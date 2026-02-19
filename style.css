@@ -1,0 +1,161 @@
+/* ========================================== */
+/* EDARS V3.0 - MODERN STYLESHEET (OPTIMIZED) */
+/* ========================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Oswald:wght@300;400;500;600;700&display=swap');
+
+/* 1. VARIABEL SISTEM & TEMA */
+:root {
+    --primary: #1e3a8a;
+    --primary-light: #2563eb;
+    --accent: #fbbf24;
+    --surface: #f8fafc;
+    --card: #ffffff;
+    --text-main: #1e293b;
+    --text-muted: #64748b;
+    --border: #e2e8f0;
+}
+
+/* Sokongan Mod Gelap (Dark Mode) */
+.dark {
+    --primary: #1e40af;
+    --primary-light: #3b82f6;
+    --surface: #0f172a;
+    --card: #1e293b;
+    --text-main: #f1f5f9;
+    --text-muted: #94a3b8;
+    --border: #334155;
+}
+
+/* 2. RESET & ASAS */
+body {
+    font-family: 'Inter', sans-serif !important;
+    background-color: var(--surface);
+    color: var(--text-main);
+    transition: background-color 0.3s ease, color 0.3s ease;
+    -webkit-font-smoothing: antialiased;
+}
+
+.font-oswald {
+    font-family: 'Oswald', sans-serif !important;
+}
+
+/* 3. KOMPONEN HEADER */
+.header-banner {
+    background: linear-gradient(135deg, #0f172a 0%, var(--primary) 100%);
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.header-banner::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(to right, var(--accent), #f59e0b);
+}
+
+.header-logo {
+    height: 56px;
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+}
+
+/* 4. KPI CARDS */
+.kpi-card {
+    background: var(--card);
+    padding: 1.5rem;
+    border-radius: 1rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    text-align: center;
+    border: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+}
+
+.kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: currentColor;
+}
+
+.kpi-value {
+    font-family: 'Oswald', sans-serif;
+    font-size: 2.5rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+/* 5. ELEMEN BORANG */
+.filter-select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    background-color: var(--card);
+    color: var(--text-main);
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2364748b' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.75rem center;
+    background-repeat: no-repeat;
+    background-size: 1.25em;
+}
+
+/* 6. JADUAL (MODERN & RESPONSIVE) */
+.result-container {
+    background: var(--card);
+    border-radius: 1rem;
+    border: 1px solid var(--border);
+    box-shadow: 0 4px 10px -2px rgba(0,0,0,0.05);
+    overflow: hidden;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+table thead th {
+    background-color: var(--surface);
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    padding: 1rem;
+    border-bottom: 2px solid var(--border);
+}
+
+table tbody td {
+    padding: 0.8rem 1rem;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.85rem;
+    color: var(--text-main);
+}
+
+table tbody tr:hover {
+    background-color: rgba(0,0,0,0.02);
+}
+
+/* 7. EKSTRA & ANIMASI */
+.bg-pattern {
+    background-color: var(--surface);
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2364748b' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+summary::-webkit-details-marker { display: none; }
+summary { list-style: none; }
+
+.animate-fade-in {
+    animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}

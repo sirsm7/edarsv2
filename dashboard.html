@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EDARS PPDAG - Papan Pemuka</title>
+    
+    <link rel="icon" type="image/png" href="icoppdag.png">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        ppdBlue: '#1e3a8a',
+                        ppdAmber: '#fbbf24',
+                        surface: 'var(--surface)',
+                        card: 'var(--card)',
+                        border: 'var(--border)',
+                    },
+                    fontFamily: {
+                        oswald: ['Oswald', 'sans-serif'],
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-pattern min-h-screen flex flex-col font-sans text-text-main">
+
+    <!-- HEADER -->
+    <header class="header-banner text-white py-5 px-6 mb-8">
+        <div class="container mx-auto max-w-7xl flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="flex flex-row items-center gap-5">
+                <img src="icoppdag.png" alt="Logo PPD Alor Gajah" class="header-logo">
+                <div class="flex flex-col">
+                    <h1 class="text-2xl md:text-3xl font-bold tracking-tight font-oswald uppercase drop-shadow-sm leading-none">
+                        EDARS <span class="text-ppdAmber">PPD ALOR GAJAH</span>
+                    </h1>
+                    <p class="text-[10px] opacity-80 tracking-[0.15em] font-light uppercase mt-1">
+                        Sistem Analisis & Pelaporan Data Peperiksaan Berpusat
+                    </p>
+                </div>
+            </div>
+            
+            <div class="flex gap-3">
+                <div id="adminControls" class="hidden flex gap-3">
+                    <button id="btnResetDB" class="bg-red-600/20 hover:bg-red-600/40 text-red-100 text-xs font-bold py-2 px-4 rounded-lg border border-red-500/30 backdrop-blur-md transition-all">
+                        🗑️ RESET DB
+                    </button>
+                    <button id="btnLogout" class="bg-white/10 hover:bg-white/20 text-white text-xs font-bold py-2 px-4 rounded-lg border border-white/20 backdrop-blur-md transition-all">
+                        🚪 LOG KELUAR
+                    </button>
+                </div>
+                <button id="btnPublicExit" class="hidden bg-white/10 hover:bg-white/20 text-white text-xs font-bold py-2 px-4 rounded-lg border border-white/20 backdrop-blur-md transition-all">
+                    🏠 KEMBALI
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 max-w-7xl pb-20 flex-grow">
+
+        <!-- 1. FILTER PANEL -->
+        <details id="mainFilterContainer" class="bg-card/80 backdrop-blur-md rounded-2xl mb-8 shadow-sm border border-border overflow-hidden" open>
+            <summary class="flex justify-between items-center p-5 cursor-pointer hover:bg-black/5 transition-colors border-b border-border">
+                <div class="flex items-center gap-3">
+                    <span class="bg-ppdBlue/10 text-ppdBlue p-2 rounded-lg text-lg">🔍</span>
+                    <div>
+                        <h3 class="font-bold font-oswald uppercase tracking-wider">Menu Penapis Data</h3>
+                        <p class="text-[10px] text-text-muted font-bold uppercase">Tetapkan kriteria analisis anda</p>
+                    </div>
+                </div>
+                <div class="text-text-muted text-xs">▼</div>
+            </summary>
+
+            <div class="p-6 md:p-8">
+                <div class="flex items-center gap-3 mb-6 pb-6 border-b border-dashed border-border">
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="toggleCompare" class="sr-only peer">
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-ppdBlue"></div>
+                        <span class="ml-3 text-xs font-bold uppercase tracking-widest text-text-muted">Mod Perbandingan</span>
+                    </label>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-6">
+                    <div>
+                        <label id="lblExam1" class="block text-[10px] font-bold text-text-muted uppercase mb-2 tracking-widest">1. Peperiksaan</label>
+                        <select id="examSelect" class="filter-select"><option value="">Memuatkan...</option></select>
+                        <label class="block text-[10px] font-bold text-text-muted uppercase mt-4 mb-2 tracking-widest">Tingkatan</label>
+                        <select id="formSelect" class="filter-select" disabled><option value="">Pilih Exam</option></select>
+                    </div>
+
+                    <div id="divExam2" class="hidden bg-ppdBlue/5 p-4 rounded-xl border border-ppdBlue/10">
+                        <label class="block text-[10px] font-bold text-ppdBlue uppercase mb-2 tracking-widest">2. Peperiksaan (Banding)</label>
+                        <select id="examSelect2" class="filter-select border-ppdBlue/20"><option value="">Pilih Baseline</option></select>
+                        <label class="block text-[10px] font-bold text-ppdBlue uppercase mt-4 mb-2 tracking-widest">Tingkatan (Banding)</label>
+                        <select id="formSelect2" class="filter-select border-ppdBlue/20" disabled><option value="">Pilih Exam 2</option></select>
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] font-bold text-text-muted uppercase mb-2 tracking-widest">Sekolah</label>
+                        <select id="schoolSelect" class="filter-select" disabled><option value="SEMUA">DAERAH (SEMUA)</option></select>
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] font-bold text-text-muted uppercase mb-2 tracking-widest">Demografi</label>
+                        <select id="demogSelect" class="filter-select">
+                            <option value="ALL">SEMUA CALON</option>
+                            <option value="L">LELAKI SAHAJA</option>
+                            <option value="P">PEREMPUAN SAHAJA</option>
+                            <option value="ALL_M">SEMUA MELAYU</option>
+                            <option value="ALL_C">SEMUA CINA</option>
+                            <option value="ALL_I">SEMUA INDIA</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-[10px] font-bold text-text-muted uppercase mb-2 tracking-widest">Komponen (KPI)</label>
+                        <select id="componentSelect" class="filter-select">
+                            <option value="NONE">ANALISA BIASA</option>
+                            <option value="BAHASA">BIDANG BAHASA</option>
+                            <option value="STEM">BIDANG STEM</option>
+                            <option value="TVET">BIDANG TVET</option>
+                            <option value="SOSIAL">SAINS SOSIAL</option>
+                            <option value="AGAMA">PENGAJIAN ISLAM</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="mt-8 flex flex-col md:flex-row justify-end gap-3 pt-6 border-t border-border">
+                    <button id="btnSpecialReport" class="btn-action bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-xl font-oswald uppercase tracking-wider flex items-center justify-center gap-2">
+                        📋 LAPORAN KHAS
+                    </button>
+                    <button id="btnCreditAnalysis" class="btn-action bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-xl font-oswald uppercase tracking-wider flex items-center justify-center gap-2">
+                        💯 ANALISA KREDIT
+                    </button>
+                    <button id="btnResetView" class="btn-action bg-slate-500 hover:bg-slate-600 text-white font-bold py-3 px-6 rounded-xl font-oswald uppercase tracking-wider flex items-center justify-center gap-2">
+                        ↺ RESET
+                    </button>
+                    <button id="btnAnalisa" disabled class="btn-action bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-200 text-white font-bold py-3 px-8 rounded-xl font-oswald uppercase tracking-wider flex items-center justify-center gap-2 transform active:scale-95 shadow-lg shadow-emerald-200">
+                        📊 JANA ANALISA
+                    </button>
+                </div>
+            </div>
+        </details>
+        
+        <!-- 2. ADMIN DATA MANAGER -->
+        <div id="adminToolsContainer" class="hidden mb-10">
+            <details class="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
+                <summary class="p-4 cursor-pointer font-bold text-ppdBlue font-oswald flex items-center gap-4 hover:bg-ppdBlue/5">
+                    <span>📂 PENGURUSAN DATA (CSV)</span>
+                    <span class="ml-auto text-text-muted text-xs">▼</span>
+                </summary>
+                <div class="p-8 bg-surface/30">
+                    <div class="border-2 border-dashed border-border hover:border-ppdBlue bg-card rounded-2xl p-10 text-center relative transition-all" id="dropZone">
+                        <input type="file" id="csvFileInput" accept=".csv" multiple class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                        <div class="pointer-events-none">
+                            <div class="w-14 h-14 bg-ppdBlue/10 text-ppdBlue rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">📄</div>
+                            <p class="font-bold font-oswald uppercase tracking-wide">Klik atau Seret Fail CSV</p>
+                            <p class="text-text-muted text-xs mt-1">Sistem akan memproses data ke database</p>
+                        </div>
+                    </div>
+                    <div id="uploadProgressContainer" class="hidden mt-6">
+                        <div class="flex justify-between text-[10px] font-bold text-text-muted mb-2 uppercase tracking-widest">
+                            <span>Status Muat Naik</span><span id="progressText">0%</span>
+                        </div>
+                        <div class="w-full bg-border rounded-full h-2 overflow-hidden">
+                            <div id="progressBar" class="bg-ppdBlue h-full transition-all duration-300" style="width: 0%"></div>
+                        </div>
+                        <div id="uploadLog" class="mt-4 text-[10px] text-text-muted font-mono h-24 overflow-y-auto bg-card p-3 border border-border rounded-lg shadow-inner"></div>
+                    </div>
+                </div>
+            </details>
+        </div>
+
+        <!-- 3. KPI DASHBOARD -->
+        <div id="kpiSection" class="hidden grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-10">
+            <div class="kpi-card text-ppdBlue" style="color: #1e3a8a"><div class="kpi-value" id="kpiCalon">0</div><div class="kpi-label">Jumlah Calon</div></div>
+            <div class="kpi-card text-indigo-600" style="color: #4f46e5"><div class="kpi-value" id="kpiGP">0.00</div><div class="kpi-label" id="labelGP">Gred Purata (GPD)</div></div>
+            <div class="kpi-card text-emerald-600" style="color: #059669"><div class="kpi-value" id="kpiLMS">0%</div><div class="kpi-label">% Layak Sijil</div></div>
+            <div class="kpi-card text-rose-600" style="color: #e11d48"><div class="kpi-value" id="kpiTLMS">0</div><div class="kpi-label">Bilangan TLMS</div></div>
+        </div>
+
+        <!-- VIEW SECTIONS -->
+        <div id="viewSpecialReport" class="hidden space-y-8 animate-fade-in">
+            <div class="result-container p-6 md:p-8">
+                <div class="flex items-center gap-3 mb-6 pb-4 border-b border-border">
+                    <span class="bg-purple-100 text-purple-700 p-2 rounded-lg">📋</span>
+                    <h3 class="font-bold font-oswald uppercase tracking-wider text-xl">Laporan Diagnostik</h3>
+                </div>
+                <div class="mb-8">
+                    <div class="flex flex-wrap gap-3">
+                        <label class="radio-label"><input type="radio" name="specialType" value="TH" checked><span>TIDAK HADIR (TH)</span></label>
+                        <label class="radio-label"><input type="radio" name="specialType" value="G"><span>GAGAL (G)</span></label>
+                        <label class="radio-label"><input type="radio" name="specialType" value="DE"><span>GRED D & E</span></label>
+                        <label class="radio-label"><input type="radio" name="specialType" value="LE10"><span>MARKAH ≤ 10</span></label>
+                    </div>
+                </div>
+                <div class="mb-8">
+                    <div class="flex justify-between items-end mb-4">
+                        <label class="text-[10px] font-bold text-text-muted uppercase tracking-widest">Senarai Subjek:</label>
+                        <div class="space-x-4 text-[10px] font-bold uppercase tracking-widest">
+                            <button id="btnSelectAll" class="text-ppdBlue">Pilih Semua</button>
+                            <button id="btnDeselectAll" class="text-text-muted">Nyahpilih</button>
+                        </div>
+                    </div>
+                    <div id="subjectCheckboxContainer" class="checkbox-grid bg-surface/50 p-4 rounded-xl border border-border"></div>
+                </div>
+                <div class="flex justify-end pt-4 border-t border-border">
+                    <button id="btnGenerateSpecial" class="bg-purple-600 text-white font-bold py-3 px-8 rounded-xl font-oswald uppercase tracking-wider">JANA LAPORAN</button>
+                </div>
+            </div>
+            <div id="specialResultContainer" class="hidden result-container border-t-4 border-purple-500">
+                <div class="p-6 border-b border-border flex justify-between items-center bg-purple-50/20">
+                    <div>
+                        <h3 class="font-bold font-oswald uppercase text-lg" id="specialReportTitle">Laporan</h3>
+                        <p class="text-[10px] font-bold text-text-muted uppercase" id="specialReportSubtitle"></p>
+                    </div>
+                    <div class="flex gap-2"><button id="btnPdfSpecial" class="btn-pdf">PDF</button><button id="btnExportSpecial" class="btn-excel">EXCEL</button></div>
+                </div>
+                <div class="overflow-x-auto"><table id="tableSpecial"><thead></thead><tbody id="tbodySpecial"></tbody></table></div>
+            </div>
+        </div>
+
+        <div id="viewCreditAnalysis" class="hidden space-y-8 animate-fade-in">
+            <div class="result-container p-6 md:p-8">
+                <div class="flex items-center gap-3 mb-6 pb-4 border-b border-border">
+                    <span class="bg-indigo-100 text-indigo-700 p-2 rounded-lg">💯</span>
+                    <h3 class="font-bold font-oswald uppercase tracking-wider text-xl">Analisa Kredit</h3>
+                </div>
+                <div class="mb-8 max-w-sm">
+                    <label class="block text-[10px] font-bold text-text-muted uppercase mb-2 tracking-widest">Pilih Subjek Teras:</label>
+                    <select id="selectCreditSubject" class="filter-select">
+                        <option value="BM">BAHASA MELAYU</option>
+                        <option value="BI">BAHASA INGGERIS</option>
+                        <option value="SEJ">SEJARAH</option>
+                        <option value="MM">MATEMATIK</option>
+                        <option value="SAINS">SAINS</option>
+                        <option value="PAI_PM">ISLAM / MORAL</option>
+                    </select>
+                </div>
+                <div class="flex justify-end pt-4 border-t border-border">
+                    <button id="btnGenerateCredit" class="bg-indigo-600 text-white font-bold py-3 px-8 rounded-xl font-oswald uppercase tracking-wider">JANA KREDIT</button>
+                </div>
+            </div>
+            <div id="creditResultContainer" class="hidden result-container border-t-4 border-indigo-500">
+                <div class="p-6 border-b border-border flex justify-between items-center bg-indigo-50/20">
+                    <div><h3 class="font-bold font-oswald uppercase text-lg" id="creditReportTitle">Kredit</h3><p class="text-[10px] font-bold text-text-muted uppercase" id="creditReportSubtitle"></p></div>
+                    <div class="flex gap-2"><button id="btnPdfCredit" class="btn-pdf">PDF</button><button id="btnExportCredit" class="btn-excel">EXCEL</button></div>
+                </div>
+                <div class="overflow-x-auto"><table id="tableCreditAnalysis"><thead></thead><tbody id="tbodyCreditAnalysis"></tbody></table></div>
+            </div>
+        </div>
+
+        <div id="viewAggregate" class="hidden space-y-8 animate-fade-in">
+            <div class="result-container border-t-4 border-slate-600">
+                <div class="p-5 border-b border-border flex justify-between items-center">
+                    <h3 class="font-bold font-oswald uppercase">Rumusan LMS Daerah</h3>
+                    <div class="flex gap-2"><button id="btnPdfAggregate" class="btn-pdf">PDF</button><button id="btnExportAggregate" class="btn-excel">EXCEL</button></div>
+                </div>
+                <div class="overflow-x-auto"><table id="tableAggregate"><thead></thead><tbody id="tbodyAggregate"></tbody></table></div>
+            </div>
+            <div class="result-container border-t-4 border-ppdAmber">
+                <div class="p-5 border-b border-border flex justify-between items-center">
+                    <h3 class="font-bold font-oswald uppercase">Analisa Subjek Daerah</h3>
+                    <div class="flex gap-2"><button id="btnPdfSubjectDistrict" class="btn-pdf">PDF</button><button id="btnExportSubjectDistrict" class="btn-excel">EXCEL</button></div>
+                </div>
+                <div class="overflow-x-auto"><table id="tableSubjectDistrict"><thead></thead><tbody id="tbodySubjectDistrict"></tbody></table></div>
+            </div>
+            <div id="districtTLMSContainer" class="result-container border-t-4 border-rose-500">
+                <div class="p-5 border-b border-border flex justify-between items-center">
+                    <h3 class="font-bold font-oswald uppercase">Senarai Murid TLMS</h3>
+                    <div class="flex gap-2"><button id="btnPdfDistrictTLMS" class="btn-pdf">PDF</button><button id="btnExportDistrictTLMS" class="btn-excel">EXCEL</button></div>
+                </div>
+                <div class="overflow-x-auto"><table id="tableDistrictTLMS"><thead></thead><tbody id="tbodyDistrictTLMS"></tbody></table></div>
+            </div>
+        </div>
+
+        <div id="viewSchoolDetail" class="hidden space-y-8 animate-fade-in">
+            <div class="result-container border-t-4 border-ppdBlue">
+                <div class="p-5 border-b border-border flex justify-between items-center">
+                    <h3 class="font-bold font-oswald uppercase">Analisa Mata Pelajaran</h3>
+                    <div class="flex gap-2"><button id="btnPdfSubject" class="btn-pdf">PDF</button><button id="btnExportSubject" class="btn-excel">EXCEL</button></div>
+                </div>
+                <div class="overflow-x-auto"><table id="tableSubject"><thead></thead><tbody id="tbodySubject"></tbody></table></div>
+            </div>
+            <div class="result-container border-t-4 border-rose-500">
+                <div class="p-5 border-b border-border flex justify-between items-center">
+                    <h3 class="font-bold font-oswald uppercase">Murid TLMS</h3>
+                    <div class="flex gap-2"><button id="btnPdfTLMS" class="btn-pdf">PDF</button><button id="btnExportTLMS" class="btn-excel">EXCEL</button></div>
+                </div>
+                <div class="overflow-x-auto"><table id="tableTLMS"><thead></thead><tbody id="tbodyTLMS"></tbody></table></div>
+            </div>
+        </div>
+
+        <div id="viewComponent" class="hidden space-y-8 animate-fade-in">
+            <div class="result-container border-t-4 border-purple-500">
+                <div class="p-5 border-b border-border flex justify-between items-center">
+                    <h3 class="font-bold font-oswald uppercase">Analisa Subjek Komponen</h3>
+                    <div class="flex gap-2"><button id="btnPdfCompSubject" class="btn-pdf">PDF</button><button id="btnExportCompSubject" class="btn-excel">EXCEL</button></div>
+                </div>
+                <div class="overflow-x-auto"><table id="tableCompSubject"><thead></thead><tbody id="tbodyCompSubject"></tbody></table></div>
+            </div>
+            <div id="componentDetailedContainer" class="space-y-8"></div>
+            <div class="result-container border-t-4 border-indigo-500">
+                <div class="p-5 border-b border-border flex justify-between items-center">
+                    <h3 class="font-bold font-oswald uppercase">Matriks Pencapaian Sekolah</h3>
+                    <div class="flex gap-2"><button id="btnPdfCompSchoolMatrix" class="btn-pdf">PDF</button><button id="btnExportCompSchoolMatrix" class="btn-excel">EXCEL</button></div>
+                </div>
+                <div class="overflow-x-auto"><table id="tableCompSchoolMatrix"><thead id="theadCompSchoolMatrix"></thead><tbody id="tbodyCompSchoolMatrix"></tbody></table></div>
+            </div>
+        </div>
+
+        <div id="viewComparison" class="hidden space-y-8 animate-fade-in">
+            <div id="comparisonKPIContainer" class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8"></div>
+            <div id="comparisonComponentContainer" class="hidden space-y-8">
+                <div class="result-container border-t-4 border-pink-500">
+                    <div class="p-5 border-b border-border flex justify-between items-center">
+                        <h3 class="font-bold font-oswald uppercase">Banding Subjek Komponen</h3>
+                        <div class="flex gap-2"><button id="btnPdfCompareCompSubjects" class="btn-pdf">PDF</button><button id="btnExportCompareCompSubjects" class="btn-excel">EXCEL</button></div>
+                    </div>
+                    <div class="overflow-x-auto"><table id="tableCompareCompSubjects"><thead></thead><tbody id="tbodyCompareCompSubjects"></tbody></table></div>
+                </div>
+                <div id="comparisonDetailedContainer" class="space-y-8"></div>
+                <div class="result-container border-t-4 border-purple-500">
+                    <div class="p-5 border-b border-border flex justify-between items-center">
+                        <h3 class="font-bold font-oswald uppercase">Banding GPK Sekolah</h3>
+                        <div class="flex gap-2"><button id="btnPdfCompareCompSchools" class="btn-pdf">PDF</button><button id="btnExportCompareCompSchools" class="btn-excel">EXCEL</button></div>
+                    </div>
+                    <div class="overflow-x-auto"><table id="tableCompareCompSchools"><thead></thead><tbody id="tbodyCompareCompSchools"></tbody></table></div>
+                </div>
+            </div>
+            <div id="comparisonGeneralContainer" class="hidden space-y-8">
+                <div class="result-container border-t-4 border-cyan-500">
+                    <div class="p-5 border-b border-border flex justify-between items-center">
+                        <h3 class="font-bold font-oswald uppercase">Banding GPS & LMS</h3>
+                        <div class="flex gap-2"><button id="btnExportKPI" class="hidden bg-emerald-600 text-white text-[10px] font-bold py-2 px-4 rounded-lg">📊 JADUAL KPI</button><button id="btnPdfCompareSchools" class="btn-pdf">PDF</button><button id="btnExportCompareSchools" class="btn-excel">EXCEL</button></div>
+                    </div>
+                    <div class="overflow-x-auto"><table id="tableCompareSchools"><thead></thead><tbody id="tbodyCompareSchools"></tbody></table></div>
+                </div>
+                <div class="result-container border-t-4 border-rose-500">
+                    <div class="p-5 border-b border-border flex justify-between items-center">
+                        <h3 class="font-bold font-oswald uppercase">Banding TLMS</h3>
+                        <div class="flex gap-2"><button id="btnPdfCompareTLMS" class="btn-pdf">PDF</button><button id="btnExportCompareTLMS" class="btn-excel">EXCEL</button></div>
+                    </div>
+                    <div class="overflow-x-auto"><table id="tableCompareTLMS"><thead></thead><tbody id="tbodyCompareTLMS"></tbody></table></div>
+                </div>
+                <div class="result-container border-t-4 border-ppdAmber">
+                    <div class="p-5 border-b border-border flex justify-between items-center">
+                        <h3 class="font-bold font-oswald uppercase">Banding GPMP Subjek</h3>
+                        <div class="flex gap-2"><button id="btnPdfCompareSubjects" class="btn-pdf">PDF</button><button id="btnExportCompareSubjects" class="btn-excel">EXCEL</button></div>
+                    </div>
+                    <div class="overflow-x-auto"><table id="tableCompareSubjects"><thead></thead><tbody id="tbodyCompareSubjects"></tbody></table></div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script src="pdf-export.js"></script>
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>
