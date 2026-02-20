@@ -158,15 +158,17 @@ export function calculateAggregateData(students) {
         } 
         
         // 3. Kira GPS Sekolah & Statistik Subjek Daerah
-        // Menggunakan kaedah imbasan kunci untuk mengesan semua subjek yang diambil
         Object.keys(marks).forEach(key => {
-            // Pengesanan pintar: Cari kunci yang bermula dengan 'G' atau 'GRED'
             if (key.startsWith('G') || key.startsWith('GRED')) {
                 const kod = key.replace(/^G_?|RED /g, '').trim();
+                
+                // PENAPISAN MUTLAK (STRICT WHITELIST)
+                if (!NAMA_SUBJEK.hasOwnProperty(kod)) return;
+                
                 const g = marks[key] ? marks[key].toString().trim().toUpperCase() : '';
 
                 if (g !== '' && g !== 'NULL' && g !== 'UNDEFINED') {
-                    // Kira GPS (Kecuali PJK dsb)
+                    // Kira GPS (Kecuali subjek dalam SUBJEK_KECUALI)
                     if (!SUBJEK_KECUALI.includes(kod)) { 
                         if (GRED_POINTS.hasOwnProperty(g)) { 
                             sc.sumPoint += GRED_POINTS[g]; 
@@ -201,7 +203,7 @@ export function calculateAggregateData(students) {
         });
     });
 
-    // 4. GARBAGE COLLECTOR (Membuang Subjek Hantu / Kosong)
+    // 4. GARBAGE COLLECTOR (Membuang Subjek Kosong)
     Object.keys(district.subjectStats).forEach(kod => {
         const sub = district.subjectStats[kod];
         if (sub.ambil === 0 || (sub.hadir === 0 && sub['G'] === 0)) {
@@ -250,6 +252,10 @@ export function calculateSchoolDetailData(students) {
         Object.keys(marks).forEach(k => { 
             if (k.startsWith('G') || k.startsWith('GRED')) { 
                 const kod = k.replace(/^G_?|RED /g, '').trim(); 
+                
+                // PENAPISAN MUTLAK (STRICT WHITELIST)
+                if (!NAMA_SUBJEK.hasOwnProperty(kod)) return;
+                
                 const g = marks[k] ? marks[k].toString().trim().toUpperCase() : ''; 
                 
                 if (g !== '' && g !== 'NULL' && g !== 'UNDEFINED') { 
@@ -284,7 +290,7 @@ export function calculateSchoolDetailData(students) {
         }); 
     });
 
-    // GARBAGE COLLECTOR (Membuang Subjek Hantu / Kosong)
+    // GARBAGE COLLECTOR
     Object.keys(subjects).forEach(kod => {
         const sub = subjects[kod];
         if (sub.ambil === 0 || (sub.hadir === 0 && sub['G'] === 0)) {
@@ -317,6 +323,9 @@ function generateMatrixData(students, targetSubjects, subjectsContainer, schools
         Object.keys(marks).forEach(k => { 
             if (k.startsWith('G') || k.startsWith('GRED')) { 
                 const kod = k.replace(/^G_?|RED /g, '').trim(); 
+                
+                // PENAPISAN MUTLAK (STRICT WHITELIST)
+                if (!NAMA_SUBJEK.hasOwnProperty(kod)) return;
                 
                 if (targetSubjects.includes(kod)) { 
                     let gred = marks[k] ? marks[k].toString().trim().toUpperCase() : ''; 
@@ -395,10 +404,9 @@ export function calculateComponentData(students, compCode) {
     let schools = {};  
     let compStats = { calon: 0, sumPoint: 0, sumSubject: 0 };
     
-    // Guna Helper Function
     let subjectSchoolMatrix = generateMatrixData(students, targetSubjects, subjects, schools, compStats);
 
-    // GARBAGE COLLECTOR (Membuang Subjek Hantu / Kosong)
+    // GARBAGE COLLECTOR
     Object.keys(subjects).forEach(kod => {
         const sub = subjects[kod];
         if (sub.ambil === 0 || (sub.hadir === 0 && sub.g_count === 0)) {
@@ -418,9 +426,6 @@ export function calculateComponentData(students, compCode) {
 // 5. COMPARISON LOGIC (PERBANDINGAN E1 vs E2)
 // ==========================================
 
-/**
- * Helper: Kira statistik ringkas daerah untuk perbandingan
- */
 function getDistrictSimpleStats(list, isComponent = false, targetSubjects = []) {
     let stats = { calon: 0, sumPoint: 0, sumSubject: 0, lms: 0, tlms: 0 };
     
@@ -431,6 +436,9 @@ function getDistrictSimpleStats(list, isComponent = false, targetSubjects = []) 
             let taking = false;
             Object.keys(marks).forEach(k => {
                 const kod = k.replace(/^G_?|RED /g, '').trim();
+                // PENAPISAN MUTLAK
+                if (!NAMA_SUBJEK.hasOwnProperty(kod)) return;
+                
                 if (targetSubjects.includes(kod)) taking = true;
             });
             if (taking) stats.calon++;
@@ -445,6 +453,10 @@ function getDistrictSimpleStats(list, isComponent = false, targetSubjects = []) 
         Object.keys(marks).forEach(k => {
             if (k.startsWith('G') || k.startsWith('GRED')) {
                 const kod = k.replace(/^G_?|RED /g, '').trim();
+                
+                // PENAPISAN MUTLAK
+                if (!NAMA_SUBJEK.hasOwnProperty(kod)) return;
+                
                 let g = marks[k] ? marks[k].toString().trim().toUpperCase() : '';
                 
                 const isRelevant = isComponent 
@@ -491,6 +503,10 @@ export function calculateComparisonGeneral(list1, list2) {
             Object.keys(marks).forEach(k => {
                 if (k.startsWith('G') || k.startsWith('GRED')) {
                     const kod = k.replace(/^G_?|RED /g, '').trim();
+                    
+                    // PENAPISAN MUTLAK
+                    if (!NAMA_SUBJEK.hasOwnProperty(kod)) return;
+                    
                     if (!SUBJEK_KECUALI.includes(kod)) {
                         const g = marks[k] ? marks[k].toString().trim().toUpperCase() : '';
                         if (g !== '' && g !== 'NULL' && g !== 'UNDEFINED') {
@@ -516,6 +532,10 @@ export function calculateComparisonGeneral(list1, list2) {
             Object.keys(marks).forEach(k => {
                 if (k.startsWith('G') || k.startsWith('GRED')) {
                     const kod = k.replace(/^G_?|RED /g, '').trim();
+                    
+                    // PENAPISAN MUTLAK
+                    if (!NAMA_SUBJEK.hasOwnProperty(kod)) return;
+                    
                     const g = marks[k] ? marks[k].toString().trim().toUpperCase() : '';
                     if (g !== '' && g !== 'NULL' && g !== 'UNDEFINED') {
                         if (!subMap[kod]) subMap[kod] = { 
@@ -545,7 +565,6 @@ export function calculateComparisonGeneral(list1, list2) {
         if (sub.ex1.ambil === 0 && sub.ex2.ambil === 0) {
             delete subMap[kod];
         } else if (sub.ex1.ct === 0 && sub.ex2.ct === 0) {
-            // Padam jika tiada nilai sah walaupun direkodkan diambil
             delete subMap[kod];
         }
     });
@@ -559,16 +578,13 @@ export function calculateComparisonGeneral(list1, list2) {
 export function calculateComparisonComponent(list1, list2, compCode) {
     const targetSubjects = COMPONENT_MAP[compCode] || [];
     
-    // 1. Kira Statistik Asas Daerah
     const stats1 = getDistrictSimpleStats(list1, true, targetSubjects);
     const stats2 = getDistrictSimpleStats(list2, true, targetSubjects);
     const districtStats = { ex1: stats1, ex2: stats2, isComponent: true };
 
-    // 2. Kira Matriks E1 & E2 (Guna Helper Sama)
     const matrix1 = generateMatrixData(list1, targetSubjects, null, null, null);
     const matrix2 = generateMatrixData(list2, targetSubjects, null, null, null);
 
-    // 3. Gabungkan Matriks (ComparisonSubjectMatrix)
     let comparisonMatrix = {};
     const allSubjects = new Set([...Object.keys(matrix1), ...Object.keys(matrix2)]);
     
@@ -579,8 +595,8 @@ export function calculateComparisonComponent(list1, list2, compCode) {
         const allSchools = new Set([...Object.keys(schools1), ...Object.keys(schools2)]);
 
         allSchools.forEach(schName => {
-            const d1 = schools1[schName]; // Data E1
-            const d2 = schools2[schName]; // Data E2
+            const d1 = schools1[schName]; 
+            const d2 = schools2[schName]; 
             const baseInfo = d1 || d2;
             
             comparisonMatrix[kod][schName] = {
@@ -610,6 +626,10 @@ export function calculateComparisonComponent(list1, list2, compCode) {
             Object.keys(marks).forEach(k => {
                 if (k.startsWith('G') || k.startsWith('GRED')) {
                     const kod = k.replace(/^G_?|RED /g, '').trim();
+                    
+                    // PENAPISAN MUTLAK
+                    if (!NAMA_SUBJEK.hasOwnProperty(kod)) return;
+                    
                     if (targetSubjects.includes(kod)) {
                         const g = marks[k] ? marks[k].toString().trim().toUpperCase() : '';
                         if (g !== '' && g !== 'NULL' && g !== 'UNDEFINED') {
@@ -637,6 +657,10 @@ export function calculateComparisonComponent(list1, list2, compCode) {
             Object.keys(marks).forEach(k => {
                 if (k.startsWith('G') || k.startsWith('GRED')) {
                     const kod = k.replace(/^G_?|RED /g, '').trim();
+                    
+                    // PENAPISAN MUTLAK
+                    if (!NAMA_SUBJEK.hasOwnProperty(kod)) return;
+                    
                     if (targetSubjects.includes(kod)) {
                         const g = marks[k] ? marks[k].toString().trim().toUpperCase() : '';
                         if (g !== '' && g !== 'NULL' && g !== 'UNDEFINED') {

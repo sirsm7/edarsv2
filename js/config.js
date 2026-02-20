@@ -24,95 +24,66 @@ export const GRED_POINTS = {
 };
 
 // 3. SENARAI SUBJEK PENGECUALIAN (SUBJEK_KECUALI)
-// Subjek ini TIDAK AKAN diambil kira dalam pengiraan GPS Sekolah.
+// Subjek ini TIDAK AKAN diambil kira dalam pengiraan GPS / GPD.
 export const SUBJEK_KECUALI = [
-    'PJPK', 'BIAK', 'MAK', 'PIAK', 'PMAK', 'BJP', 'BP', 'PPBM', 
-    'MUI', 'HIFZ', 'PJK', 'KKQ'
+    'PJPK', 'BIAK', 'MAK', 'PIAK', 'PMAK', 'BJP', 'BP', 'PPBM'
 ]; 
 
 // 4. SUSUNAN KEUTAMAAN SUBJEK (SUBJECT_PRIORITY)
 // Digunakan untuk menyusun paparan subjek dalam jadual dan checkbox (Teras didahulukan).
 export const SUBJECT_PRIORITY = [
     'BM', 'SEJ', 'BI', 'MM', 'SAINS', 'PAI', 'PM', // Teras
-    'BIO', 'FIZ', 'KIM', 'MT', // Elektif STEM
-    'PQS', 'PSI', 'TASAWWUR', // Elektif Agama
-    'PSV', 'PERNIAGAAN', 'EKO', 'PRINSIP AKAUN' // Elektif Kemanusiaan/Sastera
+    'BIO', 'FIZIK', 'KIMIA', 'MT', // Elektif STEM
+    'PQS', 'PSI', 'TI', // Elektif Agama
+    'PSV', 'PERNIAGAAN', 'EKO', 'AKAUN' // Elektif Kemanusiaan/Sastera/TVET
 ];
 
 // 5. PEMETAAN KOD KE NAMA PENUH SUBJEK (NAMA_SUBJEK)
-// Digunakan untuk paparan UI yang lebih mesra pengguna.
+// BERTINDAK SEBAGAI STRICT WHITELIST: Hanya 45 subjek ini sahaja diproses oleh sistem.
 export const NAMA_SUBJEK = {
     'ADB': "AL-ADAB WA AL-BALAGHAH", 
-    'AKHR': "AKUAKULTUR DAN HAIWAN REKREASI", 
+    'AKAUN': "PRINSIP PERAKAUNAN",
     'APAKK': "ASUHAN DAN PENDIDIKAN AWAL KANAK-KANAK",
-    'BC': "BAHASA CINA", 
-    'BT': "BAHASA TAMIL", 
+    'AS': "AL-SYARIAH",
     'BA': "BAHASA ARAB", 
-    'BCKOM': "BAHASA CINA KOMUNIKASI",
-    'BIAK': "BAHASA INGGERIS ALIRAN KEMAHIRAN", 
-    'BJP': "BAHASA JEPUN", 
-    'BJR': "BAHASA JERMAN", 
-    'KMK': "KESUSASTERAAN MELAYU KOMUNIKATIF",
-    'BP': "BAHASA PERANCIS", 
+    'BC': "BAHASA CINA", 
     'BI': "BAHASA INGGERIS", 
     'BIO': "BIOLOGI", 
+    'BJR': "BAHASA JERMAN", 
     'BM': "BAHASA MELAYU", 
+    'BT': "BAHASA TAMIL", 
     'EKO': "EKONOMI",
     'FIZIK': "FIZIK", 
-    'FIZ': "FIZIK", 
     'GEO': "GEOGRAFI", 
     'GKT': "GRAFIK KOMUNIKASI TEKNIKAL", 
     'HD': "HIASAN DALAMAN",
-    'HIFZ': "HIFZ AL-QURAN", 
-    'KPM': "KATERING DAN PENYAJIAN MAKANAN", 
-    'KPD': "KERJA PAIP DOMESTIK", 
-    'KTAMIL': "KESUSASTERAAN TAMIL", 
     'KCINA': "KESUSASTERAAN CINA", 
     'KIMIA': "KIMIA", 
-    'KIM': "KIMIA", 
-    'KAG': "KIMPALAN ARKA DAN GAS", 
-    'LN': "LANDSKAP DAN NURSERI", 
+    'KMK': "KESUSASTERAAN MELAYU KOMUNIKATIF",
+    'KTAMIL': "KESUSASTERAAN TAMIL", 
     'LAM': "AL-LUGHAH AL-'ARABIAH AL-MU'ASIRAH", 
-    'LK': "LUKISAN KEJURUTERAAN", 
-    'MQ': "MAHARAT AL-QURAN", 
-    'MUI': "MANAHIJ AL-'ULUM AL-ISLAMIYAH", 
-    'MT': "MATEMATIK TAMBAHAN", 
-    'MAK': "MATEMATIK ALIRAN KEMAHIRAN", 
+    'LN': "LANDSKAP DAN NURSERI", 
     'MAUTO': "MENSERVIS AUTOMOBIL", 
-    'SMOTO': "MENSERVIS MOTORSIKAL", 
-    'MPPPU': "MENSERVIS PEALATAN PENYEJUKAN DAN PENYAMANAN UDARA", 
-    'MPED': "MENSERVIS PERALATAN ELEKTRIK DOMESTIK", 
     'MM': "MATEMATIK", 
-    'PMZ': "PENDIDIKAN MUZIK", 
-    'PQS': "PENDIDIKAN AL-QURAN DAN AL-SUNNAH", 
+    'MT': "MATEMATIK TAMBAHAN", 
+    'MUI': "MANAHIJ AL-'ULUM AL-ISLAMIYAH", 
     'PAI': "PENDIDIKAN ISLAM", 
-    'PBD': "PEMBINAAN DOMESTIK", 
-    'PPBOT': "PEMBUATAN PERABOT", 
-    'PPM': "PEMPROSESAN MAKANAN", 
-    'PSI': "PENDIDIKAN SYARIAH ISLAMIAH", 
-    'PIAK': "PENDIDIKAN ISLAM ALIRAN KEMAHIRAN", 
-    'PJPK': "PENDIDIKAN JASMANI DAN PENDIDIKAN KESIHATAN", 
-    'PMAK': "PENDIDIKAN MORAL ALIRAN KEMAHIRAN", 
-    'PKA': "PENGAJIAN KEJURUTERAAN AWAM", 
-    'PKEE': "PENGAJIAN KEJURUTERAAN ELEKTRIK DAN ELEKTRONIK", 
-    'PKM': "PENGAJIAN KEJURUTERAAN MEKANIKAL", 
-    'PK': "PENGAJIAN KEUSAHAWANAN", 
-    'PERNIAGAAN': "PERNIAGAAN", 
-    'PERT': "PERTANIAN", 
-    'PM': "PENDIDIKAN MORAL", 
-    'AKAUN': "PRINSIP PERAKAUNAN", 
     'PDM': "PRODUKSI MULTIMEDIA", 
+    'PERNIAGAAN': "PERNIAGAAN", 
+    'PM': "PENDIDIKAN MORAL", 
+    'PPBM': "PENYEDIAAN MAKANAN",
+    'PPBOT': "PEMBUATAN PERABOT", 
+    'PQS': "PENDIDIKAN AL-QURAN DAN AL-SUNNAH", 
     'PRT': "PRODUKSI REKA TANDA", 
+    'PSI': "PENDIDIKAN SYARIAH ISLAMIAH", 
     'PSV': "PENDIDIKAN SENI VISUAL", 
-    'RBGD': "REKA BENTUK GRAFIK DIGITAL", 
     'RC': "REKA CIPTA", 
+    'SAINS': "SAINS", 
+    'SEJ': "SEJARAH", 
     'SKOM': "SAINS KOMPUTER", 
+    'SMOTO': "MENSERVIS MOTORSIKAL", 
     'SRT': "SAINS RUMAH TANGGA", 
     'SSUKAN': "SAINS SUKAN", 
-    'SEJ': "SEJARAH", 
-    'SAINS': "SAINS", 
-    'AS': "AL-SYARIAH", 
-    'TM': "TANAMAN MAKANAN", 
     'TI': "TASAWWUR ISLAM", 
     'UD': "USUL AL-DIN"
 };
@@ -120,12 +91,12 @@ export const NAMA_SUBJEK = {
 // 6. PENGELOMPOKAN KPI (COMPONENT_MAP)
 // Digunakan untuk filter Laporan Komponen (Analisa Mengikut Bidang).
 export const COMPONENT_MAP = {
-    'BAHASA': ['BM', 'BI', 'BA', 'BC', 'BT', 'KMK', 'KCINA', 'KTAMIL'],
+    'BAHASA': ['BM', 'BI', 'BA', 'BC', 'BT', 'KMK', 'KCINA', 'KTAMIL', 'BJR'],
     'SOSIAL': ['SEJ', 'PM', 'GEO', 'PAI', 'TI', 'SSUKAN', 'PSV'], 
-    'STEM': ['MM', 'MT', 'SAINS', 'BIO', 'BIOLOGI', 'FIZIK', 'FIZ', 'KIMIA', 'KIM'],
+    'STEM': ['MM', 'MT', 'SAINS', 'BIO', 'FIZIK', 'KIMIA'],
     'TVET': [
         'PERNIAGAAN', 'AKAUN', 'EKO', 'SRT', 'RC', 'GKT', 'SKOM', 
-        'LN', 'PRT', 'MAUTO', 'PDM', 'SMOTO', 'HD', 'APAKK'
+        'LN', 'PRT', 'MAUTO', 'PDM', 'SMOTO', 'HD', 'APAKK', 'PPBM', 'PPBOT'
     ],
     'AGAMA': ['ADB', 'AS', 'BA', 'LAM', 'MUI', 'PAI', 'PQS', 'PSI', 'TI', 'UD']
 };
