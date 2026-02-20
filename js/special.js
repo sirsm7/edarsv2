@@ -36,12 +36,14 @@ export function renderSubjectCheckboxes(subjects) {
 
     container.innerHTML = sortedSubjects.map(subCode => {
         const fullName = NAMA_SUBJEK[subCode] || "";
-        const label = fullName ? `<span class="font-bold text-gray-700 w-12 shrink-0">${subCode}</span> <span class="text-gray-500 text-[10px] truncate border-l border-gray-200 pl-2 ml-1 uppercase tracking-wide">${fullName}</span>` : `<span class="font-bold text-gray-700">${subCode}</span>`;
+        // KEMASKINI: Buang truncate, tambah flex-1, break-words dan leading-snug untuk wrap yang kemas
+        const label = fullName ? `<span class="font-bold text-gray-700 w-12 shrink-0">${subCode}</span> <span class="flex-1 text-gray-500 text-[10px] break-words leading-snug border-l border-gray-200 pl-2 ml-1 uppercase tracking-wide">${fullName}</span>` : `<span class="font-bold text-gray-700">${subCode}</span>`;
         
+        // KEMASKINI: Tambah h-full pada label dan buang overflow-hidden pada div
         return `
-        <label class="group flex items-center p-3 bg-white rounded-lg border border-gray-200 hover:border-purple-300 hover:shadow-md transition-all cursor-pointer select-none">
+        <label class="group flex items-center p-3 h-full bg-white rounded-lg border border-gray-200 hover:border-purple-300 hover:shadow-md transition-all cursor-pointer select-none">
             <input type="checkbox" name="chkSubject" value="${subCode}" class="w-4 h-4 text-purple-600 rounded border-gray-300 focus:ring-purple-500 shrink-0 mr-3">
-            <div class="flex items-center w-full overflow-hidden">
+            <div class="flex items-center w-full">
                 ${label}
             </div>
         </label>
