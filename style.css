@@ -1,38 +1,42 @@
 /* ========================================== */
-/* EDARS V3.0 - STYLESHEET LENGKAP            */
+/* EDARS V3.0 - MODERN STYLESHEET (REVAMPED)  */
 /* ========================================== */
 
+/* 1. GLOBAL FONT & RESET */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Oswald:wght@300;400;500;600;700&display=swap');
 
 :root {
-    --primary: #1e3a8a;
-    --primary-light: #2563eb;
-    --accent: #fbbf24;
-    --surface: #f8fafc;
-    --card: #ffffff;
-    --text-main: #1e293b;
-    --text-muted: #64748b;
-    --border: #e2e8f0;
+    --primary-blue: #1e3a8a;
+    --secondary-blue: #2563eb;
+    --accent-amber: #fbbf24;
+    --bg-surface: #f8fafc; /* Slate-50 equivalent */
+    --card-white: #ffffff;
+    --text-dark: #1e293b; /* Slate-800 */
+    --text-muted: #64748b; /* Slate-500 */
+    --border-light: #e2e8f0;
 }
 
 body {
     font-family: 'Inter', sans-serif !important;
-    background-color: var(--surface);
-    color: var(--text-main);
+    letter-spacing: 0.01em; 
     -webkit-font-smoothing: antialiased;
+    background-color: var(--bg-surface);
+    color: var(--text-dark);
     margin: 0;
 }
 
+/* Utility Class untuk Tajuk (Kekalkan Oswald) */
 .font-oswald {
     font-family: 'Oswald', sans-serif !important;
 }
 
-/* HEADER & BANNER */
+/* 2. HEADER BANNER */
 .header-banner {
-    background: linear-gradient(135deg, #0f172a 0%, var(--primary) 100%);
+    background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%); /* Deep Blue/Dark gradient */
+    border-bottom: 0;
     position: relative;
     overflow: hidden;
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 10px 25px -5px rgba(30, 58, 138, 0.25);
 }
 
 .header-banner::after {
@@ -42,32 +46,39 @@ body {
     left: 0;
     width: 100%;
     height: 4px;
-    background: linear-gradient(to right, var(--accent), #f59e0b);
+    background: linear-gradient(to right, var(--accent-amber), #f59e0b);
 }
 
 .header-logo {
-    height: 56px;
+    height: 56px; 
     width: auto;
     filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+    transition: transform 0.3s ease;
 }
 
-/* KPI CARDS */
+.header-logo:hover {
+    transform: scale(1.05);
+}
+
+/* 3. KPI CARDS (MODERN CARD STYLE) */
 .kpi-card {
-    background: var(--card);
-    padding: 1.5rem;
-    border-radius: 1rem;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    background: var(--card-white); 
+    padding: 1.75rem; 
+    border-radius: 1rem; /* Rounded-xl */
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03); 
     text-align: center;
-    border: 1px solid var(--border);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid rgba(255,255,255,0.5);
     position: relative;
     overflow: hidden;
-    transition: transform 0.2s;
 }
 
 .kpi-card:hover {
-    transform: translateY(-2px);
+    transform: translateY(-5px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
+/* Top Border Accent untuk KPI */
 .kpi-card::before {
     content: '';
     position: absolute;
@@ -75,130 +86,224 @@ body {
     left: 0;
     width: 100%;
     height: 4px;
-    background: currentColor;
+    background: currentColor; /* Mengikut warna teks KPI */
+    opacity: 0.8;
 }
 
-.kpi-value {
-    font-family: 'Oswald', sans-serif;
-    font-size: 2.5rem;
-    font-weight: 700;
-    line-height: 1.2;
-    margin-bottom: 0.25rem;
+.kpi-value { 
+    font-family: 'Oswald', sans-serif; 
+    font-size: 3.5rem; 
+    font-weight: 700; 
+    line-height: 1; 
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.02em;
 }
 
-.kpi-label {
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    font-weight: 700;
-    color: var(--text-muted);
-    letter-spacing: 0.05em;
+.kpi-label { 
+    font-size: 0.8rem; 
+    text-transform: uppercase; 
+    font-weight: 600; 
+    color: var(--text-muted); 
+    letter-spacing: 0.08em; 
 }
 
-/* FORM ELEMENTS */
+/* 4. FORM ELEMENTS (MODERN INPUT) */
 .filter-select {
-    width: 100%;
-    padding: 0.65rem 1rem;
-    border: 1px solid var(--border);
-    border-radius: 0.75rem;
-    background-color: var(--card);
-    color: var(--text-main);
-    font-size: 0.875rem;
-    appearance: none;
+    width: 100%; 
+    padding: 0.75rem 1rem; 
+    border: 1px solid var(--border-light);
+    border-radius: 0.75rem; 
+    font-family: 'Inter', sans-serif; 
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-dark); 
+    outline: none; 
+    transition: all 0.2s ease;
+    background-color: #fff;
+    /* Custom Arrow SVG */
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2364748b' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
     background-position: right 0.75rem center;
     background-repeat: no-repeat;
-    background-size: 1.25em;
-    cursor: pointer;
-    transition: border-color 0.2s;
-}
-
-.filter-select:focus {
-    outline: none;
-    border-color: var(--primary-light);
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    background-size: 1.25em 1.25em;
+    appearance: none;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
 
 .filter-select:disabled {
     background-color: #f1f5f9;
+    color: #94a3b8;
     cursor: not-allowed;
+    border-color: #e2e8f0;
 }
 
-/* TABLES */
-.result-container {
-    background: var(--card);
-    border-radius: 1rem;
-    border: 1px solid var(--border);
-    box-shadow: 0 4px 10px -2px rgba(0,0,0,0.05);
-    overflow: hidden;
-    margin-bottom: 2rem;
+.filter-select:focus { 
+    border-color: var(--secondary-blue); 
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); 
 }
 
-table {
-    width: 100%;
-    border-collapse: collapse;
+/* 5. BUTTONS (MODERN Action) */
+.btn-excel, .btn-pdf {
+    font-family: 'Oswald', sans-serif;
+    font-size: 0.75rem;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    cursor: pointer;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
 }
 
+.btn-excel { background: #fff; color: #1e293b; border: 1px solid var(--border-light); }
+.btn-excel:hover { background: #f8fafc; border-color: #cbd5e1; transform: translateY(-1px); }
+
+.btn-pdf { background: #fff; color: #b91c1c; border: 1px solid #fecaca; }
+.btn-pdf:hover { background: #fef2f2; border-color: #fca5a5; transform: translateY(-1px); }
+
+/* 6. TABLES (CLEAN & MINIMALIST) */
+.result-container { 
+    background: white; 
+    border-radius: 1rem; 
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 10px 15px -3px rgba(0,0,0,0.05); 
+    margin-bottom: 2.5rem; 
+    border: 1px solid var(--border-light);
+    overflow: hidden; 
+}
+
+.overflow-x-auto {
+    border-radius: 0 0 1rem 1rem;
+}
+
+table { 
+    width: 100%; 
+    border-collapse: collapse; 
+    min-width: 600px; 
+}
+
+/* HEADER TABLE */
 table thead th {
-    background-color: #f8fafc;
-    color: #475569;
+    background-color: #f8fafc; 
+    color: #475569; 
     font-weight: 700;
     text-transform: uppercase;
-    font-size: 0.65rem;
-    padding: 0.75rem 1rem;
-    border-bottom: 2px solid var(--border);
-    border-right: 1px solid var(--border);
-}
-
-table thead th:last-child {
-    border-right: none;
-}
-
-table tbody td {
-    padding: 0.75rem 1rem;
-    border-bottom: 1px solid var(--border);
-    font-size: 0.8rem;
-    color: var(--text-main);
+    font-size: 0.75rem !important;
+    letter-spacing: 0.05em;
+    padding: 1rem 1rem !important;
+    border-bottom: 2px solid #e2e8f0 !important;
+    border-top: none;
+    border-left: none;
     border-right: 1px solid #f1f5f9;
+    text-align: left;
+    font-family: 'Inter', sans-serif !important;
 }
 
-table tbody td:last-child {
-    border-right: none;
+table thead th.text-center { text-align: center; }
+
+/* BODY TABLE */
+table tbody td { 
+    padding: 0.85rem 1rem !important;
+    border-bottom: 1px solid #f1f5f9 !important; 
+    border-left: none !important;
+    border-right: 1px solid #f8fafc !important;
+    border-top: none !important;
+    vertical-align: middle; 
+    white-space: nowrap; 
+    font-family: 'Inter', sans-serif !important;
+    font-size: 0.85rem !important;
+    color: #334155;
+}
+
+table tbody tr:nth-child(even) {
+    background-color: #fcfcfc;
 }
 
 table tbody tr:hover {
-    background-color: #f1f5f9;
+    background-color: #f1f5f9 !important;
 }
 
-/* BUTTONS */
-.btn-excel, .btn-pdf {
-    font-family: 'Oswald', sans-serif;
-    font-size: 0.7rem;
-    padding: 0.4rem 0.8rem;
-    border-radius: 0.5rem;
-    font-weight: 600;
+/* Angka/Gred Data */
+.font-data-num {
+    font-family: 'Inter', sans-serif;
+    font-feature-settings: "tnum"; 
+    font-weight: 500;
+}
+
+@media (min-width: 768px) {
+    table th, table td { 
+        font-size: 0.9rem !important;    
+    }
+}
+
+/* 7. UTILITIES & BADGES */
+.pdf-arrow { font-family: sans-serif; } 
+
+.badge-pill {
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: all 0.2s;
+    justify-content: center;
+    padding: 0.25rem 0.6rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    font-family: 'Inter', sans-serif;
 }
 
-.btn-excel { background: #fff; color: #1e293b; border: 1px solid var(--border); }
-.btn-excel:hover { background: #f8fafc; border-color: #cbd5e1; }
+/* 8. CHECKBOX GRID (SPECIAL REPORT) */
+.checkbox-grid {
+    display: grid;
+    grid-template-columns: repeat(1, 1fr); 
+    gap: 0.75rem;
+    max-height: 250px;
+    overflow-y: auto;
+    padding-right: 8px;
+}
 
-.btn-pdf { background: #fff; color: #b91c1c; border: 1px solid #fecaca; }
-.btn-pdf:hover { background: #fef2f2; border-color: #fca5a5; }
+.checkbox-grid::-webkit-scrollbar { width: 6px; }
+.checkbox-grid::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+.checkbox-grid::-webkit-scrollbar-track { background: #f1f5f9; }
 
-/* UTILITIES */
+@media (min-width: 768px) {
+    .checkbox-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+.radio-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.6rem 1.25rem;
+    border: 1px solid var(--border-light);
+    border-radius: 9999px;
+    background: white;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    transition: all 0.2s;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+}
+
+.radio-label:hover { background: #f8fafc; border-color: #cbd5e1; }
+.radio-label input[type="radio"] { accent-color: var(--secondary-blue); width: 1.1rem; height: 1.1rem; }
+
+/* 9. SWEETALERT OVERRIDES */
+div:where(.swal2-container) div:where(.swal2-popup) {
+    font-family: 'Inter', sans-serif !important;
+    border-radius: 1.5rem !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+}
+div:where(.swal2-title) { font-family: 'Oswald', sans-serif; text-transform: uppercase; letter-spacing: 0.05em; }
+
+/* 10. BACKGROUND PATTERN */
 .bg-pattern {
-    background-color: var(--surface);
+    background-color: var(--bg-surface);
     background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2364748b' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
 }
 
-summary::-webkit-details-marker { display: none; }
-summary { list-style: none; outline: none; }
-
+/* 11. ANIMATIONS */
 .animate-fade-in {
     animation: fadeIn 0.4s ease-out;
 }
@@ -208,41 +313,5 @@ summary { list-style: none; outline: none; }
     to { opacity: 1; transform: translateY(0); }
 }
 
-.badge-pill {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.2rem 0.5rem;
-    border-radius: 999px;
-    font-size: 0.7rem;
-    font-weight: 700;
-}
-
-.checkbox-grid {
-    display: grid;
-    grid-template-columns: repeat(1, 1fr);
-    gap: 0.75rem;
-    max-height: 300px;
-    overflow-y: auto;
-}
-
-@media (min-width: 768px) {
-    .checkbox-grid { grid-template-columns: repeat(3, 1fr); }
-}
-
-.radio-label {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    background: white;
-    cursor: pointer;
-    font-size: 0.8rem;
-    font-weight: 600;
-    transition: all 0.2s;
-}
-
-.radio-label:hover { background: #f8fafc; }
-.radio-label input[type="radio"] { accent-color: var(--primary-light); }
+summary::-webkit-details-marker { display: none; }
+summary { list-style: none; outline: none; }

@@ -5,12 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EDARS PPDAG - Papan Pemuka</title>
     
+    <!-- Integrasi Favicon -->
     <link rel="icon" type="image/png" href="icoppdag.png">
     
+    <!-- External Libraries (CDN) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- jsPDF & AutoTable -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     
@@ -34,36 +37,44 @@
         }
     </script>
     
+    <!-- Custom CSS -->
     <link rel="stylesheet" href="style.css">
+    
+    <style>
+        /* CSS Fix untuk Details/Summary Marker */
+        summary::-webkit-details-marker { display: none; }
+        summary { list-style: none; outline: none; }
+    </style>
 </head>
-<body class="bg-pattern min-h-screen flex flex-col font-sans">
+<body class="bg-surface min-h-screen flex flex-col font-sans">
 
     <!-- HEADER -->
-    <header class="header-banner text-white py-5 px-6 mb-8">
+    <header class="header-banner text-white py-5 px-6 mb-10">
         <div class="container mx-auto max-w-7xl flex flex-col md:flex-row justify-between items-center gap-6">
             <div class="flex flex-row items-center gap-5">
                 <img src="icoppdag.png" alt="Logo PPD Alor Gajah" class="header-logo">
                 <div class="flex flex-col">
-                    <h1 class="text-2xl md:text-3xl font-bold tracking-tight font-oswald uppercase leading-none">
+                    <h1 class="text-2xl md:text-3xl font-bold tracking-tight font-oswald uppercase drop-shadow-sm leading-none">
                         EDARS <span class="text-ppdAmber">PPD ALOR GAJAH</span>
                     </h1>
-                    <p class="text-[10px] opacity-80 tracking-widest font-light uppercase mt-1">
+                    <p class="text-[10px] md:text-xs opacity-90 tracking-[0.15em] font-light uppercase mt-1">
                         Sistem Analisis & Pelaporan Data Peperiksaan Berpusat
                     </p>
                 </div>
             </div>
             
+            <!-- Butang Kawalan (Admin/Public) -->
             <div class="flex gap-3">
                 <div id="adminControls" class="hidden flex gap-3">
-                    <button id="btnResetDB" class="bg-red-600/20 hover:bg-red-600/40 text-red-100 text-[10px] font-bold py-2 px-4 rounded-lg border border-red-500/30 backdrop-blur-md">
-                        🗑️ RESET DB
+                    <button id="btnResetDB" class="bg-red-600/20 hover:bg-red-600/40 text-red-100 hover:text-white text-[10px] font-bold py-2 px-4 rounded-lg border border-red-500/30 backdrop-blur-md transition-all flex items-center gap-2 tracking-wider">
+                        <span>🗑️</span> RESET DB
                     </button>
-                    <button id="btnLogout" class="bg-white/10 hover:bg-white/20 text-white text-[10px] font-bold py-2 px-4 rounded-lg border border-white/20 backdrop-blur-md">
-                        🚪 LOG KELUAR
+                    <button id="btnLogout" class="bg-white/10 hover:bg-white/20 text-white text-[10px] font-bold py-2 px-4 rounded-lg border border-white/20 backdrop-blur-md transition-all flex items-center gap-2 tracking-wider">
+                        <span>🚪</span> LOG KELUAR
                     </button>
                 </div>
-                <button id="btnPublicExit" class="hidden bg-white/10 hover:bg-white/20 text-white text-[10px] font-bold py-2 px-4 rounded-lg border border-white/20 backdrop-blur-md">
-                    🏠 KEMBALI
+                <button id="btnPublicExit" class="hidden bg-white/10 hover:bg-white/20 text-white text-[10px] font-bold py-2 px-4 rounded-lg border border-white/20 backdrop-blur-md transition-all flex items-center gap-2 tracking-wider">
+                    <span>🏠</span> KEMBALI
                 </button>
             </div>
         </div>
@@ -71,48 +82,55 @@
 
     <main class="container mx-auto px-4 max-w-7xl pb-20 flex-grow">
 
-        <!-- 1. FILTER PANEL -->
-        <details id="mainFilterContainer" class="bg-card rounded-2xl mb-8 shadow-sm border border-border overflow-hidden" open>
-            <summary class="flex justify-between items-center p-5 cursor-pointer hover:bg-gray-50 transition-colors border-b border-border">
+        <!-- 1. FILTER & KAWALAN -->
+        <details id="mainFilterContainer" class="bg-card rounded-2xl mb-8 shadow-sm border border-border group overflow-hidden" open>
+            
+            <summary class="flex justify-between items-center p-5 cursor-pointer hover:bg-gray-50 transition-colors select-none border-b border-border">
                 <div class="flex items-center gap-3">
                     <span class="bg-ppdBlue/5 text-ppdBlue p-2 rounded-lg text-lg">🔍</span>
                     <div>
-                        <h3 class="font-bold font-oswald uppercase tracking-wider text-sm">Menu Penapis Data</h3>
-                        <p class="text-[9px] text-text-muted font-bold uppercase">Tetapkan kriteria analisis anda</p>
+                        <h3 class="font-bold text-text-main font-oswald uppercase tracking-wider text-base">Menu Penapis Data</h3>
+                        <p class="text-[10px] text-text-muted font-bold uppercase">Tetapkan kriteria analisis anda</p>
                     </div>
                 </div>
-                <div class="text-text-muted text-xs">▼</div>
+                <div class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-50 text-gray-400 group-open:rotate-180 transition-transform duration-300">
+                    ▼
+                </div>
             </summary>
 
             <div class="p-6 md:p-8">
+                
+                <!-- Suis Mod Perbandingan -->
                 <div class="flex items-center gap-3 mb-6 pb-6 border-b border-dashed border-border">
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" id="toggleCompare" class="sr-only peer">
-                        <div class="w-10 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-ppdBlue"></div>
-                        <span class="ml-3 text-[10px] font-bold uppercase tracking-widest text-text-muted">Mod Perbandingan</span>
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-ppdBlue"></div>
+                        <span class="ml-3 text-[10px] font-bold text-text-muted uppercase tracking-widest">Mod Perbandingan (Post-Mortem)</span>
                     </label>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-6">
+                    <!-- KOLUM 1: Exam Utama -->
                     <div>
                         <label id="lblExam1" class="block text-[9px] font-bold text-text-muted uppercase mb-2 tracking-widest">1. Peperiksaan</label>
                         <select id="examSelect" class="filter-select"><option value="">Memuatkan...</option></select>
                         <label class="block text-[9px] font-bold text-text-muted uppercase mt-4 mb-2 tracking-widest">Tingkatan</label>
-                        <select id="formSelect" class="filter-select" disabled><option value="">Pilih Exam</option></select>
+                        <select id="formSelect" class="filter-select" disabled><option value="">-- Pilih Exam --</option></select>
                     </div>
 
+                    <!-- KOLUM 2: Exam Banding (Dynamic) -->
                     <div id="divExam2" class="hidden bg-ppdBlue/5 p-4 rounded-xl border border-ppdBlue/10">
                         <label class="block text-[9px] font-bold text-ppdBlue uppercase mb-2 tracking-widest">2. Peperiksaan (Banding)</label>
-                        <select id="examSelect2" class="filter-select border-ppdBlue/20"><option value="">Pilih Baseline</option></select>
+                        <select id="examSelect2" class="filter-select border-ppdBlue/20 focus:border-ppdBlue"><option value="">-- Pilih Baseline --</option></select>
                         <label class="block text-[9px] font-bold text-ppdBlue uppercase mt-4 mb-2 tracking-widest">Tingkatan (Banding)</label>
-                        <select id="formSelect2" class="filter-select border-ppdBlue/20" disabled><option value="">Pilih Exam 2</option></select>
+                        <select id="formSelect2" class="filter-select border-ppdBlue/20 focus:border-ppdBlue" disabled><option value="">-- Pilih Exam 2 --</option></select>
                     </div>
 
+                    <!-- KOLUM 3: Sekolah & Demografi -->
                     <div>
                         <label class="block text-[9px] font-bold text-text-muted uppercase mb-2 tracking-widest">Sekolah</label>
-                        <select id="schoolSelect" class="filter-select" disabled><option value="SEMUA">DAERAH (SEMUA)</option></select>
+                        <select id="schoolSelect" class="filter-select" disabled><option value="SEMUA">SEMUA SEKOLAH (DAERAH)</option></select>
                     </div>
-
                     <div>
                         <label class="block text-[9px] font-bold text-text-muted uppercase mb-2 tracking-widest">Demografi</label>
                         <select id="demogSelect" class="filter-select">
@@ -125,7 +143,8 @@
                         </select>
                     </div>
                     
-                    <div>
+                    <!-- KOLUM 4: Komponen -->
+                    <div id="divComponent">
                         <label class="block text-[9px] font-bold text-text-muted uppercase mb-2 tracking-widest">Komponen (KPI)</label>
                         <select id="componentSelect" class="filter-select">
                             <option value="NONE">ANALISA BIASA</option>
@@ -138,57 +157,64 @@
                     </div>
                 </div>
                 
-                <div class="mt-8 flex flex-wrap justify-end gap-3 pt-6 border-t border-border">
-                    <button id="btnSpecialReport" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2.5 px-6 rounded-xl font-oswald text-[11px] uppercase tracking-wider">📋 LAPORAN KHAS</button>
-                    <button id="btnCreditAnalysis" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-6 rounded-xl font-oswald text-[11px] uppercase tracking-wider">💯 ANALISA KREDIT</button>
-                    <button id="btnResetView" class="bg-slate-500 hover:bg-slate-600 text-white font-bold py-2.5 px-6 rounded-xl font-oswald text-[11px] uppercase tracking-wider">↺ RESET</button>
-                    <button id="btnAnalisa" disabled class="bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-200 text-white font-bold py-2.5 px-8 rounded-xl font-oswald text-[11px] uppercase tracking-wider shadow-lg shadow-emerald-200 transform active:scale-95">📊 JANA ANALISA</button>
+                <!-- BARIS BUTANG TINDAKAN -->
+                <div class="mt-8 flex flex-col md:flex-row justify-end gap-3 pt-6 border-t border-border">
+                    <button id="btnSpecialReport" class="w-full md:w-auto bg-purple-600 hover:bg-purple-700 text-white font-bold py-2.5 px-6 rounded-xl shadow-sm transition-all font-oswald text-[11px] uppercase tracking-wider">
+                        📋 LAPORAN KHAS
+                    </button>
+                    <button id="btnCreditAnalysis" class="w-full md:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-6 rounded-xl shadow-sm transition-all font-oswald text-[11px] uppercase tracking-wider">
+                        💯 ANALISA KREDIT
+                    </button>
+                    <button id="btnResetView" class="w-full md:w-auto bg-slate-500 hover:bg-slate-600 text-white font-bold py-2.5 px-6 rounded-xl shadow-sm transition-all font-oswald text-[11px] uppercase tracking-wider">
+                        ↺ RESET
+                    </button>
+                    <button id="btnAnalisa" disabled class="w-full md:w-auto bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-200 text-white font-bold py-2.5 px-8 rounded-xl shadow-lg shadow-emerald-100 transition-all font-oswald text-[11px] uppercase tracking-wider transform active:scale-[0.98]">
+                        📊 JANA ANALISA
+                    </button>
                 </div>
             </div>
         </details>
         
-        <!-- 2. ADMIN DATA MANAGER -->
+        <!-- 2. ADMIN TOOLS (CSV) -->
         <div id="adminToolsContainer" class="hidden mb-10">
-            <details class="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
-                <summary class="p-4 cursor-pointer font-bold text-ppdBlue font-oswald flex items-center gap-4 hover:bg-ppdBlue/5 text-sm uppercase">
-                    <span>📂 PENGURUSAN DATA (CSV)</span>
-                    <span class="ml-auto text-text-muted text-[10px]">▼</span>
+            <details class="bg-card rounded-xl shadow-sm border border-border group overflow-hidden">
+                <summary class="p-4 cursor-pointer font-bold text-ppdBlue font-oswald flex items-center gap-4 select-none hover:bg-ppdBlue/5 transition text-sm uppercase">
+                    <span>📂 PENGURUSAN DATA (CSV)</span> 
+                    <span class="ml-auto text-text-muted text-[10px] group-open:rotate-180 transition-transform">▼</span>
                 </summary>
-                <div class="p-8 bg-slate-50/50">
-                    <div class="border-2 border-dashed border-border hover:border-ppdBlue bg-card rounded-2xl p-10 text-center relative transition-all" id="dropZone">
+                <div class="p-8 border-t border-border bg-slate-50/30">
+                    <div class="border-2 border-dashed border-border hover:border-ppdBlue bg-card rounded-2xl p-12 text-center relative transition-all" id="dropZone">
                         <input type="file" id="csvFileInput" accept=".csv" multiple class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
                         <div class="pointer-events-none">
-                            <div class="w-12 h-12 bg-ppdBlue/5 text-ppdBlue rounded-full flex items-center justify-center mx-auto mb-4 text-xl">📄</div>
-                            <p class="font-bold font-oswald uppercase tracking-wide text-sm">Klik atau Seret Fail CSV</p>
+                            <div class="w-16 h-16 bg-ppdBlue/5 text-ppdBlue rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">📄</div>
+                            <p class="font-bold font-oswald text-sm uppercase tracking-wide">Klik atau Seret Fail CSV Di Sini</p>
                         </div>
                     </div>
-                    <div id="uploadProgressContainer" class="hidden mt-6">
-                        <div class="flex justify-between text-[10px] font-bold text-text-muted mb-2 uppercase tracking-widest">
-                            <span>Status Muat Naik</span><span id="progressText">0%</span>
-                        </div>
-                        <div class="w-full bg-border rounded-full h-1.5 overflow-hidden">
-                            <div id="progressBar" class="bg-ppdBlue h-full transition-all duration-300" style="width: 0%"></div>
-                        </div>
-                        <div id="uploadLog" class="mt-4 text-[9px] text-text-muted font-mono h-24 overflow-y-auto bg-card p-3 border border-border rounded-lg shadow-inner"></div>
+                    <div id="uploadProgressContainer" class="hidden mt-8">
+                        <div class="flex justify-between text-[10px] font-bold text-text-muted mb-2 uppercase tracking-widest"><span>Status Muat Naik</span><span id="progressText">0%</span></div>
+                        <div class="w-full bg-border rounded-full h-1.5 overflow-hidden"><div id="progressBar" class="bg-ppdBlue h-full transition-all duration-300" style="width: 0%"></div></div>
+                        <div id="uploadLog" class="mt-4 text-[9px] text-text-muted font-mono h-24 overflow-y-auto bg-card p-4 border border-border rounded-lg shadow-inner"></div>
                     </div>
                 </div>
             </details>
         </div>
 
-        <!-- 3. KPI DASHBOARD -->
+        <!-- 3. KPI SECTION -->
         <div id="kpiSection" class="hidden grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-10">
-            <div class="kpi-card text-ppdBlue" style="color: #1e3a8a"><div class="kpi-value" id="kpiCalon">0</div><div class="kpi-label">Jumlah Calon</div></div>
-            <div class="kpi-card text-indigo-600" style="color: #4f46e5"><div class="kpi-value" id="kpiGP">0.00</div><div class="kpi-label" id="labelGP">Gred Purata (GPD)</div></div>
-            <div class="kpi-card text-emerald-600" style="color: #059669"><div class="kpi-value" id="kpiLMS">0%</div><div class="kpi-label">% Layak Sijil</div></div>
-            <div class="kpi-card text-rose-600" style="color: #e11d48"><div class="kpi-value" id="kpiTLMS">0</div><div class="kpi-label">Bilangan TLMS</div></div>
+            <div class="kpi-card text-ppdBlue border-t-4 border-ppdBlue"><div class="kpi-value" id="kpiCalon">0</div><div class="kpi-label">Jumlah Calon</div></div>
+            <div class="kpi-card text-indigo-600 border-t-4 border-indigo-600"><div class="kpi-value" id="kpiGP">0.00</div><div class="kpi-label" id="labelGP">Gred Purata (GPD)</div></div>
+            <div class="kpi-card text-emerald-600 border-t-4 border-emerald-600"><div class="kpi-value" id="kpiLMS">0%</div><div class="kpi-label">% Layak Sijil</div></div>
+            <div class="kpi-card text-rose-600 border-t-4 border-rose-600"><div class="kpi-value" id="kpiTLMS">0</div><div class="kpi-label">Bilangan TLMS</div></div>
         </div>
 
         <!-- 4. VIEW SECTIONS -->
+
+        <!-- VIEW A: SPECIAL REPORT -->
         <div id="viewSpecialReport" class="hidden space-y-8 animate-fade-in">
             <div class="result-container p-6 md:p-8">
                 <div class="flex items-center gap-3 mb-6 pb-4 border-b border-border">
                     <span class="bg-purple-100 text-purple-700 p-2 rounded-lg">📋</span>
-                    <h3 class="font-bold font-oswald uppercase tracking-wider text-xl">Laporan Diagnostik</h3>
+                    <h3 class="font-bold text-text-main font-oswald uppercase tracking-wider text-lg">Konfigurasi Laporan Diagnostik</h3>
                 </div>
                 <div class="mb-8">
                     <div class="flex flex-wrap gap-3">
@@ -202,21 +228,22 @@
                     <div class="flex justify-between items-end mb-4">
                         <label class="text-[10px] font-bold text-text-muted uppercase tracking-widest">Senarai Subjek:</label>
                         <div class="space-x-4 text-[10px] font-bold uppercase tracking-widest">
-                            <button id="btnSelectAll" class="text-ppdBlue">Pilih Semua</button>
-                            <button id="btnDeselectAll" class="text-text-muted">Nyahpilih</button>
+                            <button id="btnSelectAll" class="text-ppdBlue hover:underline">Pilih Semua</button>
+                            <button id="btnDeselectAll" class="text-text-muted hover:underline">Nyahpilih</button>
                         </div>
                     </div>
                     <div id="subjectCheckboxContainer" class="checkbox-grid bg-slate-50/50 p-4 rounded-xl border border-border"></div>
                 </div>
                 <div class="flex justify-end pt-4 border-t border-border">
-                    <button id="btnGenerateSpecial" class="bg-purple-600 text-white font-bold py-3 px-8 rounded-xl font-oswald uppercase tracking-wider text-[11px]">JANA LAPORAN</button>
+                    <button id="btnGenerateSpecial" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 rounded-xl font-oswald uppercase tracking-wider text-[11px]">⚡ JANA LAPORAN</button>
                 </div>
             </div>
+
             <div id="specialResultContainer" class="hidden result-container border-t-4 border-purple-500">
-                <div class="p-6 border-b border-border flex justify-between items-center bg-purple-50/20">
+                <div class="p-6 bg-purple-50/10 border-b border-border flex justify-between items-center flex-wrap gap-4">
                     <div>
-                        <h3 class="font-bold font-oswald uppercase text-lg" id="specialReportTitle">Laporan</h3>
-                        <p class="text-[10px] font-bold text-text-muted uppercase" id="specialReportSubtitle"></p>
+                        <h3 class="font-bold text-purple-900 font-oswald uppercase text-lg" id="specialReportTitle">Laporan</h3>
+                        <p class="text-[10px] font-bold text-text-muted uppercase mt-1" id="specialReportSubtitle"></p>
                     </div>
                     <div class="flex gap-2"><button id="btnPdfSpecial" class="btn-pdf">PDF</button><button id="btnExportSpecial" class="btn-excel">EXCEL</button></div>
                 </div>
@@ -224,41 +251,46 @@
             </div>
         </div>
 
+        <!-- VIEW B: CREDIT ANALYSIS -->
         <div id="viewCreditAnalysis" class="hidden space-y-8 animate-fade-in">
             <div class="result-container p-6 md:p-8">
                 <div class="flex items-center gap-3 mb-6 pb-4 border-b border-border">
                     <span class="bg-indigo-100 text-indigo-700 p-2 rounded-lg">💯</span>
-                    <h3 class="font-bold font-oswald uppercase tracking-wider text-xl">Analisa Kredit</h3>
+                    <h3 class="font-bold text-text-main font-oswald uppercase tracking-wider text-lg">Analisa Kredit & Kualiti</h3>
                 </div>
                 <div class="mb-8 max-w-sm">
-                    <label class="block text-[10px] font-bold text-text-muted uppercase mb-2 tracking-widest">Pilih Subjek Teras:</label>
+                    <label class="block text-[10px] font-bold text-text-muted uppercase mb-2 tracking-widest">Pilih Mata Pelajaran Teras:</label>
                     <select id="selectCreditSubject" class="filter-select">
-                        <option value="BM">BAHASA MELAYU</option>
-                        <option value="BI">BAHASA INGGERIS</option>
-                        <option value="SEJ">SEJARAH</option>
-                        <option value="MM">MATEMATIK</option>
-                        <option value="SAINS">SAINS</option>
-                        <option value="PAI_PM">ISLAM / MORAL</option>
+                        <option value="BM">BAHASA MELAYU (BM)</option>
+                        <option value="BI">BAHASA INGGERIS (BI)</option>
+                        <option value="SEJ">SEJARAH (SEJ)</option>
+                        <option value="MM">MATEMATIK (MM)</option>
+                        <option value="SAINS">SAINS (SAINS)</option>
+                        <option value="PAI_PM">PENDIDIKAN ISLAM / MORAL (GABUNGAN)</option>
                     </select>
                 </div>
                 <div class="flex justify-end pt-4 border-t border-border">
-                    <button id="btnGenerateCredit" class="bg-indigo-600 text-white font-bold py-3 px-8 rounded-xl font-oswald uppercase tracking-wider text-[11px]">JANA KREDIT</button>
+                    <button id="btnGenerateCredit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-xl font-oswald uppercase tracking-wider text-[11px]">⚡ JANA ANALISA</button>
                 </div>
             </div>
+
             <div id="creditResultContainer" class="hidden result-container border-t-4 border-indigo-500">
-                <div class="p-6 border-b border-border flex justify-between items-center bg-indigo-50/20">
-                    <div><h3 class="font-bold font-oswald uppercase text-lg" id="creditReportTitle">Kredit</h3><p class="text-[10px] font-bold text-text-muted uppercase" id="creditReportSubtitle"></p></div>
+                <div class="p-6 bg-indigo-50/10 border-b border-border flex justify-between items-center flex-wrap gap-4">
+                    <div>
+                        <h3 class="font-bold text-indigo-900 font-oswald uppercase text-lg" id="creditReportTitle">ANALISA PENCAPAIAN KREDIT</h3>
+                        <p class="text-[10px] font-bold text-text-muted uppercase mt-1" id="creditReportSubtitle"></p>
+                    </div>
                     <div class="flex gap-2"><button id="btnPdfCredit" class="btn-pdf">PDF</button><button id="btnExportCredit" class="btn-excel">EXCEL</button></div>
                 </div>
                 <div class="overflow-x-auto"><table id="tableCreditAnalysis"><thead></thead><tbody id="tbodyCreditAnalysis"></tbody></table></div>
             </div>
         </div>
 
-        <!-- VIEW SECTIONS (RUMUSAN) -->
-        <div id="viewAggregate" class="hidden space-y-8 animate-fade-in">
+        <!-- VIEW C: AGGREGATE (Rumusan Daerah) -->
+        <div id="viewAggregate" class="hidden space-y-8">
             <div class="result-container border-t-4 border-slate-600">
                 <div class="p-5 border-b border-border flex justify-between items-center">
-                    <h3 class="font-bold font-oswald uppercase text-sm">Rumusan LMS Daerah</h3>
+                    <h3 class="font-bold font-oswald uppercase text-sm">Rumusan Status LMS Sekolah</h3>
                     <div class="flex gap-2"><button id="btnPdfAggregate" class="btn-pdf">PDF</button><button id="btnExportAggregate" class="btn-excel">EXCEL</button></div>
                 </div>
                 <div class="overflow-x-auto">
@@ -271,41 +303,73 @@
                     </table>
                 </div>
             </div>
+
+            <!-- ANALISA SUBJEK DAERAH -->
+            <div class="result-container border-t-4 border-ppdAmber">
+                <div class="p-5 border-b border-border flex justify-between items-center">
+                    <h3 class="font-bold font-oswald uppercase text-sm">Analisa Subjek (Daerah)</h3>
+                    <div class="flex gap-2"><button id="btnPdfSubjectDistrict" class="btn-pdf">PDF</button><button id="btnExportSubjectDistrict" class="btn-excel">EXCEL</button></div>
+                </div>
+                <div class="overflow-x-auto"><table id="tableSubjectDistrict"><thead></thead><tbody id="tbodySubjectDistrict"></tbody></table></div>
+            </div>
+
+            <!-- SENARAI TLMS DAERAH -->
+            <div id="districtTLMSContainer" class="result-container border-t-4 border-rose-500">
+                <div class="p-5 border-b border-border flex justify-between items-center bg-rose-50/10">
+                    <h3 class="font-bold font-oswald uppercase text-sm text-rose-700">Senarai TLMS Daerah</h3>
+                    <div class="flex gap-2"><button id="btnPdfDistrictTLMS" class="btn-pdf">PDF</button><button id="btnExportDistrictTLMS" class="btn-excel">EXCEL</button></div>
+                </div>
+                <div class="overflow-x-auto"><table id="tableDistrictTLMS"><thead><tr><th class="border w-10 text-center">Bil</th><th class="border w-24 text-center">ID / KP</th><th class="border text-left">Nama Murid</th><th class="border text-left">Sekolah</th><th class="border w-16 text-center">BM</th><th class="border w-16 text-center">SEJ</th><th class="border text-center text-rose-600">Isu</th></tr></thead><tbody id="tbodyDistrictTLMS"></tbody></table></div>
+            </div>
         </div>
 
-        <div id="viewSchoolDetail" class="hidden space-y-8 animate-fade-in">
+        <!-- VIEW D: SCHOOL DETAIL -->
+        <div id="viewSchoolDetail" class="hidden space-y-8">
             <div class="result-container border-t-4 border-ppdBlue">
                 <div class="p-5 border-b border-border flex justify-between items-center">
-                    <h3 class="font-bold font-oswald uppercase text-sm">Analisa Mata Pelajaran</h3>
+                    <h3 class="font-bold font-oswald uppercase text-sm">Analisa Mata Pelajaran Sekolah</h3>
                     <div class="flex gap-2"><button id="btnPdfSubject" class="btn-pdf">PDF</button><button id="btnExportSubject" class="btn-excel">EXCEL</button></div>
                 </div>
                 <div class="overflow-x-auto"><table id="tableSubject"><thead></thead><tbody id="tbodySubject"></tbody></table></div>
             </div>
+
+            <!-- SENARAI TLMS SEKOLAH -->
+            <div class="result-container border-t-4 border-rose-500">
+                <div class="p-5 border-b border-border flex justify-between items-center bg-rose-50/10">
+                    <h3 class="font-bold font-oswald uppercase text-sm text-rose-700">Senarai Murid TLMS</h3>
+                    <div class="flex gap-2"><button id="btnPdfTLMS" class="btn-pdf">PDF</button><button id="btnExportTLMS" class="btn-excel">EXCEL</button></div>
+                </div>
+                <div class="overflow-x-auto"><table id="tableTLMS"><thead><tr><th class="border w-10 text-center">Bil</th><th class="border w-24 text-center">ID / KP</th><th class="border text-left">Nama Murid</th><th class="border w-24 text-center">Kelas</th><th class="border w-16 text-center">BM</th><th class="border w-16 text-center">SEJ</th><th class="border text-center text-rose-600">Isu</th></tr></thead><tbody id="tbodyTLMS"></tbody></table></div>
+            </div>
         </div>
 
-        <div id="viewComponent" class="hidden space-y-8 animate-fade-in">
+        <!-- VIEW E: COMPONENT -->
+        <div id="viewComponent" class="hidden space-y-8">
             <div class="result-container border-t-4 border-purple-500">
                 <div class="p-5 border-b border-border flex justify-between items-center">
-                    <h3 class="font-bold font-oswald uppercase text-sm">Analisa Subjek Komponen</h3>
+                    <h3 class="font-bold font-oswald uppercase text-sm">Analisa Subjek Komponen (Rumusan)</h3>
                     <div class="flex gap-2"><button id="btnPdfCompSubject" class="btn-pdf">PDF</button><button id="btnExportCompSubject" class="btn-excel">EXCEL</button></div>
                 </div>
                 <div class="overflow-x-auto"><table id="tableCompSubject"><thead></thead><tbody id="tbodyCompSubject"></tbody></table></div>
             </div>
+
             <div id="componentDetailedContainer" class="space-y-8"></div>
+
             <div class="result-container border-t-4 border-indigo-500">
                 <div class="p-5 border-b border-border flex justify-between items-center">
-                    <h3 class="font-bold font-oswald uppercase text-sm">Matriks Pencapaian Sekolah</h3>
+                    <h3 class="font-bold font-oswald uppercase text-sm">Pencapaian Sekolah (GPK Matrix)</h3>
                     <div class="flex gap-2"><button id="btnPdfCompSchoolMatrix" class="btn-pdf">PDF</button><button id="btnExportCompSchoolMatrix" class="btn-excel">EXCEL</button></div>
                 </div>
                 <div class="overflow-x-auto"><table id="tableCompSchoolMatrix"><thead id="theadCompSchoolMatrix"></thead><tbody id="tbodyCompSchoolMatrix"></tbody></table></div>
             </div>
         </div>
 
-        <!-- PERBANDINGAN SECTION (PEMBETULAN ID PENTING) -->
+        <!-- VIEW F: COMPARISON -->
         <div id="viewComparison" class="hidden space-y-8 animate-fade-in">
             <div id="comparisonKPIContainer" class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8"></div>
             
             <div id="comparisonComponentContainer" class="hidden space-y-8">
+                <!-- Summary Table -->
                 <div class="result-container border-t-4 border-pink-500">
                     <div class="p-5 border-b border-border flex justify-between items-center">
                         <h3 class="font-bold font-oswald uppercase text-sm">Banding Subjek Komponen</h3>
@@ -326,7 +390,10 @@
                         </table>
                     </div>
                 </div>
+
                 <div id="comparisonDetailedContainer" class="space-y-8"></div>
+
+                <!-- GPK Matrix Comparison -->
                 <div class="result-container border-t-4 border-purple-500">
                     <div class="p-5 border-b border-border flex justify-between items-center">
                         <h3 class="font-bold font-oswald uppercase text-sm">Banding GPK Sekolah</h3>
@@ -350,11 +417,12 @@
             </div>
 
             <div id="comparisonGeneralContainer" class="hidden space-y-8">
+                <!-- GPS & LMS Comparison -->
                 <div class="result-container border-t-4 border-cyan-500">
                     <div class="p-5 border-b border-border flex justify-between items-center">
-                        <h3 class="font-bold font-oswald uppercase text-sm">Banding GPS & LMS</h3>
+                        <h3 class="font-bold font-oswald uppercase text-sm text-cyan-800">Banding GPS & LMS</h3>
                         <div class="flex gap-2">
-                            <button id="btnExportKPI" class="hidden bg-emerald-600 text-white text-[10px] font-bold py-1 px-3 rounded-lg">📊 KPI</button>
+                            <button id="btnExportKPI" class="hidden bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold py-1.5 px-4 rounded-lg transition-all">📊 JADUAL KPI</button>
                             <button id="btnPdfCompareSchools" class="btn-pdf">PDF</button>
                             <button id="btnExportCompareSchools" class="btn-excel">EXCEL</button>
                         </div>
@@ -374,10 +442,11 @@
                         </table>
                     </div>
                 </div>
-                
+
+                <!-- Subject GPMP Comparison -->
                 <div class="result-container border-t-4 border-ppdAmber">
                     <div class="p-5 border-b border-border flex justify-between items-center">
-                        <h3 class="font-bold font-oswald uppercase text-sm">Banding GPMP Subjek</h3>
+                        <h3 class="font-bold font-oswald uppercase text-sm text-ppdBlue">Banding GPMP Subjek</h3>
                         <div class="flex gap-2"><button id="btnPdfCompareSubjects" class="btn-pdf">PDF</button><button id="btnExportCompareSubjects" class="btn-excel">EXCEL</button></div>
                     </div>
                     <div class="overflow-x-auto">
@@ -396,9 +465,10 @@
                     </div>
                 </div>
 
+                <!-- TLMS Comparison -->
                 <div class="result-container border-t-4 border-rose-500">
                     <div class="p-5 border-b border-border flex justify-between items-center">
-                        <h3 class="font-bold font-oswald uppercase text-sm">Banding TLMS</h3>
+                        <h3 class="font-bold font-oswald uppercase text-sm text-rose-700">Banding TLMS</h3>
                         <div class="flex gap-2"><button id="btnPdfCompareTLMS" class="btn-pdf">PDF</button><button id="btnExportCompareTLMS" class="btn-excel">EXCEL</button></div>
                     </div>
                     <div class="overflow-x-auto">
@@ -421,7 +491,10 @@
 
     </main>
 
+    <!-- Global PDF Helper -->
     <script src="pdf-export.js"></script>
+    
+    <!-- Main Controller -->
     <script type="module" src="js/main.js"></script>
 </body>
 </html>
