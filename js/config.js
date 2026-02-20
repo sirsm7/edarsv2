@@ -20,9 +20,7 @@ export const GRED_POINTS = {
     'C': 6, 
     'D': 7, 
     'E': 8, 
-    'G': 9, 
-    'TH': 9,
-    'T': 9  // Sokongan tambahan untuk 'T' jika ada typo dalam CSV
+    'G': 9
 };
 
 // 3. SENARAI SUBJEK PENGECUALIAN (SUBJEK_KECUALI)

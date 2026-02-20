@@ -21,12 +21,17 @@ function calculateGPS(studentList) {
         Object.keys(marks).forEach(k => {
             if (k.startsWith('G') || k.startsWith('GRED')) {
                 const kod = k.replace(/^G_?|RED /g, '').trim();
-                const g = marks[k];
+                const g = marks[k] ? marks[k].toString().trim().toUpperCase() : '';
                 
-                // Abaikan subjek yang dikecualikan & gred tidak sah
-                if (!SUBJEK_KECUALI.includes(kod) && GRED_POINTS.hasOwnProperty(g) && g !== 'TH') {
-                    totalPoints += GRED_POINTS[g];
-                    totalSubjects++;
+                if (g !== '' && g !== 'NULL' && g !== 'UNDEFINED') {
+                    // Abaikan subjek yang dikecualikan
+                    if (!SUBJEK_KECUALI.includes(kod)) {
+                        // Semak jika gred sah (TH tidak akan tersenarai di sini kerana tiada dalam config)
+                        if (GRED_POINTS.hasOwnProperty(g)) {
+                            totalPoints += GRED_POINTS[g];
+                            totalSubjects++;
+                        }
+                    }
                 }
             }
         });

@@ -114,8 +114,8 @@ export function calculateAggregateData(students) {
         district.calon++; 
         
         // 2. Kira LMS (Mesti Lulus BM & SEJ)
-        const hasBM = gBM !== '' && gBM !== 'TH';
-        const hasSEJ = gSEJ !== '' && gSEJ !== 'TH';
+        const hasBM = gBM !== '' && gBM !== 'TH' && gBM !== 'T';
+        const hasSEJ = gSEJ !== '' && gSEJ !== 'TH' && gSEJ !== 'T';
 
         if (hasBM || hasSEJ) sc.hadir_exam++; 
         
@@ -163,12 +163,12 @@ export function calculateAggregateData(students) {
             // Pengesanan pintar: Cari kunci yang bermula dengan 'G' atau 'GRED'
             if (key.startsWith('G') || key.startsWith('GRED')) {
                 const kod = key.replace(/^G_?|RED /g, '').trim();
-                const g = marks[key];
+                const g = marks[key] ? marks[key].toString().trim().toUpperCase() : '';
 
-                if (g !== '' && g !== null && g !== undefined) {
+                if (g !== '' && g !== 'NULL' && g !== 'UNDEFINED') {
                     // Kira GPS (Kecuali PJK dsb)
                     if (!SUBJEK_KECUALI.includes(kod)) { 
-                        if (GRED_POINTS.hasOwnProperty(g) && g !== 'TH') { 
+                        if (GRED_POINTS.hasOwnProperty(g)) { 
                             sc.sumPoint += GRED_POINTS[g]; 
                             sc.sumSubject++; 
                             district.sumPoint += GRED_POINTS[g]; 
@@ -189,16 +189,24 @@ export function calculateAggregateData(students) {
                     const sub = district.subjectStats[kod];
                     sub.ambil++; 
 
-                    if (GRED_POINTS.hasOwnProperty(g) && g !== 'TH') {
+                    if (GRED_POINTS.hasOwnProperty(g)) {
                         sub.hadir++; 
                         sub.point += GRED_POINTS[g];
                         if (sub.hasOwnProperty(g)) sub[g]++;
-                    } else if (g === 'TH') {
+                    } else if (g === 'TH' || g === 'T') {
                         sub['G']++; 
                     }
                 }
             }
         });
+    });
+
+    // 4. GARBAGE COLLECTOR (Membuang Subjek Hantu / Kosong)
+    Object.keys(district.subjectStats).forEach(kod => {
+        const sub = district.subjectStats[kod];
+        if (sub.ambil === 0 || (sub.hadir === 0 && sub['G'] === 0)) {
+            delete district.subjectStats[kod];
+        }
     });
 
     return { schools, district, tlmsList };
@@ -242,9 +250,9 @@ export function calculateSchoolDetailData(students) {
         Object.keys(marks).forEach(k => { 
             if (k.startsWith('G') || k.startsWith('GRED')) { 
                 const kod = k.replace(/^G_?|RED /g, '').trim(); 
-                const g = marks[k]; 
+                const g = marks[k] ? marks[k].toString().trim().toUpperCase() : ''; 
                 
-                if (g !== '' && g !== null) { 
+                if (g !== '' && g !== 'NULL' && g !== 'UNDEFINED') { 
                     if (!subjects[kod]) {
                         subjects[kod] = {
                             kod: kod, 
@@ -256,7 +264,7 @@ export function calculateSchoolDetailData(students) {
                     
                     subjects[kod].ambil++; 
                     
-                    if (GRED_POINTS.hasOwnProperty(g) && g !== 'TH') { 
+                    if (GRED_POINTS.hasOwnProperty(g)) { 
                         subjects[kod].hadir++; 
                         subjects[kod].point += GRED_POINTS[g]; 
                         
@@ -268,13 +276,22 @@ export function calculateSchoolDetailData(students) {
                         
                         if (subjects[kod].hasOwnProperty(g)) subjects[kod][g]++;
                         
-                    } else if (g === 'TH') {
+                    } else if (g === 'TH' || g === 'T') {
                         subjects[kod]['G']++; 
                     }
                 }
             } 
         }); 
     });
+
+    // GARBAGE COLLECTOR (Membuang Subjek Hantu / Kosong)
+    Object.keys(subjects).forEach(kod => {
+        const sub = subjects[kod];
+        if (sub.ambil === 0 || (sub.hadir === 0 && sub['G'] === 0)) {
+            delete subjects[kod];
+        }
+    });
+
     return { subjects, tlmsList, stats };
 }
 
@@ -302,14 +319,14 @@ function generateMatrixData(students, targetSubjects, subjectsContainer, schools
                 const kod = k.replace(/^G_?|RED /g, '').trim(); 
                 
                 if (targetSubjects.includes(kod)) { 
-                    const gred = marks[k]; 
+                    let gred = marks[k] ? marks[k].toString().trim().toUpperCase() : ''; 
                     
-                    if (gred !== '' && gred !== null) {
+                    if (gred !== '' && gred !== 'NULL' && gred !== 'UNDEFINED') {
                         // A. DATA SUBJEK DAERAH
                         if (subjectsContainer) {
                             if (!subjectsContainer[kod]) {
                                 subjectsContainer[kod] = { 
-                                    kod: kod, nama: NAMA_SUBJEK[kod] || kod, ambil: 0, hadir: 0, point: 0, lulus: 0 
+                                    kod: kod, nama: NAMA_SUBJEK[kod] || kod, ambil: 0, hadir: 0, point: 0, lulus: 0, g_count: 0 
                                 }; 
                             }
                             subjectsContainer[kod].ambil++; 
@@ -328,7 +345,7 @@ function generateMatrixData(students, targetSubjects, subjectsContainer, schools
                         const scSubDetail = matrix[kod][s.nama_sekolah];
                         scSubDetail.daftar++;
                         
-                        if (GRED_POINTS.hasOwnProperty(gred) && gred !== 'TH') { 
+                        if (GRED_POINTS.hasOwnProperty(gred)) { 
                             // Update Subjek Daerah
                             if (subjectsContainer) {
                                 subjectsContainer[kod].hadir++; 
@@ -358,6 +375,11 @@ function generateMatrixData(students, targetSubjects, subjectsContainer, schools
                             // Kira Grouping
                             if (['A+', 'A', 'A-'].includes(gred)) { scSubDetail.cemerlang++; scSubDetail.kredit++; }
                             else if (['B+', 'B', 'C+', 'C'].includes(gred)) { scSubDetail.kepujian++; scSubDetail.kredit++; }
+                            
+                        } else if (gred === 'TH' || gred === 'T') {
+                            if (subjectsContainer) {
+                                subjectsContainer[kod].g_count++;
+                            }
                         }
                     }
                 } 
@@ -375,6 +397,15 @@ export function calculateComponentData(students, compCode) {
     
     // Guna Helper Function
     let subjectSchoolMatrix = generateMatrixData(students, targetSubjects, subjects, schools, compStats);
+
+    // GARBAGE COLLECTOR (Membuang Subjek Hantu / Kosong)
+    Object.keys(subjects).forEach(kod => {
+        const sub = subjects[kod];
+        if (sub.ambil === 0 || (sub.hadir === 0 && sub.g_count === 0)) {
+            delete subjects[kod];
+            if (subjectSchoolMatrix[kod]) delete subjectSchoolMatrix[kod];
+        }
+    });
 
     const validSubjectCodes = Object.values(subjects)
         .sort((a,b) => a.kod.localeCompare(b.kod))
@@ -414,15 +445,17 @@ function getDistrictSimpleStats(list, isComponent = false, targetSubjects = []) 
         Object.keys(marks).forEach(k => {
             if (k.startsWith('G') || k.startsWith('GRED')) {
                 const kod = k.replace(/^G_?|RED /g, '').trim();
-                const g = marks[k];
+                let g = marks[k] ? marks[k].toString().trim().toUpperCase() : '';
                 
                 const isRelevant = isComponent 
                     ? targetSubjects.includes(kod) 
                     : !SUBJEK_KECUALI.includes(kod);
 
-                if (isRelevant && g !== '' && g !== null && GRED_POINTS.hasOwnProperty(g) && g !== 'TH') {
-                    stats.sumPoint += GRED_POINTS[g];
-                    stats.sumSubject++;
+                if (isRelevant && g !== '' && g !== 'NULL' && g !== 'UNDEFINED') {
+                    if (GRED_POINTS.hasOwnProperty(g)) {
+                        stats.sumPoint += GRED_POINTS[g];
+                        stats.sumSubject++;
+                    }
                 }
             }
         });
@@ -459,10 +492,12 @@ export function calculateComparisonGeneral(list1, list2) {
                 if (k.startsWith('G') || k.startsWith('GRED')) {
                     const kod = k.replace(/^G_?|RED /g, '').trim();
                     if (!SUBJEK_KECUALI.includes(kod)) {
-                        const g = marks[k];
-                        if (g !== '' && g !== null && GRED_POINTS.hasOwnProperty(g) && g !== 'TH') {
-                            sc[key].pt += GRED_POINTS[g];
-                            sc[key].ct++;
+                        const g = marks[k] ? marks[k].toString().trim().toUpperCase() : '';
+                        if (g !== '' && g !== 'NULL' && g !== 'UNDEFINED') {
+                            if (GRED_POINTS.hasOwnProperty(g)) {
+                                sc[key].pt += GRED_POINTS[g];
+                                sc[key].ct++;
+                            }
                         }
                     }
                 }
@@ -481,15 +516,17 @@ export function calculateComparisonGeneral(list1, list2) {
             Object.keys(marks).forEach(k => {
                 if (k.startsWith('G') || k.startsWith('GRED')) {
                     const kod = k.replace(/^G_?|RED /g, '').trim();
-                    const g = marks[k];
-                    if (g !== '' && g !== null) {
+                    const g = marks[k] ? marks[k].toString().trim().toUpperCase() : '';
+                    if (g !== '' && g !== 'NULL' && g !== 'UNDEFINED') {
                         if (!subMap[kod]) subMap[kod] = { 
                             kod: kod, nama: NAMA_SUBJEK[kod] || kod, 
-                            ex1: { pt: 0, ct: 0, lulus: 0 }, 
-                            ex2: { pt: 0, ct: 0, lulus: 0 } 
+                            ex1: { pt: 0, ct: 0, lulus: 0, ambil: 0 }, 
+                            ex2: { pt: 0, ct: 0, lulus: 0, ambil: 0 } 
                         };
                         const obj = subMap[kod][key];
-                        if (GRED_POINTS.hasOwnProperty(g) && g !== 'TH') {
+                        obj.ambil++;
+                        
+                        if (GRED_POINTS.hasOwnProperty(g)) {
                             obj.pt += GRED_POINTS[g];
                             obj.ct++;
                             if (isLulusGrade(g)) obj.lulus++;
@@ -501,6 +538,17 @@ export function calculateComparisonGeneral(list1, list2) {
     };
     processSubjects(list1, 'ex1');
     processSubjects(list2, 'ex2');
+
+    // GARBAGE COLLECTOR
+    Object.keys(subMap).forEach(kod => {
+        const sub = subMap[kod];
+        if (sub.ex1.ambil === 0 && sub.ex2.ambil === 0) {
+            delete subMap[kod];
+        } else if (sub.ex1.ct === 0 && sub.ex2.ct === 0) {
+            // Padam jika tiada nilai sah walaupun direkodkan diambil
+            delete subMap[kod];
+        }
+    });
 
     return { schoolMap, subMap, districtStats };
 }
@@ -517,15 +565,11 @@ export function calculateComparisonComponent(list1, list2, compCode) {
     const districtStats = { ex1: stats1, ex2: stats2, isComponent: true };
 
     // 2. Kira Matriks E1 & E2 (Guna Helper Sama)
-    // Kita tak perlu subjects/schools container di sini, just nak matriks
     const matrix1 = generateMatrixData(list1, targetSubjects, null, null, null);
     const matrix2 = generateMatrixData(list2, targetSubjects, null, null, null);
 
     // 3. Gabungkan Matriks (ComparisonSubjectMatrix)
-    // Structure: comparisonMatrix[kod][sekolah] = { e1: {...}, e2: {...} }
     let comparisonMatrix = {};
-    
-    // Helper untuk merge key
     const allSubjects = new Set([...Object.keys(matrix1), ...Object.keys(matrix2)]);
     
     allSubjects.forEach(kod => {
@@ -537,8 +581,6 @@ export function calculateComparisonComponent(list1, list2, compCode) {
         allSchools.forEach(schName => {
             const d1 = schools1[schName]; // Data E1
             const d2 = schools2[schName]; // Data E2
-            
-            // Ambil nama/kod dari mana-mana yg wujud
             const baseInfo = d1 || d2;
             
             comparisonMatrix[kod][schName] = {
@@ -550,7 +592,7 @@ export function calculateComparisonComponent(list1, list2, compCode) {
         });
     });
 
-    // 4. Proses GPK Sekolah (Logic Lama dikekalkan untuk jadual GPK Matrix)
+    // 4. Proses GPK Sekolah
     const schoolMap = {};
     const processCompSchools = (list, key) => {
         list.forEach(s => {
@@ -569,10 +611,10 @@ export function calculateComparisonComponent(list1, list2, compCode) {
                 if (k.startsWith('G') || k.startsWith('GRED')) {
                     const kod = k.replace(/^G_?|RED /g, '').trim();
                     if (targetSubjects.includes(kod)) {
-                        const g = marks[k];
-                        if (g !== '' && g !== null) {
+                        const g = marks[k] ? marks[k].toString().trim().toUpperCase() : '';
+                        if (g !== '' && g !== 'NULL' && g !== 'UNDEFINED') {
                             hasComp = true;
-                            if (GRED_POINTS.hasOwnProperty(g) && g !== 'TH') {
+                            if (GRED_POINTS.hasOwnProperty(g)) {
                                 sc[key].pt += GRED_POINTS[g];
                                 sc[key].ct++;
                             }
@@ -596,15 +638,17 @@ export function calculateComparisonComponent(list1, list2, compCode) {
                 if (k.startsWith('G') || k.startsWith('GRED')) {
                     const kod = k.replace(/^G_?|RED /g, '').trim();
                     if (targetSubjects.includes(kod)) {
-                        const g = marks[k];
-                        if (g !== '' && g !== null) {
+                        const g = marks[k] ? marks[k].toString().trim().toUpperCase() : '';
+                        if (g !== '' && g !== 'NULL' && g !== 'UNDEFINED') {
                             if (!subMap[kod]) subMap[kod] = { 
                                 kod: kod, nama: NAMA_SUBJEK[kod] || kod, 
-                                ex1: { pt: 0, ct: 0, lulus: 0 }, 
-                                ex2: { pt: 0, ct: 0, lulus: 0 } 
+                                ex1: { pt: 0, ct: 0, lulus: 0, ambil: 0 }, 
+                                ex2: { pt: 0, ct: 0, lulus: 0, ambil: 0 } 
                             };
                             const obj = subMap[kod][key];
-                            if (GRED_POINTS.hasOwnProperty(g) && g !== 'TH') {
+                            obj.ambil++;
+                            
+                            if (GRED_POINTS.hasOwnProperty(g)) {
                                 obj.pt += GRED_POINTS[g];
                                 obj.ct++;
                                 if (isLulusGrade(g)) obj.lulus++;
@@ -618,6 +662,21 @@ export function calculateComparisonComponent(list1, list2, compCode) {
     processCompSubjects(list1, 'ex1');
     processCompSubjects(list2, 'ex2');
 
-    // Return semua data termasuk comparisonMatrix
+    // GARBAGE COLLECTOR
+    Object.keys(subMap).forEach(kod => {
+        const sub = subMap[kod];
+        if (sub.ex1.ambil === 0 && sub.ex2.ambil === 0) {
+            delete subMap[kod];
+            if (comparisonMatrix[kod]) delete comparisonMatrix[kod];
+        } else if (sub.ex1.ct === 0 && sub.ex2.ct === 0) {
+            delete subMap[kod];
+            if (comparisonMatrix[kod]) delete comparisonMatrix[kod];
+        }
+    });
+
+    Object.keys(comparisonMatrix).forEach(kod => {
+        if (!subMap[kod]) delete comparisonMatrix[kod];
+    });
+
     return { schoolMap, subMap, districtStats, comparisonMatrix };
 }
