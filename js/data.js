@@ -148,37 +148,75 @@ export async function processAndUploadDataSmart(rows) {
 // ==========================================
 
 export async function resetDatabase() {
-    // Amaran Tahap 1
-    const res1 = await Swal.fire({ 
-        title: '⚠️ AMARAN KERAS!', 
-        text: "Tindakan ini akan memadam SEMUA data pelajar dalam sistem. Data tidak boleh dikembalikan.", 
-        icon: 'warning', 
-        showCancelButton: true, 
-        confirmButtonColor: '#d33', 
-        confirmButtonText: 'Ya, Saya Faham Risiko' 
-    });
+    try {
+        // Ambil senarai peperiksaan sedia ada dalam DB
+        const exams = await fetchExamList();
 
-    if (res1.isConfirmed) {
-        // Amaran Tahap 2 (Double Confirmation)
-        const res2 = await Swal.fire({ 
-            title: 'PENGESAHAN TERAKHIR', 
-            text: "Sila taip perkataan 'PADAM' untuk meneruskan.", 
-            input: 'text', 
-            inputAttributes: { autocapitalize: 'off' },
-            preConfirm: (v) => v !== 'PADAM' ? Swal.showValidationMessage('Perkataan salah. Operasi dibatalkan.') : true 
+        if (!exams || exams.length === 0) {
+            Swal.fire('Info', 'Pangkalan data sudah kosong. Tiada data peperiksaan untuk dipadam.', 'info');
+            return;
+        }
+
+        // Bina pilihan dropdown untuk SweetAlert
+        const examOptions = {};
+        exams.forEach(exam => {
+            examOptions[exam] = exam;
         });
 
-        if (res2.isConfirmed) {
-            Swal.showLoading();
-            // Padam semua kecuali ID '0' (jika ada data sistem)
-            const { error } = await supabaseClient.from('edars_data').delete().neq('id_individu', '0');
-            
-            if (!error) {
-                Swal.fire('Berjaya', 'Pangkalan data telah dikosongkan.', 'success').then(() => location.reload());
-            } else {
-                Swal.fire('Ralat', error.message, 'error');
+        // Amaran Tahap 1: Pemilihan Peperiksaan
+        const res1 = await Swal.fire({ 
+            title: 'PILIH DATA UNTUK DIPADAM', 
+            text: "Sila pilih nama peperiksaan yang ingin dipadam dari pangkalan data. Tindakan ini tidak boleh dikembalikan.", 
+            icon: 'warning', 
+            input: 'select',
+            inputOptions: examOptions,
+            inputPlaceholder: '-- Sila Pilih Peperiksaan --',
+            showCancelButton: true, 
+            confirmButtonColor: '#d33', 
+            confirmButtonText: 'Seterusnya',
+            cancelButtonText: 'Batal',
+            inputValidator: (value) => {
+                return new Promise((resolve) => {
+                    if (value) resolve();
+                    else resolve('Sila pilih satu peperiksaan terlebih dahulu!');
+                });
+            }
+        });
+
+        if (res1.isConfirmed && res1.value) {
+            const selectedExam = res1.value;
+
+            // Amaran Tahap 2 (Double Confirmation)
+            const res2 = await Swal.fire({ 
+                title: 'PENGESAHAN TERAKHIR', 
+                html: `Anda pasti mahu memadam <b>KESEMUA REKOD</b> bagi peperiksaan:<br><br><span class="text-red-600 font-bold text-lg">${selectedExam}</span><br><br>Sila taip perkataan <b>PADAM</b> untuk meneruskan.`, 
+                input: 'text', 
+                inputAttributes: { autocapitalize: 'off' },
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                confirmButtonText: 'Ya, Padam',
+                cancelButtonText: 'Batal',
+                preConfirm: (v) => v !== 'PADAM' ? Swal.showValidationMessage('Perkataan salah. Operasi dibatalkan.') : true 
+            });
+
+            if (res2.isConfirmed) {
+                Swal.showLoading();
+                
+                // Padam spesifik mengikut nama peperiksaan
+                const { error } = await supabaseClient
+                    .from('edars_data')
+                    .delete()
+                    .eq('nama_peperiksaan', selectedExam);
+                
+                if (!error) {
+                    Swal.fire('Berjaya', `Data bagi peperiksaan ${selectedExam} telah berjaya dipadam.`, 'success').then(() => location.reload());
+                } else {
+                    Swal.fire('Ralat', error.message, 'error');
+                }
             }
         }
+    } catch (err) {
+        Swal.fire('Ralat Sistem', err.message, 'error');
     }
 }
 
