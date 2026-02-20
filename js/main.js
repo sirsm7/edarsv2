@@ -36,6 +36,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         setupAdminView();
     }
 
+    // INIT STATIC DROPDOWNS (KEMASKINI BAHARU)
+    // Menjana pilihan statik (Demografi, Komponen, Kredit) secara dinamik dari config.js
+    UI.initStaticDropdowns();
+
     setupEventListeners();
     await loadInitialData();
 });

@@ -4,12 +4,37 @@
 // ==========================================
 
 import { exportTableToExcel } from './utils.js';
-import { SUBJECT_PRIORITY, NAMA_SUBJEK } from './config.js';
+import { SUBJECT_PRIORITY, NAMA_SUBJEK, STATIC_OPTIONS } from './config.js';
 import * as Templates from './templates.js';
 
 // ==========================================
-// 1. HELPER: SORTING SUBJEK
+// 1. HELPER: STATIC DROPDOWNS & SORTING
 // ==========================================
+
+/**
+ * Memasukkan data statik ke dalam dropdown UI secara dinamik.
+ */
+export function initStaticDropdowns() {
+    const demogSelect = document.getElementById('demogSelect');
+    const componentSelect = document.getElementById('componentSelect');
+    const creditSelect = document.getElementById('selectCreditSubject');
+
+    const populateSelect = (selectEl, optionsData) => {
+        if (!selectEl || !optionsData) return;
+        selectEl.innerHTML = ''; 
+        optionsData.forEach(opt => {
+            const optionEl = document.createElement('option');
+            optionEl.value = opt.value;
+            optionEl.textContent = opt.label;
+            if (opt.disabled) optionEl.disabled = true;
+            selectEl.appendChild(optionEl);
+        });
+    };
+
+    populateSelect(demogSelect, STATIC_OPTIONS.DEMOG);
+    populateSelect(componentSelect, STATIC_OPTIONS.COMPONENT);
+    populateSelect(creditSelect, STATIC_OPTIONS.CREDIT_SUBJECT);
+}
 
 const sortSubjects = (a, b) => {
     const codeA = a.kod || a || "";
@@ -146,8 +171,9 @@ export function renderComponentTable(data) {
     const { subjects, schools, compStats, validSubjectCodes, subjectSchoolMatrix } = data;
     
     // 1. Header Suntikan (Fix Visual)
-    const theadComp = document.querySelector('#tableCompSubject thead');
-    if (theadComp) theadComp.innerHTML = Templates.getComponentSimpleHeader();
+    const theadComp = document.querySelector('#tableCompSubject full_table thead');
+    const theadCompReal = document.querySelector('#tableCompSubject thead');
+    if (theadCompReal) theadCompReal.innerHTML = Templates.getComponentSimpleHeader();
 
     // 2. Data Body
     document.getElementById('tbodyCompSubject').innerHTML = Object.values(subjects)

@@ -122,21 +122,59 @@ export const NAMA_SUBJEK = {
 // 6. PENGELOMPOKAN KPI (COMPONENT_MAP)
 // Digunakan untuk filter Laporan Komponen (Analisa Mengikut Bidang).
 export const COMPONENT_MAP = {
-    // Rujukan Screenshot: image_af33c5.png
     'BAHASA': ['BM', 'BI', 'BA', 'BC', 'BT', 'KMK', 'KCINA', 'KTAMIL'],
-    
-    // Rujukan Screenshot: image_af33a9.png
     'SOSIAL': ['SEJ', 'PM', 'GEO', 'PAI', 'TI', 'SSUKAN', 'PSV'], 
-    
-    // Rujukan Screenshot: image_af3390.png
     'STEM': ['MM', 'MT', 'SAINS', 'BIO', 'BIOLOGI', 'FIZIK', 'FIZ', 'KIMIA', 'KIM'],
-    
-    // Rujukan Screenshot: image_af338a.png
     'TVET': [
         'PERNIAGAAN', 'AKAUN', 'EKO', 'SRT', 'RC', 'GKT', 'SKOM', 
         'LN', 'PRT', 'MAUTO', 'PDM', 'SMOTO', 'HD', 'APAKK'
     ],
-    
-    // Rujukan Screenshot: image_aeca31.png (DIKEMASKINI)
     'AGAMA': ['ADB', 'AS', 'BA', 'LAM', 'MUI', 'PAI', 'PQS', 'PSI', 'TI', 'UD']
+};
+
+// 7. PILIHAN STATIK UI (DROPDOWN OPTIONS)
+// Digunakan untuk menjana senarai pada dropdown filter UI secara dinamik.
+export const STATIC_OPTIONS = {
+    DEMOG: [
+        { value: 'ALL', label: 'SEMUA CALON' },
+        { value: '', label: '--- MENGIKUT JANTINA ---', disabled: true },
+        { value: 'L', label: 'SEMUA LELAKI' },
+        { value: 'P', label: 'SEMUA PEREMPUAN' },
+        { value: '', label: '--- MELAYU ---', disabled: true },
+        { value: 'ALL_M', label: 'SEMUA MELAYU (L+P)' },
+        { value: 'L_M', label: 'LELAKI MELAYU SAHAJA' },
+        { value: 'P_M', label: 'PEREMPUAN MELAYU SAHAJA' },
+        { value: '', label: '--- CINA ---', disabled: true },
+        { value: 'ALL_C', label: 'SEMUA CINA (L+P)' },
+        { value: 'L_C', label: 'LELAKI CINA SAHAJA' },
+        { value: 'P_C', label: 'PEREMPUAN CINA SAHAJA' },
+        { value: '', label: '--- INDIA ---', disabled: true },
+        { value: 'ALL_I', label: 'SEMUA INDIA (L+P)' },
+        { value: 'L_I', label: 'LELAKI INDIA SAHAJA' },
+        { value: 'P_I', label: 'PEREMPUAN INDIA SAHAJA' },
+        { value: '', label: '--- ORANG ASLI ---', disabled: true },
+        { value: 'ALL_OA', label: 'SEMUA ORANG ASLI (L+P)' },
+        { value: 'L_OA', label: 'LELAKI ORANG ASLI SAHAJA' },
+        { value: 'P_OA', label: 'PEREMPUAN ORANG ASLI SAHAJA' },
+        { value: '', label: '--- LAIN-LAIN ---', disabled: true },
+        { value: 'ALL_OTH', label: 'SEMUA LAIN-LAIN (L+P)' },
+        { value: 'L_OTH', label: 'LELAKI LAIN-LAIN SAHAJA' },
+        { value: 'P_OTH', label: 'PEREMPUAN LAIN-LAIN SAHAJA' }
+    ],
+    COMPONENT: [
+        { value: 'NONE', label: 'ANALISA BIASA' },
+        { value: 'BAHASA', label: 'BIDANG BAHASA' },
+        { value: 'STEM', label: 'BIDANG STEM' },
+        { value: 'TVET', label: 'BIDANG TVET' },
+        { value: 'SOSIAL', label: 'SAINS SOSIAL' },
+        { value: 'AGAMA', label: 'PENGAJIAN ISLAM' }
+    ],
+    CREDIT_SUBJECT: [
+        { value: 'BM', label: 'BAHASA MELAYU (BM)' },
+        { value: 'BI', label: 'BAHASA INGGERIS (BI)' },
+        { value: 'SEJ', label: 'SEJARAH (SEJ)' },
+        { value: 'MM', label: 'MATEMATIK (MM)' },
+        { value: 'SAINS', label: 'SAINS (SAINS)' },
+        { value: 'PAI_PM', label: 'PENDIDIKAN ISLAM / MORAL (GABUNGAN)' }
+    ]
 };

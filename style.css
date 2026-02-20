@@ -126,6 +126,16 @@ body {
     background-size: 1.25em 1.25em;
     appearance: none;
     box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    /* Pembaikan untuk Teks Dropdown Wrap */
+    white-space: normal;
+    word-wrap: break-word;
+    height: auto;
+    min-height: 42px;
+}
+
+.filter-select option {
+    white-space: normal;
+    word-wrap: break-word;
 }
 
 .filter-select:disabled {
