@@ -3,11 +3,11 @@
 /* ========================================== */
 
 /* 1. GLOBAL FONT & RESET */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Oswald:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Oswald:wght@300;400;500;600;700&display=swap');
 
 :root {
-    --primary-blue: #1e3a8a;
-    --secondary-blue: #2563eb;
+    --primary-blue: #2563eb;
+    --secondary-blue: #1e40af;
     --accent-amber: #fbbf24;
     --bg-surface: #f8fafc; /* Slate-50 equivalent */
     --card-white: #ffffff;
@@ -17,12 +17,11 @@
 }
 
 body {
-    font-family: 'Inter', sans-serif !important;
+    font-family: 'Inter', sans-serif !important; /* Tukar ke Inter untuk keterbacaan */
     letter-spacing: 0.01em; 
     -webkit-font-smoothing: antialiased;
     background-color: var(--bg-surface);
     color: var(--text-dark);
-    margin: 0;
 }
 
 /* Utility Class untuk Tajuk (Kekalkan Oswald) */
@@ -78,7 +77,7 @@ body {
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
-/* Top Border Accent untuk KPI */
+/* Top Border Accent untuk KPI (menggantikan border-bottom lama) */
 .kpi-card::before {
     content: '';
     position: absolute;
@@ -137,11 +136,11 @@ body {
 }
 
 .filter-select:focus { 
-    border-color: var(--secondary-blue); 
+    border-color: var(--primary-blue); 
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); 
 }
 
-/* 5. BUTTONS (MODERN Action) */
+/* 5. BUTTONS (MODERN PILL & ACTION) */
 .btn-excel, .btn-pdf {
     font-family: 'Oswald', sans-serif;
     font-size: 0.75rem;
@@ -171,24 +170,25 @@ body {
     box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 10px 15px -3px rgba(0,0,0,0.05); 
     margin-bottom: 2.5rem; 
     border: 1px solid var(--border-light);
-    overflow: hidden; 
+    overflow: hidden; /* Penting untuk border-radius */
 }
 
+/* Wrapper untuk scroll table */
 .overflow-x-auto {
     border-radius: 0 0 1rem 1rem;
 }
 
 table { 
     width: 100%; 
-    border-collapse: collapse; 
+    border-collapse: collapse; /* Guna collapse instead of separate */
     min-width: 600px; 
 }
 
 /* HEADER TABLE */
 table thead th {
-    background-color: #f8fafc; 
-    color: #475569; 
-    font-weight: 700;
+    background-color: #f8fafc; /* Slate-50 */
+    color: #475569; /* Slate-600 */
+    font-weight: 600;
     text-transform: uppercase;
     font-size: 0.75rem !important;
     letter-spacing: 0.05em;
@@ -196,39 +196,42 @@ table thead th {
     border-bottom: 2px solid #e2e8f0 !important;
     border-top: none;
     border-left: none;
-    border-right: 1px solid #f1f5f9;
-    text-align: left;
+    border-right: none;
+    text-align: left; /* Default left align for clean look */
     font-family: 'Inter', sans-serif !important;
 }
 
+/* Center sesetengah header jika perlu (override inline HTML classes) */
 table thead th.text-center { text-align: center; }
 
 /* BODY TABLE */
 table tbody td { 
     padding: 0.85rem 1rem !important;
-    border-bottom: 1px solid #f1f5f9 !important; 
+    border-bottom: 1px solid #f1f5f9 !important; /* Divider halus */
     border-left: none !important;
-    border-right: 1px solid #f8fafc !important;
+    border-right: none !important;
     border-top: none !important;
     vertical-align: middle; 
-    white-space: nowrap; 
-    font-family: 'Inter', sans-serif !important;
+    white-space: normal; /* DIKEMASKINI: Dibenarkan untuk text-wrap */
+    line-height: 1.4; /* DIKEMASKINI: Jarak baris untuk teks yang panjang */
+    font-family: 'Inter', sans-serif !important; /* Gunakan Inter untuk data */
     font-size: 0.85rem !important;
     color: #334155;
 }
 
+/* Zebra Striping Halus */
 table tbody tr:nth-child(even) {
     background-color: #fcfcfc;
 }
 
 table tbody tr:hover {
-    background-color: #f1f5f9 !important;
+    background-color: #f1f5f9 !important; /* Highlight row */
 }
 
 /* Angka/Gred Data */
 .font-data-num {
     font-family: 'Inter', sans-serif;
-    font-feature-settings: "tnum"; 
+    font-feature-settings: "tnum"; /* Tabular numbers */
     font-weight: 500;
 }
 
@@ -248,7 +251,7 @@ table tbody tr:hover {
     padding: 0.25rem 0.6rem;
     border-radius: 9999px;
     font-size: 0.75rem;
-    font-weight: 700;
+    font-weight: 600;
     font-family: 'Inter', sans-serif;
 }
 
@@ -287,7 +290,7 @@ table tbody tr:hover {
 }
 
 .radio-label:hover { background: #f8fafc; border-color: #cbd5e1; }
-.radio-label input[type="radio"] { accent-color: var(--secondary-blue); width: 1.1rem; height: 1.1rem; }
+.radio-label input[type="radio"] { accent-color: var(--primary-blue); width: 1.1rem; height: 1.1rem; }
 
 /* 9. SWEETALERT OVERRIDES */
 div:where(.swal2-container) div:where(.swal2-popup) {
@@ -297,21 +300,10 @@ div:where(.swal2-container) div:where(.swal2-popup) {
 }
 div:where(.swal2-title) { font-family: 'Oswald', sans-serif; text-transform: uppercase; letter-spacing: 0.05em; }
 
-/* 10. BACKGROUND PATTERN */
-.bg-pattern {
-    background-color: var(--bg-surface);
-    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2364748b' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+/* 10. FLOATING / STICKY FILTER */
+.floating-panel {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 10px 30px -10px rgba(0,0,0,0.1);
 }
-
-/* 11. ANIMATIONS */
-.animate-fade-in {
-    animation: fadeIn 0.4s ease-out;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-summary::-webkit-details-marker { display: none; }
-summary { list-style: none; outline: none; }

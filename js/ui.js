@@ -179,7 +179,7 @@ export function renderComponentTable(data) {
         .sort((a,b) => (a.code || "").localeCompare(b.code || ""))
         .map(s=>{ 
             let row = `<tr class="transition-colors text-gray-700">
-                <td class="font-medium text-left whitespace-nowrap">
+                <td class="font-medium text-left">
                 <span class="text-gray-400 text-[10px] mr-1 block leading-none">[${s.code}]</span>
                 <span class="font-semibold uppercase text-xs tracking-tight">${s.name}</span>
             </td>`; 

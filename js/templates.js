@@ -282,7 +282,7 @@ export function getComponentSchoolRow(s, i) {
     return `
     <tr class="transition-colors text-gray-700 hover:bg-gray-50">
         <td class="text-center text-gray-400 border-r border-gray-100">${i+1}</td>
-        <td class="text-center font-bold text-gray-600 border-r border-gray-100 whitespace-nowrap">${s.code}</td>
+        <td class="text-center font-bold text-gray-600 border-r border-gray-100">${s.code}</td>
         <td class="font-medium text-left uppercase text-xs tracking-wide border-r border-gray-100">${s.name}</td>
         <td class="text-center bg-gray-50/50 text-gray-500 border-r border-gray-100">${s.daftar}</td>
         <td class="text-center bg-gray-50/50 font-medium border-r border-gray-100">${s.hadir}</td>
@@ -392,7 +392,7 @@ export function getComparisonDetailRow(s, i) {
     return `
     <tr class="transition-colors text-gray-700 hover:bg-gray-50">
         <td class="text-center text-gray-400 border-r border-gray-100">${i+1}</td>
-        <td class="font-medium text-left border-r border-gray-100 whitespace-nowrap">
+        <td class="font-medium text-left border-r border-gray-100">
             <span class="text-[10px] text-gray-400 block leading-none">[${s.code}]</span>
             <span class="font-semibold uppercase text-xs tracking-tight">${s.name}</span>
         </td>

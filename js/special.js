@@ -287,7 +287,7 @@ export function renderSpecialTable(results, mode, isCompareMode, showSchool = tr
         html += `<tr class="transition-colors hover:bg-gray-50">`;
         html += `<td class="text-center text-gray-400 font-medium">${counter++}</td>`;
         html += `<td class="font-medium uppercase text-gray-700">${r.nama}</td>`;
-        html += `<td class="text-center text-gray-500 font-medium text-xs whitespace-nowrap">${r.kelas}</td>`;
+        html += `<td class="text-center text-gray-500 font-medium text-xs">${r.kelas}</td>`;
         
         if (showSchool) {
             html += `<td class="text-xs font-medium uppercase text-gray-500 text-left tracking-wide">${r.sekolah}</td>`;
