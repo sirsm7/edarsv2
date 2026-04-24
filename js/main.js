@@ -13,6 +13,9 @@ import * as Special from './special.js';
 import * as Credit from './credit.js';
 import { updateLog, exportTableToExcel } from './utils.js';
 import { generateAndExportKPI } from './kpi-generator.js'; // IMPORT BARU
+// ── SURGICAL EDIT START: Import Kamus & Susunan Subjek ──
+import { NAMA_SUBJEK, SUBJECT_PRIORITY } from './config.js';
+// ── SURGICAL EDIT END ──
 
 // ==========================================
 // 2. INIT & AUTH CHECK
@@ -115,14 +118,12 @@ function setupEventListeners() {
     const btnGenerateCredit = document.getElementById('btnGenerateCredit');
     if (btnGenerateCredit) btnGenerateCredit.addEventListener('click', handleGenerateCreditAnalysis);
 
-    // ── SURGICAL EDIT START: Listener Analisa Subjek Spesifik ──
     // H. Butang Analisa Subjek Spesifik
     const btnSingleSubject = document.getElementById('btnSingleSubject');
     if (btnSingleSubject) btnSingleSubject.addEventListener('click', switchToSingleSubjectView);
 
     const btnGenerateSingleSubject = document.getElementById('btnGenerateSingleSubject');
     if (btnGenerateSingleSubject) btnGenerateSingleSubject.addEventListener('click', handleGenerateSingleSubject);
-    // ── SURGICAL EDIT END ──
 
     // F. Setup Export Excel & PDF
     setupExportListeners();
@@ -133,7 +134,6 @@ function setupEventListeners() {
 }
 
 function setupExportListeners() {
-    // ── SURGICAL EDIT START: Tambahan Pemetaan Eksport ──
     // Peta ID Butang -> [ID Table, Nama Fail]
     const exportMap = {
         'btnExportAggregate': ['tableAggregate', 'Analisa_LMS_Sekolah'],
@@ -180,7 +180,6 @@ function setupExportListeners() {
         'btnPdfCredit': ['tableCreditAnalysis', 'Analisa Kredit', 'Analisa_Kredit'],
         'btnPdfSingleSubject': ['tableSingleSubject', 'Analisa Subjek', 'Analisa_Subjek_Spesifik']
     };
-    // ── SURGICAL EDIT END ──
 
     Object.keys(pdfMap).forEach(btnId => {
         const btn = document.getElementById(btnId);
@@ -223,12 +222,10 @@ function handleModeToggle() {
 }
 
 function hideAllViews() {
-    // ── SURGICAL EDIT START: Sembunyikan View Subjek Tunggal ──
     ['viewAggregate', 'viewSchoolDetail', 'viewComponent', 'viewComparison', 'viewSpecialReport', 'viewCreditAnalysis', 'viewSingleSubject'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.classList.add('hidden');
     });
-    // ── SURGICAL EDIT END ──
     const kpi = document.getElementById('kpiSection');
     if (kpi) {
         kpi.classList.add('hidden');
@@ -258,7 +255,7 @@ function switchToCreditAnalysisView() {
     }
 }
 
-// ── SURGICAL EDIT START: View Controller Subjek Tunggal ──
+// ── SURGICAL EDIT START: View Controller Subjek Tunggal (Penambahbaikan UX) ──
 function switchToSingleSubjectView() {
     hideAllViews();
     document.getElementById('viewSingleSubject').classList.remove('hidden');
@@ -268,8 +265,22 @@ function switchToSingleSubjectView() {
         const selectEl = document.getElementById('selectSingleSubjectOption');
         selectEl.innerHTML = '';
         
-        subjects.forEach(sub => {
-            selectEl.add(new Option(sub, sub));
+        // Algoritma Susunan Pintar (Mengutamakan Subjek Teras)
+        const sortedSubjects = subjects.sort((a, b) => {
+            const idxA = SUBJECT_PRIORITY.indexOf(a);
+            const idxB = SUBJECT_PRIORITY.indexOf(b);
+            const weightA = idxA === -1 ? 999 : idxA;
+            const weightB = idxB === -1 ? 999 : idxB;
+            
+            if (weightA !== weightB) return weightA - weightB;
+            return a.localeCompare(b);
+        });
+
+        // Pemetaan Label (UX) dengan mengekalkan nilai asal kod (Value)
+        sortedSubjects.forEach(sub => {
+            const fullName = NAMA_SUBJEK[sub] || sub;
+            const label = fullName !== sub ? `${sub} - ${fullName}` : sub;
+            selectEl.add(new Option(label, sub));
         });
     } else {
         Swal.fire('Info', 'Sila tekan butang "Jana Analisa" dahulu untuk memuatkan data.', 'info');
@@ -734,7 +745,6 @@ async function handleGenerateCreditAnalysis() {
     }, 500);
 }
 
-// ── SURGICAL EDIT START: Logik Eksekusi Analisa Subjek Spesifik ──
 async function handleGenerateSingleSubject() {
     if (!State.hasData()) {
         Swal.fire('Ralat', 'Sila tekan butang "Jana Analisa" dahulu untuk memuatkan data.', 'warning');
@@ -799,4 +809,3 @@ async function handleGenerateSingleSubject() {
         Swal.close();
     }, 500);
 }
-// ── SURGICAL EDIT END ──
