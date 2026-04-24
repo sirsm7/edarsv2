@@ -550,3 +550,31 @@ function renderDetailedComparisonTables(comparisonMatrix) {
         if(btnExcel) btnExcel.addEventListener('click', () => exportTableToExcel(tableId, `Banding_${kod}_Sekolah`));
     });
 }
+
+// ── SURGICAL EDIT START: Renderer Analisa Subjek Spesifik ──
+// ==========================================
+// 7. RENDER SINGLE SUBJECT (ANALISA SUBJEK SPESIFIK)
+// ==========================================
+export function renderSingleSubjectTable(result, isCompare, subjectCode) {
+    const thead = document.getElementById('theadSingleSubject');
+    const tbody = document.getElementById('tbodySingleSubject');
+    
+    if (!thead || !tbody) return;
+
+    const schoolData = Object.values(result.data).sort((a, b) => (a.code || "").localeCompare(b.code || ""));
+    
+    let headerHtml = '';
+    let rowsHtml = '';
+
+    if (isCompare) {
+        headerHtml = Templates.getComparisonDetailHeader();
+        rowsHtml = schoolData.map((s, i) => Templates.getComparisonDetailRow(s, i)).join('');
+    } else {
+        headerHtml = Templates.getComponentSchoolHeader();
+        rowsHtml = schoolData.map((s, i) => Templates.getComponentSchoolRow(s, i)).join('');
+    }
+
+    thead.innerHTML = headerHtml;
+    tbody.innerHTML = rowsHtml;
+}
+// ── SURGICAL EDIT END ──

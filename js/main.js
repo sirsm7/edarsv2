@@ -115,6 +115,15 @@ function setupEventListeners() {
     const btnGenerateCredit = document.getElementById('btnGenerateCredit');
     if (btnGenerateCredit) btnGenerateCredit.addEventListener('click', handleGenerateCreditAnalysis);
 
+    // ── SURGICAL EDIT START: Listener Analisa Subjek Spesifik ──
+    // H. Butang Analisa Subjek Spesifik
+    const btnSingleSubject = document.getElementById('btnSingleSubject');
+    if (btnSingleSubject) btnSingleSubject.addEventListener('click', switchToSingleSubjectView);
+
+    const btnGenerateSingleSubject = document.getElementById('btnGenerateSingleSubject');
+    if (btnGenerateSingleSubject) btnGenerateSingleSubject.addEventListener('click', handleGenerateSingleSubject);
+    // ── SURGICAL EDIT END ──
+
     // F. Setup Export Excel & PDF
     setupExportListeners();
     
@@ -124,6 +133,7 @@ function setupEventListeners() {
 }
 
 function setupExportListeners() {
+    // ── SURGICAL EDIT START: Tambahan Pemetaan Eksport ──
     // Peta ID Butang -> [ID Table, Nama Fail]
     const exportMap = {
         'btnExportAggregate': ['tableAggregate', 'Analisa_LMS_Sekolah'],
@@ -139,6 +149,7 @@ function setupExportListeners() {
         'btnExportCompareCompSubjects': ['tableCompareCompSubjects', 'Perbandingan_Subjek_Komponen'],
         'btnExportCompareCompSchools': ['tableCompareCompSchools', 'Perbandingan_Sekolah_Komponen'],
         'btnExportCompareTLMS': ['tableCompareTLMS', 'Perbandingan_TLMS_Sekolah'],
+        'btnExportSingleSubject': ['tableSingleSubject', 'Analisa_Subjek_Spesifik']
     };
     
     Object.keys(exportMap).forEach(btnId => {
@@ -166,8 +177,10 @@ function setupExportListeners() {
         'btnPdfCompareCompSchools': ['tableCompareCompSchools', 'Banding GPK', 'Compare_GPK'],
         'btnPdfCompareTLMS': ['tableCompareTLMS', 'Banding TLMS', 'Compare_TLMS'],
         'btnPdfSpecial': ['tableSpecial', 'Laporan Khas', 'Laporan_Khas'],
-        'btnPdfCredit': ['tableCreditAnalysis', 'Analisa Kredit', 'Analisa_Kredit']
+        'btnPdfCredit': ['tableCreditAnalysis', 'Analisa Kredit', 'Analisa_Kredit'],
+        'btnPdfSingleSubject': ['tableSingleSubject', 'Analisa Subjek', 'Analisa_Subjek_Spesifik']
     };
+    // ── SURGICAL EDIT END ──
 
     Object.keys(pdfMap).forEach(btnId => {
         const btn = document.getElementById(btnId);
@@ -210,10 +223,12 @@ function handleModeToggle() {
 }
 
 function hideAllViews() {
-    ['viewAggregate', 'viewSchoolDetail', 'viewComponent', 'viewComparison', 'viewSpecialReport', 'viewCreditAnalysis'].forEach(id => {
+    // ── SURGICAL EDIT START: Sembunyikan View Subjek Tunggal ──
+    ['viewAggregate', 'viewSchoolDetail', 'viewComponent', 'viewComparison', 'viewSpecialReport', 'viewCreditAnalysis', 'viewSingleSubject'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.classList.add('hidden');
     });
+    // ── SURGICAL EDIT END ──
     const kpi = document.getElementById('kpiSection');
     if (kpi) {
         kpi.classList.add('hidden');
@@ -242,6 +257,25 @@ function switchToCreditAnalysisView() {
         Swal.fire('Info', 'Sila tekan butang "Jana Analisa" dahulu untuk memuatkan data.', 'info');
     }
 }
+
+// ── SURGICAL EDIT START: View Controller Subjek Tunggal ──
+function switchToSingleSubjectView() {
+    hideAllViews();
+    document.getElementById('viewSingleSubject').classList.remove('hidden');
+
+    if (State.hasData()) {
+        const subjects = extractSubjectsFromData(State.getMainData());
+        const selectEl = document.getElementById('selectSingleSubjectOption');
+        selectEl.innerHTML = '';
+        
+        subjects.forEach(sub => {
+            selectEl.add(new Option(sub, sub));
+        });
+    } else {
+        Swal.fire('Info', 'Sila tekan butang "Jana Analisa" dahulu untuk memuatkan data.', 'info');
+    }
+}
+// ── SURGICAL EDIT END ──
 
 function resetDashboardView(fullReset = false) {
     hideAllViews();
@@ -699,3 +733,70 @@ async function handleGenerateCreditAnalysis() {
         Swal.close();
     }, 500);
 }
+
+// ── SURGICAL EDIT START: Logik Eksekusi Analisa Subjek Spesifik ──
+async function handleGenerateSingleSubject() {
+    if (!State.hasData()) {
+        Swal.fire('Ralat', 'Sila tekan butang "Jana Analisa" dahulu untuk memuatkan data.', 'warning');
+        return;
+    }
+
+    const selectedSubject = document.getElementById('selectSingleSubjectOption').value;
+    const school = document.getElementById('schoolSelect').value;
+    const demog = document.getElementById('demogSelect').value;
+    const isCompare = document.getElementById('toggleCompare').checked;
+
+    if (!selectedSubject) {
+        Swal.fire('Peringatan', 'Sila pilih satu mata pelajaran.', 'info');
+        return;
+    }
+
+    let filteredData1 = State.getMainData();
+    if (school !== 'SEMUA') filteredData1 = filteredData1.filter(s => s.nama_sekolah === school);
+    filteredData1 = filteredData1.filter(s => Analytics.filterDemography(s, demog));
+
+    if (filteredData1.length === 0) {
+        Swal.fire('Tiada Data', 'Tiada calon untuk kriteria Sekolah/Demografi ini.', 'info');
+        return;
+    }
+
+    let filteredData2 = [];
+    if (isCompare) {
+        let raw2 = State.getComparisonData();
+        if (raw2.length === 0) {
+            const exam2 = document.getElementById('examSelect2').value;
+            const form2 = document.getElementById('formSelect2').value;
+            if (exam2 && form2) {
+                 raw2 = await fetchDataForAnalytics(exam2, form2, school);
+                 State.setComparisonData(raw2);
+            } else {
+                Swal.fire('Ralat', 'Data perbandingan hilang. Sila tekan "Jana Analisa" semula.', 'error');
+                return;
+            }
+        }
+        filteredData2 = raw2;
+        if (school !== 'SEMUA') filteredData2 = filteredData2.filter(s => s.nama_sekolah === school);
+        filteredData2 = filteredData2.filter(s => Analytics.filterDemography(s, demog));
+    }
+
+    Swal.fire({ title: 'Menjana Analisa Subjek...', didOpen: () => Swal.showLoading() });
+
+    setTimeout(() => {
+        // Panggil fungsi penjanaan dari modul Analytics (Akan ditambah pada fail seterusnya)
+        const result = Analytics.calculateSingleSubjectMatrix(filteredData1, filteredData2, isCompare, selectedSubject);
+        
+        // Panggil fungsi paparan dari modul UI (Akan ditambah pada fail seterusnya)
+        UI.renderSingleSubjectTable(result, isCompare, selectedSubject);
+
+        document.getElementById('singleSubjectReportTitle').innerText = `ANALISA PENCAPAIAN SUBJEK: ${selectedSubject}`;
+        document.getElementById('singleSubjectReportSubtitle').innerText = isCompare 
+            ? `Perbandingan antara ${document.getElementById('examSelect').value} vs ${document.getElementById('examSelect2').value}`
+            : `Peperiksaan: ${document.getElementById('examSelect').value}`;
+            
+        document.getElementById('singleSubjectResultContainer').classList.remove('hidden');
+        document.getElementById('singleSubjectResultContainer').scrollIntoView({ behavior: 'smooth' });
+
+        Swal.close();
+    }, 500);
+}
+// ── SURGICAL EDIT END ──

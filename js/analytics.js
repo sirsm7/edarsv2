@@ -704,3 +704,54 @@ export function calculateComparisonComponent(list1, list2, compCode) {
 
     return { schoolMap, subMap, districtStats, comparisonMatrix };
 }
+
+// ── SURGICAL EDIT START: Analisa Subjek Spesifik ──
+// -----------------------------------------------------------
+// NEW: SINGLE SUBJECT ANALYSIS (ANALISA SUBJEK SPESIFIK)
+// -----------------------------------------------------------
+export function calculateSingleSubjectMatrix(list1, list2, isCompare, subjectCode) {
+    const targetSubjects = [subjectCode];
+    
+    // Kita gunakan enjin matriks sedia ada (generateMatrixData)
+    // Parameter: (students, targetSubjects, subjectsContainer, schoolsContainer, compStatsContainer)
+    // Kita lepaskan null kerana kita hanya mahu result matriks
+    const matrix1 = generateMatrixData(list1, targetSubjects, null, null, null);
+    const schools1 = matrix1[subjectCode] || {};
+
+    if (!isCompare) {
+        return { 
+            isCompare: false, 
+            subjectCode: subjectCode, 
+            data: schools1 
+        };
+    } else {
+        const matrix2 = generateMatrixData(list2, targetSubjects, null, null, null);
+        const schools2 = matrix2[subjectCode] || {};
+        
+        let comparisonMatrix = {};
+        
+        // Dapatkan gabungan semua nama sekolah dari E1 & E2
+        const allSchools = new Set([...Object.keys(schools1), ...Object.keys(schools2)]);
+        
+        allSchools.forEach(schName => {
+            const d1 = schools1[schName]; 
+            const d2 = schools2[schName]; 
+            const baseInfo = d1 || d2; // Untuk dapatkan kod sekolah
+            
+            comparisonMatrix[schName] = {
+                name: schName,
+                code: baseInfo.code,
+                // Pastikan tiada ralat undefined jika sekolah tiada dalam salah satu exam
+                e1: d1 || { daftar:0, hadir:0, cemerlang:0, kepujian:0, kredit:0, point:0, lulus:0, 'A+':0, 'A':0, 'A-':0, 'B+':0, 'B':0, 'C+':0, 'C':0, 'D':0, 'E':0, 'G':0 },
+                e2: d2 || { daftar:0, hadir:0, cemerlang:0, kepujian:0, kredit:0, point:0, lulus:0, 'A+':0, 'A':0, 'A-':0, 'B+':0, 'B':0, 'C+':0, 'C':0, 'D':0, 'E':0, 'G':0 }
+            };
+        });
+
+        return { 
+            isCompare: true, 
+            subjectCode: subjectCode, 
+            data: comparisonMatrix 
+        };
+    }
+}
+// ── SURGICAL EDIT END ──
