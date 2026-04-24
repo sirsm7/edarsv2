@@ -255,7 +255,6 @@ function switchToCreditAnalysisView() {
     }
 }
 
-// ── SURGICAL EDIT START: View Controller Subjek Tunggal (Penambahbaikan UX) ──
 function switchToSingleSubjectView() {
     hideAllViews();
     document.getElementById('viewSingleSubject').classList.remove('hidden');
@@ -286,7 +285,6 @@ function switchToSingleSubjectView() {
         Swal.fire('Info', 'Sila tekan butang "Jana Analisa" dahulu untuk memuatkan data.', 'info');
     }
 }
-// ── SURGICAL EDIT END ──
 
 function resetDashboardView(fullReset = false) {
     hideAllViews();
@@ -414,7 +412,15 @@ function extractSubjectsFromData(data) {
             Object.keys(s.markah_data).forEach(k => {
                 if (k.startsWith('G') || k.startsWith('GRED')) {
                     const kod = k.replace(/^G_?|RED /g, '').trim();
-                    if (kod) subSet.add(kod);
+                    // ── SURGICAL EDIT START: Penapisan Mutlak Subjek ──
+                    // Hanya subjek dalam whitelist DAN mempunyai rekod markah/gred sah sahaja diserap
+                    if (kod && NAMA_SUBJEK.hasOwnProperty(kod)) {
+                        const val = s.markah_data[k];
+                        if (val !== undefined && val !== null && val.toString().trim() !== '') {
+                            subSet.add(kod);
+                        }
+                    }
+                    // ── SURGICAL EDIT END ──
                 }
             });
         }
@@ -792,13 +798,17 @@ async function handleGenerateSingleSubject() {
     Swal.fire({ title: 'Menjana Analisa Subjek...', didOpen: () => Swal.showLoading() });
 
     setTimeout(() => {
-        // Panggil fungsi penjanaan dari modul Analytics (Akan ditambah pada fail seterusnya)
+        // Panggil fungsi penjanaan dari modul Analytics
         const result = Analytics.calculateSingleSubjectMatrix(filteredData1, filteredData2, isCompare, selectedSubject);
         
-        // Panggil fungsi paparan dari modul UI (Akan ditambah pada fail seterusnya)
+        // Panggil fungsi paparan dari modul UI
         UI.renderSingleSubjectTable(result, isCompare, selectedSubject);
 
-        document.getElementById('singleSubjectReportTitle').innerText = `ANALISA PENCAPAIAN SUBJEK: ${selectedSubject}`;
+        // ── SURGICAL EDIT START: Papar Nama Penuh Subjek pada Tajuk Jadual ──
+        const fullSubjectName = NAMA_SUBJEK[selectedSubject] || selectedSubject;
+        document.getElementById('singleSubjectReportTitle').innerText = `ANALISA PENCAPAIAN SUBJEK: ${fullSubjectName}`;
+        // ── SURGICAL EDIT END ──
+        
         document.getElementById('singleSubjectReportSubtitle').innerText = isCompare 
             ? `Perbandingan antara ${document.getElementById('examSelect').value} vs ${document.getElementById('examSelect2').value}`
             : `Peperiksaan: ${document.getElementById('examSelect').value}`;
