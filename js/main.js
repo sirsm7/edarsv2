@@ -283,6 +283,8 @@ function switchToStudentAchievementView() {
     const form = document.getElementById('formSelect').value;
     const school = document.getElementById('schoolSelect').value;
     const demog = document.getElementById('demogSelect').value;
+    const isCompare = document.getElementById('toggleCompare').checked;
+    const exam2 = document.getElementById('examSelect2').value;
 
     if (!Analytics.isSpecificSchoolSelected(school)) {
         Swal.fire('Info', 'Paparan pelajar hanya tersedia apabila memilih nama sekolah spesifik, bukan SEMUA SEKOLAH (DAERAH).', 'info');
@@ -305,7 +307,19 @@ function switchToStudentAchievementView() {
         return;
     }
 
-    const result = Analytics.calculateStudentAchievementData(filteredData);
+    let comparisonData = [];
+    if (isCompare) {
+        if (!State.getComparisonData().length) {
+            Swal.fire('Info', 'Data perbandingan tidak dimuatkan. Sila jana analisa perbandingan dahulu.', 'warning');
+            return;
+        }
+        comparisonData = State.getComparisonData();
+        comparisonData = comparisonData.filter(s => s.nama_sekolah === school);
+        comparisonData = comparisonData.filter(s => Analytics.filterDemography(s, demog));
+    }
+
+    // Panggil calculate dengan data perbandingan (jika ada)
+    const result = Analytics.calculateStudentAchievementData(filteredData, comparisonData);
 
     hideAllViews();
 
@@ -319,7 +333,9 @@ function switchToStudentAchievementView() {
         exam,
         form,
         school,
-        demog
+        demog,
+        isCompare,
+        exam2
     });
 
     if (view) view.scrollIntoView({ behavior: 'smooth', block: 'start' });

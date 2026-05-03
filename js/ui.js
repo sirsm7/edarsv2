@@ -625,34 +625,94 @@ function getStudentAchievementSubjectDisplay(subjectResult) {
     return `${escapeStudentAchievementHTML(markah)} <span class="text-[10px] text-gray-500">(${escapeStudentAchievementHTML(gred)})</span>`;
 }
 
-function getStudentAchievementRow(row, index, subjects) {
-    const subjectCells = subjects.map(subject => {
-        const subjectResult = row.subjects.find(item => item.kod === subject.kod);
-        return `<td class="${getStudentAchievementSubjectCellClass(subjectResult)}">${getStudentAchievementSubjectDisplay(subjectResult)}</td>`;
-    }).join('');
+function getStudentAchievementRow(row, index, subjects, isCompare) {
+    if (isCompare) {
+        const comp = row.comparison || {};
+        const gpsDiffClass = comp.gpsImprovement === 'UP' ? 'text-green-600' : (comp.gpsImprovement === 'DOWN' ? 'text-red-600' : 'text-gray-400');
+        const totalTakenE1 = row.totalTaken || 0;
+        const totalTakenE2 = comp.totalTaken || 0;
 
-    return `
-        <tr class="transition-colors text-gray-700 hover:bg-cyan-50/20">
-            <td class="text-center text-gray-400">${index + 1}</td>
-            <td class="text-center text-[11px] font-mono text-gray-600">
-                <div>${escapeStudentAchievementHTML(row.id_individu || '-')}</div>
-                <div class="text-gray-400">${escapeStudentAchievementHTML(row.no_kp || '-')}</div>
-            </td>
-            <td class="text-left">
-                <div class="font-bold text-gray-800 uppercase text-xs tracking-tight">${escapeStudentAchievementHTML(row.nama_murid || '-')}</div>
-                <div class="text-[10px] text-gray-400 uppercase">${escapeStudentAchievementHTML(row.jantina || '-')} | ${escapeStudentAchievementHTML(row.kaum || '-')}</div>
-            </td>
-            <td class="text-center font-semibold text-gray-700">${escapeStudentAchievementHTML(row.kelas || '-')}</td>
-            <td class="text-center text-gray-600">${row.totalTaken || 0}</td>
-            <td class="text-center font-bold text-emerald-700">${row.totalPass || 0}</td>
-            <td class="text-center font-bold text-rose-700">${row.totalFail || 0}</td>
-            <td class="text-center font-bold text-indigo-700">${row.totalCredit || 0}</td>
-            <td class="text-center font-bold text-gray-900">${escapeStudentAchievementHTML(row.gpsText || '-')}</td>
-            <td class="${getStudentAchievementStatusClass(row.lmsStatus)}">${escapeStudentAchievementHTML(row.lmsStatus || '-')}</td>
-            ${subjectCells}
-            <td class="text-left text-[11px] text-rose-700 font-semibold">${escapeStudentAchievementHTML(row.issueText || '-')}</td>
-        </tr>
-    `;
+        const subjectCells = subjects.map(subject => {
+            const sr = row.subjects.find(item => item.kod === subject.kod) || {};
+            
+            let diffHtml = '-';
+            let diffClass = 'text-gray-400';
+            if (sr.diffStatus) {
+                if (sr.diffStatus.type === 'UP') diffClass = 'text-green-600 font-bold';
+                else if (sr.diffStatus.type === 'DOWN') diffClass = 'text-red-600 font-bold';
+                else if (sr.diffStatus.type === 'NEW') diffClass = 'text-blue-600 font-bold';
+                else if (sr.diffStatus.type === 'DROP') diffClass = 'text-rose-600 font-bold';
+                diffHtml = sr.diffStatus.label;
+            }
+
+            const e1Display = sr.isTaken ? `${escapeStudentAchievementHTML(sr.markah || '-')} <div class="text-[10px] text-gray-500 leading-none mt-0.5">(${escapeStudentAchievementHTML(sr.gred || '-')})</div>` : '-';
+            const e2Display = sr.compIsTaken ? `${escapeStudentAchievementHTML(sr.compMark || '-')} <div class="text-[10px] text-gray-400 leading-none mt-0.5">(${escapeStudentAchievementHTML(sr.compGrade || '-')})</div>` : '-';
+
+            const bgE1 = sr.isTaken && !sr.isPass && sr.gred !== 'TH' && sr.gred !== 'T' ? 'bg-red-50/20 text-red-700 font-bold' : (sr.isTaken ? 'bg-blue-50/10 text-gray-800' : 'bg-gray-50/20 text-gray-400');
+
+            return `
+                <td class="text-center align-middle border-r border-gray-100 ${bgE1}">${e1Display}</td>
+                <td class="text-center align-middle border-r border-gray-100 bg-gray-50/30 text-gray-500 text-xs">${e2Display}</td>
+                <td class="text-center align-middle border-r border-gray-200 bg-gray-50/50 text-[10px] ${diffClass}">${diffHtml}</td>
+            `;
+        }).join('');
+
+        return `
+            <tr class="transition-colors text-gray-700 hover:bg-cyan-50/20 border-b border-gray-100">
+                <td class="text-center text-gray-400 border-r border-gray-100">${index + 1}</td>
+                <td class="text-center text-[11px] font-mono text-gray-600 border-r border-gray-100">
+                    <div>${escapeStudentAchievementHTML(row.id_individu || '-')}</div>
+                    <div class="text-gray-400">${escapeStudentAchievementHTML(row.no_kp || '-')}</div>
+                </td>
+                <td class="text-left border-r border-gray-100">
+                    <div class="font-bold text-gray-800 uppercase text-xs tracking-tight">${escapeStudentAchievementHTML(row.nama_murid || '-')}</div>
+                    <div class="text-[10px] text-gray-400 uppercase">${escapeStudentAchievementHTML(row.jantina || '-')} | ${escapeStudentAchievementHTML(row.kaum || '-')}</div>
+                </td>
+                <td class="text-center font-semibold text-gray-700 border-r border-gray-200">${escapeStudentAchievementHTML(row.kelas || '-')}</td>
+                
+                <td class="text-center font-bold text-blue-700 bg-gray-50/50 border-r border-gray-100">${totalTakenE1}</td>
+                <td class="text-center text-gray-500 bg-gray-50/50 border-r border-gray-200">${totalTakenE2}</td>
+                
+                <td class="text-center font-bold border-r border-gray-100 ${row.lmsStatus === 'LMS' ? 'text-emerald-700 bg-emerald-50/50' : 'text-rose-700 bg-rose-50/50'}">${escapeStudentAchievementHTML(row.lmsStatus || '-')}</td>
+                <td class="text-center text-[10px] font-semibold border-r border-emerald-100 ${comp.lmsStatus === 'LMS' ? 'text-emerald-600 bg-emerald-50/30' : 'text-rose-600 bg-rose-50/30'}">${escapeStudentAchievementHTML(comp.lmsStatus || '-')}</td>
+                
+                <td class="text-center font-bold text-gray-900 bg-indigo-50/50 border-r border-gray-100">${escapeStudentAchievementHTML(row.gpsText || '-')}</td>
+                <td class="text-center text-gray-500 bg-indigo-50/30 border-r border-gray-100 text-xs">${escapeStudentAchievementHTML(comp.gpsText || '-')}</td>
+                <td class="text-center font-bold bg-indigo-100/50 border-r border-indigo-200 text-xs ${gpsDiffClass}">${escapeStudentAchievementHTML(comp.gpsDiffText || '-')}</td>
+                
+                ${subjectCells}
+            </tr>
+        `;
+    } else {
+        // SINGLE MODE ROW
+        const subjectCells = subjects.map(subject => {
+            const subjectResult = row.subjects.find(item => item.kod === subject.kod);
+            return `<td class="${getStudentAchievementSubjectCellClass(subjectResult)} border-r border-gray-100">${getStudentAchievementSubjectDisplay(subjectResult)}</td>`;
+        }).join('');
+
+        return `
+            <tr class="transition-colors text-gray-700 hover:bg-cyan-50/20 border-b border-gray-100">
+                <td class="text-center text-gray-400 border-r border-gray-100">${index + 1}</td>
+                <td class="text-center text-[11px] font-mono text-gray-600 border-r border-gray-100">
+                    <div>${escapeStudentAchievementHTML(row.id_individu || '-')}</div>
+                    <div class="text-gray-400">${escapeStudentAchievementHTML(row.no_kp || '-')}</div>
+                </td>
+                <td class="text-left border-r border-gray-100">
+                    <div class="font-bold text-gray-800 uppercase text-xs tracking-tight">${escapeStudentAchievementHTML(row.nama_murid || '-')}</div>
+                    <div class="text-[10px] text-gray-400 uppercase">${escapeStudentAchievementHTML(row.jantina || '-')} | ${escapeStudentAchievementHTML(row.kaum || '-')}</div>
+                </td>
+                <td class="text-center font-semibold text-gray-700 border-r border-gray-100">${escapeStudentAchievementHTML(row.kelas || '-')}</td>
+                <td class="text-center text-gray-600 border-r border-gray-100">${row.totalTaken || 0}</td>
+                <td class="text-center font-bold text-emerald-700 border-r border-gray-100">${row.totalPass || 0}</td>
+                <td class="text-center font-bold text-rose-700 border-r border-gray-100">${row.totalFail || 0}</td>
+                <td class="text-center font-bold text-indigo-700 border-r border-gray-100">${row.totalCredit || 0}</td>
+                <td class="text-center font-bold text-gray-900 border-r border-gray-100">${escapeStudentAchievementHTML(row.gpsText || '-')}</td>
+                <td class="border-r border-gray-100 ${getStudentAchievementStatusClass(row.lmsStatus)}">${escapeStudentAchievementHTML(row.lmsStatus || '-')}</td>
+                ${subjectCells}
+                <td class="text-left text-[10px] text-rose-700 font-semibold align-middle leading-snug break-words max-w-[150px]">${escapeStudentAchievementHTML(row.issueText || '-')}</td>
+            </tr>
+        `;
+    }
 }
 
 function getStudentAchievementEmptyRow(colspan, message) {
@@ -665,33 +725,71 @@ function getStudentAchievementEmptyRow(colspan, message) {
     `;
 }
 
-function getStudentAchievementHeader(subjects) {
+function getStudentAchievementHeader(subjects, isCompare) {
+    if (isCompare) {
+        const subjectHeaders = subjects.map(subject => `
+            <th class="border-r border-gray-300 text-center min-w-[140px] px-2 py-2" colspan="3" title="${escapeStudentAchievementHTML(subject.nama)}">
+                <div class="font-bold">${escapeStudentAchievementHTML(subject.kod)}</div>
+                <div class="text-[9px] font-medium text-gray-500 normal-case leading-tight mt-0.5">${escapeStudentAchievementHTML(subject.nama)}</div>
+            </th>
+        `).join('');
+
+        const subjectSubHeaders = subjects.map(subject => `
+            <th class="border-r border-gray-200 text-center text-[10px] bg-blue-50/50 w-16 py-1">E1</th>
+            <th class="border-r border-gray-200 text-center text-[10px] bg-gray-50/50 w-16 py-1">E2</th>
+            <th class="border-r border-gray-300 text-center text-[10px] bg-gray-100 w-16 py-1">BEZA</th>
+        `).join('');
+
+        return `
+            <tr>
+                <th rowspan="2" class="border-r border-b text-center w-10 bg-gray-50">Bil</th>
+                <th rowspan="2" class="border-r border-b text-center min-w-[120px] bg-gray-50">ID / KP</th>
+                <th rowspan="2" class="border-r border-b text-left min-w-[200px] bg-gray-50">Nama Murid</th>
+                <th rowspan="2" class="border-r border-b text-center min-w-[80px] bg-gray-50">Kelas</th>
+                <th colspan="2" class="border-r border-b border-gray-300 text-center bg-gray-100">Subjek (Ambil)</th>
+                <th colspan="2" class="border-r border-b border-emerald-200 text-center bg-emerald-50">LMS</th>
+                <th colspan="3" class="border-r border-b border-indigo-200 text-center bg-indigo-50">GPS</th>
+                ${subjectHeaders}
+            </tr>
+            <tr class="text-[10px]">
+                <th class="border-r border-b border-gray-200 text-center bg-gray-50 py-1">E1</th>
+                <th class="border-r border-b border-gray-300 text-center bg-gray-50 py-1">E2</th>
+                <th class="border-r border-b border-emerald-200 text-center bg-emerald-50 py-1">E1</th>
+                <th class="border-r border-b border-emerald-200 text-center bg-emerald-50 py-1">E2</th>
+                <th class="border-r border-b border-indigo-200 text-center bg-indigo-50 py-1">E1</th>
+                <th class="border-r border-b border-indigo-200 text-center bg-indigo-50 py-1">E2</th>
+                <th class="border-r border-b border-indigo-300 text-center bg-indigo-100 font-bold py-1">BEZA</th>
+                ${subjectSubHeaders}
+            </tr>
+        `;
+    }
+
     const subjectHeaders = subjects.map(subject => `
-        <th class="border text-center min-w-[90px]" title="${escapeStudentAchievementHTML(subject.nama)}">
+        <th class="border-r text-center min-w-[90px] px-2 py-2 align-middle bg-gray-50" title="${escapeStudentAchievementHTML(subject.nama)}">
             <div class="font-bold">${escapeStudentAchievementHTML(subject.kod)}</div>
-            <div class="text-[9px] font-medium text-gray-500 normal-case leading-tight">${escapeStudentAchievementHTML(subject.nama)}</div>
+            <div class="text-[9px] font-medium text-gray-500 normal-case leading-tight mt-0.5">${escapeStudentAchievementHTML(subject.nama)}</div>
         </th>
     `).join('');
 
     return `
         <tr>
-            <th class="border text-center w-10">Bil</th>
-            <th class="border text-center min-w-[120px]">ID / KP</th>
-            <th class="border text-left min-w-[260px]">Nama Murid</th>
-            <th class="border text-center min-w-[90px]">Kelas</th>
-            <th class="border text-center min-w-[80px]">Subjek</th>
-            <th class="border text-center min-w-[80px]">Lulus</th>
-            <th class="border text-center min-w-[80px]">Gagal</th>
-            <th class="border text-center min-w-[80px]">Kredit</th>
-            <th class="border text-center min-w-[80px]">GPS</th>
-            <th class="border text-center min-w-[80px]">LMS</th>
+            <th class="border-r border-b text-center w-10 bg-gray-50">Bil</th>
+            <th class="border-r border-b text-center min-w-[120px] bg-gray-50">ID / KP</th>
+            <th class="border-r border-b text-left min-w-[220px] bg-gray-50">Nama Murid</th>
+            <th class="border-r border-b text-center min-w-[80px] bg-gray-50">Kelas</th>
+            <th class="border-r border-b text-center min-w-[70px] bg-gray-50">Subjek</th>
+            <th class="border-r border-b text-center min-w-[70px] bg-gray-50">Lulus</th>
+            <th class="border-r border-b text-center min-w-[70px] bg-gray-50">Gagal</th>
+            <th class="border-r border-b text-center min-w-[70px] bg-gray-50">Kredit</th>
+            <th class="border-r border-b text-center min-w-[70px] bg-gray-50">GPS</th>
+            <th class="border-r border-b text-center min-w-[70px] bg-gray-50">LMS</th>
             ${subjectHeaders}
-            <th class="border text-left min-w-[180px]">Isu</th>
+            <th class="border-r border-b text-left min-w-[180px] bg-gray-50">Isu</th>
         </tr>
     `;
 }
 
-function updateStudentAchievementInfo(data) {
+function updateStudentAchievementInfo(data, isCompare) {
     const info = document.getElementById('studentAchievementInfo');
     if (!info) return;
 
@@ -704,15 +802,25 @@ function updateStudentAchievementInfo(data) {
         return;
     }
 
-    info.innerHTML = `
-        <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
-            <div><span class="text-gray-400">Calon:</span> <span class="text-gray-900">${summary.totalStudents || 0}</span></div>
-            <div><span class="text-gray-400">Subjek Dikesan:</span> <span class="text-gray-900">${subjects.length}</span></div>
-            <div><span class="text-gray-400">GPS:</span> <span class="text-gray-900">${escapeStudentAchievementHTML(summary.gpsText || '-')}</span></div>
-            <div><span class="text-gray-400">% LMS:</span> <span class="text-emerald-700">${escapeStudentAchievementHTML(summary.lmsPercentText || '0.00%')}</span></div>
-            <div><span class="text-gray-400">TLMS:</span> <span class="text-rose-700">${summary.totalTLMS || 0}</span></div>
-        </div>
-    `;
+    if (isCompare) {
+        info.innerHTML = `
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 items-center">
+                <div><span class="text-gray-400">Calon Diperiksa:</span> <span class="text-gray-900 font-bold">${summary.totalStudents || 0}</span></div>
+                <div><span class="text-gray-400">Subjek Dikesan:</span> <span class="text-gray-900 font-bold">${subjects.length}</span></div>
+                <div class="col-span-2 text-right"><span class="text-emerald-600 bg-emerald-50 px-2 py-1 rounded">▲ Peningkatan</span> <span class="text-red-600 bg-red-50 px-2 py-1 rounded ml-2">▼ Penurunan</span> <span class="text-blue-600 bg-blue-50 px-2 py-1 rounded ml-2">Subjek Baru</span></div>
+            </div>
+        `;
+    } else {
+        info.innerHTML = `
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-3 items-center">
+                <div><span class="text-gray-400">Calon:</span> <span class="text-gray-900 font-bold">${summary.totalStudents || 0}</span></div>
+                <div><span class="text-gray-400">Subjek Dikesan:</span> <span class="text-gray-900 font-bold">${subjects.length}</span></div>
+                <div><span class="text-gray-400">GPS:</span> <span class="text-gray-900 font-bold">${escapeStudentAchievementHTML(summary.gpsText || '-')}</span></div>
+                <div><span class="text-gray-400">% LMS:</span> <span class="text-emerald-700 font-bold">${escapeStudentAchievementHTML(summary.lmsPercentText || '0.00%')}</span></div>
+                <div><span class="text-gray-400">TLMS:</span> <span class="text-rose-700 font-bold">${summary.totalTLMS || 0}</span></div>
+            </div>
+        `;
+    }
 }
 
 export function renderStudentAchievementTable(data, context = {}) {
@@ -724,22 +832,33 @@ export function renderStudentAchievementTable(data, context = {}) {
 
     const subjects = Array.isArray(data?.subjects) ? data.subjects : [];
     const rows = Array.isArray(data?.rows) ? data.rows : [];
-    const totalColumns = 11 + subjects.length;
+    
+    // Semak mod perbandingan (daripada context atau kehadiran objek comparison)
+    const isCompare = context.isCompare || (rows.length > 0 && rows[0].comparison !== undefined && rows[0].comparison !== null);
 
-    thead.innerHTML = getStudentAchievementHeader(subjects);
+    const totalColumns = isCompare ? 11 + (subjects.length * 3) : 11 + subjects.length;
+
+    thead.innerHTML = getStudentAchievementHeader(subjects, isCompare);
 
     if (subtitle) {
         const examText = context.exam ? escapeStudentAchievementHTML(context.exam) : '';
         const formText = context.form ? escapeStudentAchievementHTML(context.form) : '';
         const schoolText = context.school ? escapeStudentAchievementHTML(context.school) : '';
-        const subtitleParts = [examText, formText, schoolText].filter(Boolean);
+        const exam2Text = context.exam2 ? escapeStudentAchievementHTML(context.exam2) : '';
+        
+        let subtitleParts = [];
+        if (isCompare && exam2Text) {
+            subtitleParts = [`Perbandingan: ${examText} vs ${exam2Text}`, formText, schoolText].filter(Boolean);
+        } else {
+            subtitleParts = [examText, formText, schoolText].filter(Boolean);
+        }
 
         subtitle.innerHTML = subtitleParts.length > 0
-            ? subtitleParts.join(' | ')
+            ? subtitleParts.join(' <span class="mx-2 text-gray-300">|</span> ')
             : 'Paparan murid berdasarkan data analisis semasa';
     }
 
-    updateStudentAchievementInfo(data);
+    updateStudentAchievementInfo(data, isCompare);
 
     if (rows.length === 0) {
         tbody.innerHTML = getStudentAchievementEmptyRow(totalColumns, 'Tiada rekod pelajar untuk dipaparkan.');
@@ -747,7 +866,7 @@ export function renderStudentAchievementTable(data, context = {}) {
     }
 
     tbody.innerHTML = rows
-        .map((row, index) => getStudentAchievementRow(row, index, subjects))
+        .map((row, index) => getStudentAchievementRow(row, index, subjects, isCompare))
         .join('');
 }
 // ── SURGICAL EDIT END ──

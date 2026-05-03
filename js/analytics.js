@@ -707,7 +707,7 @@ export function calculateComparisonComponent(list1, list2, compCode) {
     return { schoolMap, subMap, districtStats, comparisonMatrix };
 }
 
-// ── SURGICAL EDIT START: Analisa Subjek Spesifik ──
+// ── SURGICAL EDIT START: Paparan Pelajar & Pencapaian (Perbandingan) ──
 // -----------------------------------------------------------
 // NEW: SINGLE SUBJECT ANALYSIS (ANALISA SUBJEK SPESIFIK)
 // -----------------------------------------------------------
@@ -756,9 +756,7 @@ export function calculateSingleSubjectMatrix(list1, list2, isCompare, subjectCod
         };
     }
 }
-// ── SURGICAL EDIT END ──
 
-// ── SURGICAL EDIT START: Paparan Pelajar & Pencapaian ──
 // -----------------------------------------------------------
 // NEW: STUDENT ACHIEVEMENT ANALYSIS (PAPARAN PELAJAR)
 // -----------------------------------------------------------
@@ -868,10 +866,11 @@ function studentAchievementBuildAchievementText(subjects) {
         .join(' | ');
 }
 
-export function getStudentAchievementSubjectCodes(students) {
+export function getStudentAchievementSubjectCodes(students, comparisonStudents = []) {
     const subjectSet = new Set();
+    const allStudents = [...(Array.isArray(students) ? students : []), ...(Array.isArray(comparisonStudents) ? comparisonStudents : [])];
 
-    (Array.isArray(students) ? students : []).forEach(student => {
+    allStudents.forEach(student => {
         const marks = student.markah_data || {};
 
         Object.keys(marks).forEach(rawKey => {
@@ -903,14 +902,24 @@ export function getStudentAchievementSubjectCodes(students) {
     return Array.from(subjectSet).sort(studentAchievementCompareSubjects);
 }
 
-export function calculateStudentAchievementData(students, options = {}) {
+export function calculateStudentAchievementData(students, comparisonStudents = [], options = {}) {
     const source = Array.isArray(students) ? students : [];
+    const compSource = Array.isArray(comparisonStudents) ? comparisonStudents : [];
+
+    const compMap = new Map();
+    compSource.forEach(s => {
+        if (s.id_individu) compMap.set(s.id_individu, s);
+    });
+
     const subjectCodes = Array.isArray(options.subjectCodes) && options.subjectCodes.length > 0
         ? options.subjectCodes.filter(studentAchievementIsSubjectCode).sort(studentAchievementCompareSubjects)
-        : getStudentAchievementSubjectCodes(source);
+        : getStudentAchievementSubjectCodes(source, compSource);
 
     const rows = source.map((student, index) => {
         const marks = student.markah_data || {};
+        const compStudent = compMap.get(student.id_individu);
+        const compMarks = compStudent ? (compStudent.markah_data || {}) : null;
+
         let totalTaken = 0;
         let totalPresent = 0;
         let totalPass = 0;
@@ -918,6 +927,14 @@ export function calculateStudentAchievementData(students, options = {}) {
         let totalCredit = 0;
         let totalPoint = 0;
         let countedSubjects = 0;
+
+        let compTotalTaken = 0;
+        let compTotalPresent = 0;
+        let compTotalPass = 0;
+        let compTotalFail = 0;
+        let compTotalCredit = 0;
+        let compTotalPoint = 0;
+        let compCountedSubjects = 0;
 
         const subjectResults = subjectCodes.map(subjectCode => {
             const mark = studentAchievementGetSubjectMark(marks, subjectCode);
@@ -942,6 +959,70 @@ export function calculateStudentAchievementData(students, options = {}) {
                 countedSubjects++;
             }
 
+            let compMark = '';
+            let compGrade = '';
+            let compIsTaken = false;
+            let compIsPresent = false;
+            let compIsPass = false;
+            let compIsFail = false;
+            let compIsCredit = false;
+            let compPoint = null;
+            let compIsGpsCounted = false;
+
+            if (compMarks) {
+                compMark = studentAchievementGetSubjectMark(compMarks, subjectCode);
+                compGrade = studentAchievementGetSubjectGrade(compMarks, subjectCode);
+                const compHasMark = !studentAchievementIsEmptyValue(compMark);
+                const compHasGrade = !studentAchievementIsEmptyValue(compGrade);
+                compIsTaken = compHasMark || compHasGrade;
+                compIsPresent = compIsTaken && !studentAchievementIsAbsentGrade(compGrade || compMark);
+                compIsPass = compHasGrade ? studentAchievementIsPassingGrade(compGrade) : false;
+                compIsFail = compIsTaken && compHasGrade && !studentAchievementIsPassingGrade(compGrade);
+                compIsCredit = compHasGrade && studentAchievementIsCreditGrade(compGrade);
+                compPoint = studentAchievementIsKnownGrade(compGrade) ? GRED_POINTS[compGrade] : null;
+                compIsGpsCounted = compIsTaken && compPoint !== null && !SUBJEK_KECUALI.includes(subjectCode);
+
+                if (compIsTaken) compTotalTaken++;
+                if (compIsPresent) compTotalPresent++;
+                if (compIsPass) compTotalPass++;
+                if (compIsFail) compTotalFail++;
+                if (compIsCredit) compTotalCredit++;
+                if (compIsGpsCounted) {
+                    compTotalPoint += compPoint;
+                    compCountedSubjects++;
+                }
+            }
+
+            let diffStatus = { type: 'NONE', label: '-', val: 0 };
+            if (compIsTaken && isTaken) {
+                if (studentAchievementIsAbsentGrade(grade) && studentAchievementIsAbsentGrade(compGrade)) diffStatus = { type: 'SAME', label: '-', val: 0 };
+                else if (studentAchievementIsAbsentGrade(grade) && !studentAchievementIsAbsentGrade(compGrade)) diffStatus = { type: 'DOWN', label: '▼ TH', val: -1 };
+                else if (!studentAchievementIsAbsentGrade(grade) && studentAchievementIsAbsentGrade(compGrade)) diffStatus = { type: 'UP', label: '▲ HDR', val: 1 };
+                else {
+                    const v1 = parseFloat(mark);
+                    const v2 = parseFloat(compMark);
+                    if (!isNaN(v1) && !isNaN(v2)) {
+                        const diff = v1 - v2;
+                        if (diff > 0) diffStatus = { type: 'UP', label: `▲ +${diff}`, val: diff };
+                        else if (diff < 0) diffStatus = { type: 'DOWN', label: `▼ ${Math.abs(diff)}`, val: diff };
+                        else diffStatus = { type: 'SAME', label: '-', val: 0 };
+                    } else if (grade !== compGrade) {
+                         const p1 = GRED_POINTS[grade];
+                         const p2 = GRED_POINTS[compGrade];
+                         if (p1 !== undefined && p2 !== undefined) {
+                             const diff = p2 - p1; 
+                             if (diff > 0) diffStatus = { type: 'UP', label: `▲`, val: diff };
+                             else if (diff < 0) diffStatus = { type: 'DOWN', label: `▼`, val: diff };
+                             else diffStatus = { type: 'SAME', label: '-', val: 0 };
+                         }
+                    }
+                }
+            } else if (isTaken && !compIsTaken) {
+                diffStatus = { type: 'NEW', label: 'BARU', val: 0 };
+            } else if (!isTaken && compIsTaken) {
+                diffStatus = { type: 'DROP', label: 'GUGUR', val: 0 };
+            }
+
             return {
                 kod: subjectCode,
                 nama: studentAchievementGetSubjectName(subjectCode),
@@ -954,7 +1035,16 @@ export function calculateStudentAchievementData(students, options = {}) {
                 isFail,
                 isCredit,
                 isGpsCounted,
-                display: isTaken ? `${mark || '-'} (${grade || '-'})` : '-'
+                display: isTaken ? `${mark || '-'} (${grade || '-'})` : '-',
+                compMark,
+                compGrade,
+                compIsTaken,
+                compIsPresent,
+                compIsPass,
+                compIsFail,
+                compIsCredit,
+                diffStatus,
+                compDisplay: compIsTaken ? `${compMark || '-'} (${compGrade || '-'})` : '-'
             };
         });
 
@@ -964,6 +1054,37 @@ export function calculateStudentAchievementData(students, options = {}) {
         const gps = countedSubjects > 0 ? totalPoint / countedSubjects : 0;
         const issueText = studentAchievementBuildIssueText(subjectResults);
         const achievementText = studentAchievementBuildAchievementText(subjectResults);
+
+        let comparison = null;
+        if (compMarks) {
+            const compGBM = studentAchievementGetSubjectGrade(compMarks, 'BM');
+            const compGSEJ = studentAchievementGetSubjectGrade(compMarks, 'SEJ');
+            const compIsLMS = studentAchievementIsPassingGrade(compGBM) && studentAchievementIsPassingGrade(compGSEJ);
+            const compGps = compCountedSubjects > 0 ? compTotalPoint / compCountedSubjects : 0;
+            
+            const gpsDiff = gps - compGps;
+            let gpsImprovement = 'NONE';
+            let gpsDiffText = '-';
+            if (compCountedSubjects > 0 && countedSubjects > 0) {
+                if (gpsDiff < 0) { gpsImprovement = 'UP'; gpsDiffText = `▲ ${Math.abs(gpsDiff).toFixed(2)}`; }
+                else if (gpsDiff > 0) { gpsImprovement = 'DOWN'; gpsDiffText = `▼ ${Math.abs(gpsDiff).toFixed(2)}`; }
+                else { gpsImprovement = 'SAME'; gpsDiffText = '-'; }
+            }
+
+            comparison = {
+                totalTaken: compTotalTaken,
+                totalPresent: compTotalPresent,
+                totalPass: compTotalPass,
+                totalFail: compTotalFail,
+                totalCredit: compTotalCredit,
+                gps: compGps,
+                gpsText: compCountedSubjects > 0 ? compGps.toFixed(2) : '-',
+                gpsDiff: Math.abs(gpsDiff).toFixed(2),
+                gpsImprovement,
+                gpsDiffText,
+                lmsStatus: compIsLMS ? 'LMS' : 'TLMS'
+            };
+        }
 
         return {
             bil: index + 1,
@@ -995,7 +1116,8 @@ export function calculateStudentAchievementData(students, options = {}) {
             bmGrade: gBM || '-',
             sejGrade: gSEJ || '-',
             issueText,
-            achievementText
+            achievementText,
+            comparison
         };
     });
 
@@ -1051,7 +1173,7 @@ export function calculateStudentAchievementData(students, options = {}) {
     };
 }
 
-export function getStudentAchievementExportRows(studentAchievementData) {
+export function getStudentAchievementExportRows(studentAchievementData, isCompare = false) {
     const data = studentAchievementData || {};
     const subjects = Array.isArray(data.subjects) ? data.subjects : [];
     const rows = Array.isArray(data.rows) ? data.rows : [];
@@ -1064,20 +1186,41 @@ export function getStudentAchievementExportRows(studentAchievementData) {
             'Nama Murid': row.nama_murid,
             Kelas: row.kelas,
             Jantina: row.jantina,
-            Kaum: row.kaum,
-            'Bil Subjek': row.totalTaken,
-            'Bil Lulus': row.totalPass,
-            'Bil Gagal': row.totalFail,
-            'Bil Kredit': row.totalCredit,
-            GPS: row.gpsText,
-            LMS: row.lmsStatus,
-            Isu: row.issueText
+            Kaum: row.kaum
         };
+
+        if (isCompare) {
+            item['Subjek E1'] = row.totalTaken;
+            item['Subjek E2'] = row.comparison ? row.comparison.totalTaken : '-';
+            item['Lulus E1'] = row.totalPass;
+            item['Lulus E2'] = row.comparison ? row.comparison.totalPass : '-';
+            item['LMS E1'] = row.lmsStatus;
+            item['LMS E2'] = row.comparison ? row.comparison.lmsStatus : '-';
+            item['GPS E1'] = row.gpsText;
+            item['GPS E2'] = row.comparison ? row.comparison.gpsText : '-';
+            item['Beza GPS'] = row.comparison && row.comparison.gpsImprovement !== 'NONE'
+                ? (row.comparison.gpsImprovement === 'UP' ? `+${row.comparison.gpsDiff}` : (row.comparison.gpsImprovement === 'DOWN' ? `-${row.comparison.gpsDiff}` : '0.00'))
+                : '-';
+        } else {
+            item['Bil Subjek'] = row.totalTaken;
+            item['Bil Lulus'] = row.totalPass;
+            item['Bil Gagal'] = row.totalFail;
+            item['Bil Kredit'] = row.totalCredit;
+            item['GPS'] = row.gpsText;
+            item['LMS'] = row.lmsStatus;
+            item['Isu'] = row.issueText;
+        }
 
         subjects.forEach(subject => {
             const subjectResult = row.subjects.find(result => result.kod === subject.kod);
-            item[subject.kod] = subjectResult ? subjectResult.markah || '-' : '-';
-            item[`G${subject.kod}`] = subjectResult ? subjectResult.gred || '-' : '-';
+            if (isCompare) {
+                item[`${subject.kod} E1`] = subjectResult ? subjectResult.display : '-';
+                item[`${subject.kod} E2`] = subjectResult ? subjectResult.compDisplay : '-';
+                item[`${subject.kod} Beza`] = subjectResult ? subjectResult.diffStatus.label : '-';
+            } else {
+                item[subject.kod] = subjectResult ? subjectResult.markah || '-' : '-';
+                item[`G${subject.kod}`] = subjectResult ? subjectResult.gred || '-' : '-';
+            }
         });
 
         item['Ringkasan Pencapaian'] = row.achievementText;
