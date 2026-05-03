@@ -4,7 +4,9 @@
 // Bebas daripada manipulasi DOM (Pure Logic).
 // ==========================================
 
-import { GRED_POINTS, SUBJEK_KECUALI, NAMA_SUBJEK, COMPONENT_MAP } from './config.js';
+// ── SURGICAL EDIT START: Kemas kini import config ──
+import { GRED_POINTS, SUBJEK_KECUALI, NAMA_SUBJEK, COMPONENT_MAP, SUBJECT_PRIORITY } from './config.js';
+// ── SURGICAL EDIT END ──
 import { getGrade, isLulusGrade } from './utils.js';
 
 // ==========================================
@@ -753,5 +755,338 @@ export function calculateSingleSubjectMatrix(list1, list2, isCompare, subjectCod
             data: comparisonMatrix 
         };
     }
+}
+// ── SURGICAL EDIT END ──
+
+// ── SURGICAL EDIT START: Paparan Pelajar & Pencapaian ──
+// -----------------------------------------------------------
+// NEW: STUDENT ACHIEVEMENT ANALYSIS (PAPARAN PELAJAR)
+// -----------------------------------------------------------
+function studentAchievementNormalizeValue(value) {
+    if (value === undefined || value === null) return '';
+    return value.toString().trim();
+}
+
+function studentAchievementNormalizeGrade(value) {
+    return studentAchievementNormalizeValue(value).toUpperCase();
+}
+
+function studentAchievementIsEmptyValue(value) {
+    const text = studentAchievementNormalizeValue(value).toUpperCase();
+    return text === '' || text === 'NULL' || text === 'UNDEFINED';
+}
+
+function studentAchievementIsAbsentGrade(grade) {
+    const g = studentAchievementNormalizeGrade(grade);
+    return g === '' || g === 'TH' || g === 'T' || g === 'NULL' || g === 'UNDEFINED';
+}
+
+function studentAchievementIsKnownGrade(grade) {
+    return Object.prototype.hasOwnProperty.call(GRED_POINTS, studentAchievementNormalizeGrade(grade));
+}
+
+function studentAchievementIsPassingGrade(grade) {
+    const g = studentAchievementNormalizeGrade(grade);
+    return studentAchievementIsKnownGrade(g) && g !== 'G';
+}
+
+function studentAchievementIsCreditGrade(grade) {
+    const g = studentAchievementNormalizeGrade(grade);
+    return ['A+', 'A', 'A-', 'B+', 'B', 'C+', 'C'].includes(g);
+}
+
+function studentAchievementIsSubjectCode(key) {
+    return Object.prototype.hasOwnProperty.call(NAMA_SUBJEK, key);
+}
+
+function studentAchievementGetSubjectName(subjectCode) {
+    return NAMA_SUBJEK[subjectCode] || subjectCode;
+}
+
+function studentAchievementStripGradePrefix(key) {
+    return studentAchievementNormalizeValue(key).replace(/^G_?|^GRED\s+|^GRED_/i, '').trim();
+}
+
+function studentAchievementGradeKeyCandidates(subjectCode) {
+    return [
+        `G${subjectCode}`,
+        `G_${subjectCode}`,
+        `GRED ${subjectCode}`,
+        `GRED_${subjectCode}`
+    ];
+}
+
+function studentAchievementGetSubjectMark(marks, subjectCode) {
+    if (!marks || !subjectCode) return '';
+    const value = marks[subjectCode];
+    if (studentAchievementIsEmptyValue(value)) return '';
+    return studentAchievementNormalizeValue(value).toUpperCase();
+}
+
+function studentAchievementGetSubjectGrade(marks, subjectCode) {
+    if (!marks || !subjectCode) return '';
+    const candidates = studentAchievementGradeKeyCandidates(subjectCode);
+
+    for (const key of candidates) {
+        if (marks[key] !== undefined && !studentAchievementIsEmptyValue(marks[key])) {
+            return studentAchievementNormalizeGrade(marks[key]);
+        }
+    }
+
+    return '';
+}
+
+function studentAchievementSubjectSortScore(subjectCode) {
+    const idx = SUBJECT_PRIORITY.indexOf(subjectCode);
+    return idx === -1 ? 9999 : idx;
+}
+
+function studentAchievementCompareSubjects(a, b) {
+    const scoreA = studentAchievementSubjectSortScore(a);
+    const scoreB = studentAchievementSubjectSortScore(b);
+
+    if (scoreA !== scoreB) return scoreA - scoreB;
+
+    const nameA = studentAchievementGetSubjectName(a);
+    const nameB = studentAchievementGetSubjectName(b);
+
+    if (nameA !== nameB) return nameA.localeCompare(nameB, 'ms-MY');
+    return a.localeCompare(b, 'ms-MY');
+}
+
+function studentAchievementBuildIssueText(subjects) {
+    return subjects
+        .filter(item => item.isTaken && !item.isPass)
+        .map(item => `${item.kod}:${item.gred || item.markah || '-'}`)
+        .join(' ');
+}
+
+function studentAchievementBuildAchievementText(subjects) {
+    return subjects
+        .filter(item => item.isTaken)
+        .map(item => `${item.kod} ${item.markah || '-'} (${item.gred || '-'})`)
+        .join(' | ');
+}
+
+export function getStudentAchievementSubjectCodes(students) {
+    const subjectSet = new Set();
+
+    (Array.isArray(students) ? students : []).forEach(student => {
+        const marks = student.markah_data || {};
+
+        Object.keys(marks).forEach(rawKey => {
+            const key = studentAchievementNormalizeValue(rawKey);
+
+            if (studentAchievementIsSubjectCode(key)) {
+                const mark = studentAchievementGetSubjectMark(marks, key);
+                const grade = studentAchievementGetSubjectGrade(marks, key);
+
+                if (!studentAchievementIsEmptyValue(mark) || !studentAchievementIsEmptyValue(grade)) {
+                    subjectSet.add(key);
+                }
+                return;
+            }
+
+            if (key.startsWith('G') || key.startsWith('GRED')) {
+                const possibleSubjectCode = studentAchievementStripGradePrefix(key);
+
+                if (!studentAchievementIsSubjectCode(possibleSubjectCode)) return;
+
+                const grade = studentAchievementGetSubjectGrade(marks, possibleSubjectCode);
+                if (!studentAchievementIsEmptyValue(grade)) {
+                    subjectSet.add(possibleSubjectCode);
+                }
+            }
+        });
+    });
+
+    return Array.from(subjectSet).sort(studentAchievementCompareSubjects);
+}
+
+export function calculateStudentAchievementData(students, options = {}) {
+    const source = Array.isArray(students) ? students : [];
+    const subjectCodes = Array.isArray(options.subjectCodes) && options.subjectCodes.length > 0
+        ? options.subjectCodes.filter(studentAchievementIsSubjectCode).sort(studentAchievementCompareSubjects)
+        : getStudentAchievementSubjectCodes(source);
+
+    const rows = source.map((student, index) => {
+        const marks = student.markah_data || {};
+        let totalTaken = 0;
+        let totalPresent = 0;
+        let totalPass = 0;
+        let totalFail = 0;
+        let totalCredit = 0;
+        let totalPoint = 0;
+        let countedSubjects = 0;
+
+        const subjectResults = subjectCodes.map(subjectCode => {
+            const mark = studentAchievementGetSubjectMark(marks, subjectCode);
+            const grade = studentAchievementGetSubjectGrade(marks, subjectCode);
+            const hasMark = !studentAchievementIsEmptyValue(mark);
+            const hasGrade = !studentAchievementIsEmptyValue(grade);
+            const isTaken = hasMark || hasGrade;
+            const isPresent = isTaken && !studentAchievementIsAbsentGrade(grade || mark);
+            const isPass = hasGrade ? studentAchievementIsPassingGrade(grade) : false;
+            const isFail = isTaken && hasGrade && !studentAchievementIsPassingGrade(grade);
+            const isCredit = hasGrade && studentAchievementIsCreditGrade(grade);
+            const point = studentAchievementIsKnownGrade(grade) ? GRED_POINTS[grade] : null;
+            const isGpsCounted = isTaken && point !== null && !SUBJEK_KECUALI.includes(subjectCode);
+
+            if (isTaken) totalTaken++;
+            if (isPresent) totalPresent++;
+            if (isPass) totalPass++;
+            if (isFail) totalFail++;
+            if (isCredit) totalCredit++;
+            if (isGpsCounted) {
+                totalPoint += point;
+                countedSubjects++;
+            }
+
+            return {
+                kod: subjectCode,
+                nama: studentAchievementGetSubjectName(subjectCode),
+                markah: mark,
+                gred: grade,
+                point,
+                isTaken,
+                isPresent,
+                isPass,
+                isFail,
+                isCredit,
+                isGpsCounted,
+                display: isTaken ? `${mark || '-'} (${grade || '-'})` : '-'
+            };
+        });
+
+        const gBM = studentAchievementGetSubjectGrade(marks, 'BM');
+        const gSEJ = studentAchievementGetSubjectGrade(marks, 'SEJ');
+        const isLMS = studentAchievementIsPassingGrade(gBM) && studentAchievementIsPassingGrade(gSEJ);
+        const gps = countedSubjects > 0 ? totalPoint / countedSubjects : 0;
+        const issueText = studentAchievementBuildIssueText(subjectResults);
+        const achievementText = studentAchievementBuildAchievementText(subjectResults);
+
+        return {
+            bil: index + 1,
+            id: student.id || '',
+            id_individu: student.id_individu || '',
+            no_kp: student.no_kp || '',
+            nama_murid: student.nama_murid || '',
+            kod_sekolah: student.kod_sekolah || '',
+            nama_sekolah: student.nama_sekolah || '',
+            tingkatan: student.tingkatan || '',
+            kelas: student.kelas || '',
+            jantina: student.jantina || '',
+            agama: student.agama || '',
+            kaum: student.kaum || '',
+            tahun: student.tahun || '',
+            sesi_persekolahan: student.sesi_persekolahan || '',
+            nama_peperiksaan: student.nama_peperiksaan || '',
+            subjects: subjectResults,
+            totalTaken,
+            totalPresent,
+            totalPass,
+            totalFail,
+            totalCredit,
+            totalPoint,
+            countedSubjects,
+            gps,
+            gpsText: countedSubjects > 0 ? gps.toFixed(2) : '-',
+            lmsStatus: isLMS ? 'LMS' : 'TLMS',
+            bmGrade: gBM || '-',
+            sejGrade: gSEJ || '-',
+            issueText,
+            achievementText
+        };
+    });
+
+    rows.sort((a, b) => {
+        const kelasCompare = (a.kelas || '').localeCompare(b.kelas || '', 'ms-MY');
+        if (kelasCompare !== 0) return kelasCompare;
+        return (a.nama_murid || '').localeCompare(b.nama_murid || '', 'ms-MY');
+    });
+
+    rows.forEach((row, index) => {
+        row.bil = index + 1;
+    });
+
+    const summary = rows.reduce((acc, row) => {
+        acc.totalStudents++;
+        acc.totalLMS += row.lmsStatus === 'LMS' ? 1 : 0;
+        acc.totalTLMS += row.lmsStatus === 'TLMS' ? 1 : 0;
+        acc.totalSubjectTaken += row.totalTaken;
+        acc.totalSubjectPresent += row.totalPresent;
+        acc.totalPass += row.totalPass;
+        acc.totalFail += row.totalFail;
+        acc.totalCredit += row.totalCredit;
+        acc.totalPoint += row.totalPoint;
+        acc.totalCountedSubjects += row.countedSubjects;
+        return acc;
+    }, {
+        totalStudents: 0,
+        totalLMS: 0,
+        totalTLMS: 0,
+        totalSubjectTaken: 0,
+        totalSubjectPresent: 0,
+        totalPass: 0,
+        totalFail: 0,
+        totalCredit: 0,
+        totalPoint: 0,
+        totalCountedSubjects: 0
+    });
+
+    summary.lmsPercent = summary.totalStudents > 0 ? (summary.totalLMS / summary.totalStudents) * 100 : 0;
+    summary.tlmsPercent = summary.totalStudents > 0 ? (summary.totalTLMS / summary.totalStudents) * 100 : 0;
+    summary.gps = summary.totalCountedSubjects > 0 ? summary.totalPoint / summary.totalCountedSubjects : 0;
+    summary.gpsText = summary.totalCountedSubjects > 0 ? summary.gps.toFixed(2) : '-';
+    summary.lmsPercentText = `${summary.lmsPercent.toFixed(2)}%`;
+    summary.tlmsPercentText = `${summary.tlmsPercent.toFixed(2)}%`;
+
+    return {
+        subjects: subjectCodes.map(subjectCode => ({
+            kod: subjectCode,
+            nama: studentAchievementGetSubjectName(subjectCode)
+        })),
+        rows,
+        summary
+    };
+}
+
+export function getStudentAchievementExportRows(studentAchievementData) {
+    const data = studentAchievementData || {};
+    const subjects = Array.isArray(data.subjects) ? data.subjects : [];
+    const rows = Array.isArray(data.rows) ? data.rows : [];
+
+    return rows.map(row => {
+        const item = {
+            Bil: row.bil,
+            'ID Individu': row.id_individu,
+            'No KP': row.no_kp,
+            'Nama Murid': row.nama_murid,
+            Kelas: row.kelas,
+            Jantina: row.jantina,
+            Kaum: row.kaum,
+            'Bil Subjek': row.totalTaken,
+            'Bil Lulus': row.totalPass,
+            'Bil Gagal': row.totalFail,
+            'Bil Kredit': row.totalCredit,
+            GPS: row.gpsText,
+            LMS: row.lmsStatus,
+            Isu: row.issueText
+        };
+
+        subjects.forEach(subject => {
+            const subjectResult = row.subjects.find(result => result.kod === subject.kod);
+            item[subject.kod] = subjectResult ? subjectResult.markah || '-' : '-';
+            item[`G${subject.kod}`] = subjectResult ? subjectResult.gred || '-' : '-';
+        });
+
+        item['Ringkasan Pencapaian'] = row.achievementText;
+        return item;
+    });
+}
+
+export function isSpecificSchoolSelected(schoolValue) {
+    const normalized = studentAchievementNormalizeValue(schoolValue).toUpperCase();
+    return normalized !== '' && normalized !== 'SEMUA';
 }
 // ── SURGICAL EDIT END ──

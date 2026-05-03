@@ -578,3 +578,176 @@ export function renderSingleSubjectTable(result, isCompare, subjectCode) {
     tbody.innerHTML = rowsHtml;
 }
 // ── SURGICAL EDIT END ──
+
+// ── SURGICAL EDIT START: Renderer Paparan Pelajar & Pencapaian ──
+// ==========================================
+// 8. RENDER STUDENT ACHIEVEMENT (PAPARAN PELAJAR)
+// ==========================================
+
+function escapeStudentAchievementHTML(value) {
+    if (value === undefined || value === null) return '';
+    return value.toString()
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+function getStudentAchievementSubjectCellClass(subjectResult) {
+    if (!subjectResult || !subjectResult.isTaken) {
+        return 'text-center text-gray-300 bg-gray-50/40';
+    }
+
+    if (subjectResult.isPass) {
+        return 'text-center font-semibold text-emerald-700 bg-emerald-50/30';
+    }
+
+    if (subjectResult.gred === 'TH' || subjectResult.gred === 'T') {
+        return 'text-center font-bold text-amber-700 bg-amber-50/40';
+    }
+
+    return 'text-center font-bold text-rose-700 bg-rose-50/40';
+}
+
+function getStudentAchievementStatusClass(status) {
+    return status === 'LMS'
+        ? 'text-center font-bold text-emerald-700 bg-emerald-50/50'
+        : 'text-center font-bold text-rose-700 bg-rose-50/50';
+}
+
+function getStudentAchievementSubjectDisplay(subjectResult) {
+    if (!subjectResult || !subjectResult.isTaken) return '-';
+
+    const markah = subjectResult.markah || '-';
+    const gred = subjectResult.gred || '-';
+
+    return `${escapeStudentAchievementHTML(markah)} <span class="text-[10px] text-gray-500">(${escapeStudentAchievementHTML(gred)})</span>`;
+}
+
+function getStudentAchievementRow(row, index, subjects) {
+    const subjectCells = subjects.map(subject => {
+        const subjectResult = row.subjects.find(item => item.kod === subject.kod);
+        return `<td class="${getStudentAchievementSubjectCellClass(subjectResult)}">${getStudentAchievementSubjectDisplay(subjectResult)}</td>`;
+    }).join('');
+
+    return `
+        <tr class="transition-colors text-gray-700 hover:bg-cyan-50/20">
+            <td class="text-center text-gray-400">${index + 1}</td>
+            <td class="text-center text-[11px] font-mono text-gray-600">
+                <div>${escapeStudentAchievementHTML(row.id_individu || '-')}</div>
+                <div class="text-gray-400">${escapeStudentAchievementHTML(row.no_kp || '-')}</div>
+            </td>
+            <td class="text-left">
+                <div class="font-bold text-gray-800 uppercase text-xs tracking-tight">${escapeStudentAchievementHTML(row.nama_murid || '-')}</div>
+                <div class="text-[10px] text-gray-400 uppercase">${escapeStudentAchievementHTML(row.jantina || '-')} | ${escapeStudentAchievementHTML(row.kaum || '-')}</div>
+            </td>
+            <td class="text-center font-semibold text-gray-700">${escapeStudentAchievementHTML(row.kelas || '-')}</td>
+            <td class="text-center text-gray-600">${row.totalTaken || 0}</td>
+            <td class="text-center font-bold text-emerald-700">${row.totalPass || 0}</td>
+            <td class="text-center font-bold text-rose-700">${row.totalFail || 0}</td>
+            <td class="text-center font-bold text-indigo-700">${row.totalCredit || 0}</td>
+            <td class="text-center font-bold text-gray-900">${escapeStudentAchievementHTML(row.gpsText || '-')}</td>
+            <td class="${getStudentAchievementStatusClass(row.lmsStatus)}">${escapeStudentAchievementHTML(row.lmsStatus || '-')}</td>
+            ${subjectCells}
+            <td class="text-left text-[11px] text-rose-700 font-semibold">${escapeStudentAchievementHTML(row.issueText || '-')}</td>
+        </tr>
+    `;
+}
+
+function getStudentAchievementEmptyRow(colspan, message) {
+    return `
+        <tr>
+            <td colspan="${colspan}" class="text-center py-10 text-sm text-gray-400 italic">
+                ${escapeStudentAchievementHTML(message)}
+            </td>
+        </tr>
+    `;
+}
+
+function getStudentAchievementHeader(subjects) {
+    const subjectHeaders = subjects.map(subject => `
+        <th class="border text-center min-w-[90px]" title="${escapeStudentAchievementHTML(subject.nama)}">
+            <div class="font-bold">${escapeStudentAchievementHTML(subject.kod)}</div>
+            <div class="text-[9px] font-medium text-gray-500 normal-case leading-tight">${escapeStudentAchievementHTML(subject.nama)}</div>
+        </th>
+    `).join('');
+
+    return `
+        <tr>
+            <th class="border text-center w-10">Bil</th>
+            <th class="border text-center min-w-[120px]">ID / KP</th>
+            <th class="border text-left min-w-[260px]">Nama Murid</th>
+            <th class="border text-center min-w-[90px]">Kelas</th>
+            <th class="border text-center min-w-[80px]">Subjek</th>
+            <th class="border text-center min-w-[80px]">Lulus</th>
+            <th class="border text-center min-w-[80px]">Gagal</th>
+            <th class="border text-center min-w-[80px]">Kredit</th>
+            <th class="border text-center min-w-[80px]">GPS</th>
+            <th class="border text-center min-w-[80px]">LMS</th>
+            ${subjectHeaders}
+            <th class="border text-left min-w-[180px]">Isu</th>
+        </tr>
+    `;
+}
+
+function updateStudentAchievementInfo(data) {
+    const info = document.getElementById('studentAchievementInfo');
+    if (!info) return;
+
+    const summary = data?.summary || {};
+    const subjects = Array.isArray(data?.subjects) ? data.subjects : [];
+    const rows = Array.isArray(data?.rows) ? data.rows : [];
+
+    if (rows.length === 0) {
+        info.innerHTML = 'Tiada rekod pelajar untuk dipaparkan bagi pilihan semasa.';
+        return;
+    }
+
+    info.innerHTML = `
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+            <div><span class="text-gray-400">Calon:</span> <span class="text-gray-900">${summary.totalStudents || 0}</span></div>
+            <div><span class="text-gray-400">Subjek Dikesan:</span> <span class="text-gray-900">${subjects.length}</span></div>
+            <div><span class="text-gray-400">GPS:</span> <span class="text-gray-900">${escapeStudentAchievementHTML(summary.gpsText || '-')}</span></div>
+            <div><span class="text-gray-400">% LMS:</span> <span class="text-emerald-700">${escapeStudentAchievementHTML(summary.lmsPercentText || '0.00%')}</span></div>
+            <div><span class="text-gray-400">TLMS:</span> <span class="text-rose-700">${summary.totalTLMS || 0}</span></div>
+        </div>
+    `;
+}
+
+export function renderStudentAchievementTable(data, context = {}) {
+    const thead = document.getElementById('theadStudentAchievement');
+    const tbody = document.getElementById('tbodyStudentAchievement');
+    const subtitle = document.getElementById('studentAchievementSubtitle');
+
+    if (!thead || !tbody) return;
+
+    const subjects = Array.isArray(data?.subjects) ? data.subjects : [];
+    const rows = Array.isArray(data?.rows) ? data.rows : [];
+    const totalColumns = 11 + subjects.length;
+
+    thead.innerHTML = getStudentAchievementHeader(subjects);
+
+    if (subtitle) {
+        const examText = context.exam ? escapeStudentAchievementHTML(context.exam) : '';
+        const formText = context.form ? escapeStudentAchievementHTML(context.form) : '';
+        const schoolText = context.school ? escapeStudentAchievementHTML(context.school) : '';
+        const subtitleParts = [examText, formText, schoolText].filter(Boolean);
+
+        subtitle.innerHTML = subtitleParts.length > 0
+            ? subtitleParts.join(' | ')
+            : 'Paparan murid berdasarkan data analisis semasa';
+    }
+
+    updateStudentAchievementInfo(data);
+
+    if (rows.length === 0) {
+        tbody.innerHTML = getStudentAchievementEmptyRow(totalColumns, 'Tiada rekod pelajar untuk dipaparkan.');
+        return;
+    }
+
+    tbody.innerHTML = rows
+        .map((row, index) => getStudentAchievementRow(row, index, subjects))
+        .join('');
+}
+// ── SURGICAL EDIT END ──

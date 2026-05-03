@@ -92,6 +92,10 @@ function setupEventListeners() {
     document.getElementById('toggleCompare').addEventListener('change', handleModeToggle);
     document.getElementById('examSelect').addEventListener('change', handleExamChange);
     document.getElementById('formSelect').addEventListener('change', handleFormChange);
+    // ── SURGICAL EDIT START: Tambahan Event Listener School Select ──
+    const schoolSelect = document.getElementById('schoolSelect');
+    if (schoolSelect) schoolSelect.addEventListener('change', handleSchoolChange);
+    // ── SURGICAL EDIT END ──
     document.getElementById('examSelect2').addEventListener('change', handleExam2Change); // Untuk perbandingan
 
     // C. Butang Tindakan Utama
@@ -115,12 +119,20 @@ function setupEventListeners() {
     const btnCredit = document.getElementById('btnCreditAnalysis');
     if (btnCredit) btnCredit.addEventListener('click', switchToCreditAnalysisView);
 
+    // ── SURGICAL EDIT START: Butang Paparan Pelajar & Pencapaian ──
+    // E2. Butang Paparan Pelajar & Pencapaian
+    const btnStudentAchievement = document.getElementById('btnStudentAchievement');
+    if (btnStudentAchievement) btnStudentAchievement.addEventListener('click', switchToStudentAchievementView);
+    // ── SURGICAL EDIT END ──
+
     const btnGenerateCredit = document.getElementById('btnGenerateCredit');
     if (btnGenerateCredit) btnGenerateCredit.addEventListener('click', handleGenerateCreditAnalysis);
 
     // H. Butang Analisa Subjek Spesifik
     const btnSingleSubject = document.getElementById('btnSingleSubject');
-    if (btnSingleSubject) btnSingleSubject.addEventListener('click', switchToSingleSubjectView);
+    // ── SURGICAL EDIT START: Satukan navigasi Analisa Kredit & Analisa Subjek ──
+    if (btnSingleSubject) btnSingleSubject.addEventListener('click', switchToCreditAnalysisView);
+    // ── SURGICAL EDIT END ──
 
     const btnGenerateSingleSubject = document.getElementById('btnGenerateSingleSubject');
     if (btnGenerateSingleSubject) btnGenerateSingleSubject.addEventListener('click', handleGenerateSingleSubject);
@@ -149,7 +161,10 @@ function setupExportListeners() {
         'btnExportCompareCompSubjects': ['tableCompareCompSubjects', 'Perbandingan_Subjek_Komponen'],
         'btnExportCompareCompSchools': ['tableCompareCompSchools', 'Perbandingan_Sekolah_Komponen'],
         'btnExportCompareTLMS': ['tableCompareTLMS', 'Perbandingan_TLMS_Sekolah'],
-        'btnExportSingleSubject': ['tableSingleSubject', 'Analisa_Subjek_Spesifik']
+        // ── SURGICAL EDIT START: Export Excel Paparan Pelajar ──
+        'btnExportSingleSubject': ['tableSingleSubject', 'Analisa_Subjek_Spesifik'],
+        'btnExportStudentAchievement': ['tableStudentAchievement', 'Paparan_Pelajar_Pencapaian']
+        // ── SURGICAL EDIT END ──
     };
     
     Object.keys(exportMap).forEach(btnId => {
@@ -178,7 +193,10 @@ function setupExportListeners() {
         'btnPdfCompareTLMS': ['tableCompareTLMS', 'Banding TLMS', 'Compare_TLMS'],
         'btnPdfSpecial': ['tableSpecial', 'Laporan Khas', 'Laporan_Khas'],
         'btnPdfCredit': ['tableCreditAnalysis', 'Analisa Kredit', 'Analisa_Kredit'],
-        'btnPdfSingleSubject': ['tableSingleSubject', 'Analisa Subjek', 'Analisa_Subjek_Spesifik']
+        // ── SURGICAL EDIT START: PDF Paparan Pelajar ──
+        'btnPdfSingleSubject': ['tableSingleSubject', 'Analisa Subjek', 'Analisa_Subjek_Spesifik'],
+        'btnPdfStudentAchievement': ['tableStudentAchievement', 'Paparan Pelajar & Pencapaian', 'Paparan_Pelajar_Pencapaian']
+        // ── SURGICAL EDIT END ──
     };
 
     Object.keys(pdfMap).forEach(btnId => {
@@ -219,10 +237,15 @@ function handleModeToggle() {
         State.setComparisonData([]); 
     }
     hideAllViews();
+    // ── SURGICAL EDIT START: Kemas kini Butang Paparan Pelajar ──
+    updateStudentAchievementButtonState();
+    // ── SURGICAL EDIT END ──
 }
 
 function hideAllViews() {
-    ['viewAggregate', 'viewSchoolDetail', 'viewComponent', 'viewComparison', 'viewSpecialReport', 'viewCreditAnalysis', 'viewSingleSubject'].forEach(id => {
+    // ── SURGICAL EDIT START: Tambah viewStudentAchievement ──
+    ['viewAggregate', 'viewSchoolDetail', 'viewComponent', 'viewComparison', 'viewSpecialReport', 'viewCreditAnalysis', 'viewSingleSubject', 'viewStudentAchievement'].forEach(id => {
+    // ── SURGICAL EDIT END ──
         const el = document.getElementById(id);
         if (el) el.classList.add('hidden');
     });
@@ -232,6 +255,76 @@ function hideAllViews() {
         kpi.classList.remove('grid'); 
     }
 }
+
+// ── SURGICAL EDIT START: Logik Kawalan Paparan Pelajar & Pencapaian ──
+function updateStudentAchievementButtonState() {
+    const btnStudentAchievement = document.getElementById('btnStudentAchievement');
+    if (!btnStudentAchievement) return;
+
+    const school = document.getElementById('schoolSelect')?.value || 'SEMUA';
+    const isSpecificSchool = Analytics.isSpecificSchoolSelected(school);
+
+    if (!isSpecificSchool) {
+        btnStudentAchievement.classList.add('hidden');
+        btnStudentAchievement.disabled = true;
+        btnStudentAchievement.title = 'Paparan pelajar hanya tersedia untuk sekolah spesifik.';
+        return;
+    }
+
+    btnStudentAchievement.classList.remove('hidden');
+    btnStudentAchievement.disabled = !State.hasData();
+    btnStudentAchievement.title = State.hasData()
+        ? 'Buka Paparan Pelajar & Pencapaian'
+        : 'Sila tekan Jana Analisa dahulu untuk memuatkan data sekolah ini.';
+}
+
+function switchToStudentAchievementView() {
+    const exam = document.getElementById('examSelect').value;
+    const form = document.getElementById('formSelect').value;
+    const school = document.getElementById('schoolSelect').value;
+    const demog = document.getElementById('demogSelect').value;
+
+    if (!Analytics.isSpecificSchoolSelected(school)) {
+        Swal.fire('Info', 'Paparan pelajar hanya tersedia apabila memilih nama sekolah spesifik, bukan SEMUA SEKOLAH (DAERAH).', 'info');
+        updateStudentAchievementButtonState();
+        return;
+    }
+
+    if (!State.hasData()) {
+        Swal.fire('Info', 'Sila tekan butang "Jana Analisa" dahulu untuk memuatkan data sekolah ini.', 'info');
+        updateStudentAchievementButtonState();
+        return;
+    }
+
+    let filteredData = State.getMainData();
+    filteredData = filteredData.filter(s => s.nama_sekolah === school);
+    filteredData = filteredData.filter(s => Analytics.filterDemography(s, demog));
+
+    if (filteredData.length === 0) {
+        Swal.fire('Tiada Data', 'Tiada rekod pelajar ditemui untuk sekolah dan demografi ini.', 'info');
+        return;
+    }
+
+    const result = Analytics.calculateStudentAchievementData(filteredData);
+
+    hideAllViews();
+
+    const view = document.getElementById('viewStudentAchievement');
+    if (view) view.classList.remove('hidden');
+
+    const labelGP = document.getElementById('labelGP');
+    if (labelGP) labelGP.innerText = 'Paparan Pelajar';
+
+    UI.renderStudentAchievementTable(result, {
+        exam,
+        form,
+        school,
+        demog
+    });
+
+    if (view) view.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+// ── SURGICAL EDIT END ──
 
 function switchToSpecialReportView() {
     hideAllViews();
@@ -249,6 +342,37 @@ function switchToSpecialReportView() {
 function switchToCreditAnalysisView() {
     hideAllViews();
     document.getElementById('viewCreditAnalysis').classList.remove('hidden');
+    // ── SURGICAL EDIT START: Gabungkan paparan Analisa Kredit dan Analisa Subjek dalam tab yang sama ──
+    const singleSubjectView = document.getElementById('viewSingleSubject');
+    if (singleSubjectView) singleSubjectView.classList.remove('hidden');
+
+    if (State.hasData()) {
+        const subjects = extractSubjectsFromData(State.getMainData());
+        const selectEl = document.getElementById('selectSingleSubjectOption');
+
+        if (selectEl) {
+            selectEl.innerHTML = '';
+            
+            // Algoritma Susunan Pintar (Mengutamakan Subjek Teras)
+            const sortedSubjects = subjects.sort((a, b) => {
+                const idxA = SUBJECT_PRIORITY.indexOf(a);
+                const idxB = SUBJECT_PRIORITY.indexOf(b);
+                const weightA = idxA === -1 ? 999 : idxA;
+                const weightB = idxB === -1 ? 999 : idxB;
+                
+                if (weightA !== weightB) return weightA - weightB;
+                return a.localeCompare(b);
+            });
+
+            // Pemetaan Label (UX) dengan mengekalkan nilai asal kod (Value)
+            sortedSubjects.forEach(sub => {
+                const fullName = NAMA_SUBJEK[sub] || sub;
+                const label = fullName !== sub ? `${sub} - ${fullName}` : sub;
+                selectEl.add(new Option(label, sub));
+            });
+        }
+    }
+    // ── SURGICAL EDIT END ──
 
     if (!State.hasData()) {
         Swal.fire('Info', 'Sila tekan butang "Jana Analisa" dahulu untuk memuatkan data.', 'info');
@@ -256,34 +380,9 @@ function switchToCreditAnalysisView() {
 }
 
 function switchToSingleSubjectView() {
-    hideAllViews();
-    document.getElementById('viewSingleSubject').classList.remove('hidden');
-
-    if (State.hasData()) {
-        const subjects = extractSubjectsFromData(State.getMainData());
-        const selectEl = document.getElementById('selectSingleSubjectOption');
-        selectEl.innerHTML = '';
-        
-        // Algoritma Susunan Pintar (Mengutamakan Subjek Teras)
-        const sortedSubjects = subjects.sort((a, b) => {
-            const idxA = SUBJECT_PRIORITY.indexOf(a);
-            const idxB = SUBJECT_PRIORITY.indexOf(b);
-            const weightA = idxA === -1 ? 999 : idxA;
-            const weightB = idxB === -1 ? 999 : idxB;
-            
-            if (weightA !== weightB) return weightA - weightB;
-            return a.localeCompare(b);
-        });
-
-        // Pemetaan Label (UX) dengan mengekalkan nilai asal kod (Value)
-        sortedSubjects.forEach(sub => {
-            const fullName = NAMA_SUBJEK[sub] || sub;
-            const label = fullName !== sub ? `${sub} - ${fullName}` : sub;
-            selectEl.add(new Option(label, sub));
-        });
-    } else {
-        Swal.fire('Info', 'Sila tekan butang "Jana Analisa" dahulu untuk memuatkan data.', 'info');
-    }
+    // ── SURGICAL EDIT START: Halakan Analisa Subjek ke tab gabungan Analisa Kredit ──
+    switchToCreditAnalysisView();
+    // ── SURGICAL EDIT END ──
 }
 
 function resetDashboardView(fullReset = false) {
@@ -323,6 +422,9 @@ function resetDashboardView(fullReset = false) {
         });
     }
     document.getElementById('btnAnalisa').disabled = true;
+    // ── SURGICAL EDIT START: Kemas kini butang ──
+    updateStudentAchievementButtonState();
+    // ── SURGICAL EDIT END ──
 }
 
 // ==========================================
@@ -351,6 +453,9 @@ async function handleExamChange() {
     const exam = this.value;
     State.setFilter('exam1', exam);
     State.setMainData([]); // Clear data lama
+    // ── SURGICAL EDIT START: Kemas kini butang ──
+    updateStudentAchievementButtonState();
+    // ── SURGICAL EDIT END ──
     
     const formSel = document.getElementById('formSelect');
     formSel.innerHTML = '<option value="">Memuatkan...</option>';
@@ -381,6 +486,20 @@ async function handleExam2Change() {
     formSel2.disabled = false;
 }
 
+// ── SURGICAL EDIT START: Fungsi Handle School Change ──
+function handleSchoolChange() {
+    State.setMainData([]);
+    State.setComparisonData([]);
+    hideAllViews();
+
+    const form = document.getElementById('formSelect')?.value || '';
+    const btnAnalisa = document.getElementById('btnAnalisa');
+    if (btnAnalisa) btnAnalisa.disabled = !form;
+
+    updateStudentAchievementButtonState();
+}
+// ── SURGICAL EDIT END ──
+
 async function handleFormChange() {
     const exam = document.getElementById('examSelect').value;
     const form = this.value;
@@ -388,6 +507,9 @@ async function handleFormChange() {
     
     // SMART FETCH: Kosongkan data lama untuk paksa 'Jana Analisa'
     State.setMainData([]); 
+    // ── SURGICAL EDIT START: Kemas kini butang ──
+    updateStudentAchievementButtonState();
+    // ── SURGICAL EDIT END ──
 
     const schoolSelect = document.getElementById('schoolSelect');
     
@@ -400,6 +522,9 @@ async function handleFormChange() {
     schools.forEach(s => schoolSelect.add(new Option(s.nama_sekolah, s.nama_sekolah)));
     schoolSelect.disabled = false;
     document.getElementById('btnAnalisa').disabled = false;
+    // ── SURGICAL EDIT START: Kemas kini butang ──
+    updateStudentAchievementButtonState();
+    // ── SURGICAL EDIT END ──
 
     // NOTA: 'Silent Load' telah DIBUANG untuk mengelakkan bottleneck di mobile.
     // Data sebenar hanya akan diambil apabila butang 'Jana Analisa' ditekan.
@@ -493,6 +618,9 @@ async function loadSingleAnalytics() {
         // Ini mengurangkan saiz muat turun sebanyak 95% untuk analisis sekolah individu.
         let rawData = await fetchDataForAnalytics(exam, form, school);
         State.setMainData(rawData);
+        // ── SURGICAL EDIT START: Kemas kini butang ──
+        updateStudentAchievementButtonState();
+        // ── SURGICAL EDIT END ──
         
         // Tapis Data (Demografi)
         let filteredData = rawData;
@@ -538,6 +666,9 @@ async function loadSingleAnalytics() {
             const analyticsResult = Analytics.calculateSchoolDetailData(filteredData);
             UI.renderSchoolDetailTable(analyticsResult);
         }
+        // ── SURGICAL EDIT START: Kemas kini butang ──
+        updateStudentAchievementButtonState();
+        // ── SURGICAL EDIT END ──
         Swal.close();
 
     } catch (err) {
@@ -574,6 +705,9 @@ async function loadComparisonAnalytics() {
         
         State.setMainData(data1);
         State.setComparisonData(data2);
+        // ── SURGICAL EDIT START: Kemas kini butang ──
+        updateStudentAchievementButtonState();
+        // ── SURGICAL EDIT END ──
 
         const applyFilters = (data) => {
             let res = data;
@@ -616,6 +750,9 @@ async function loadComparisonAnalytics() {
             UI.renderComparisonTables(result, { name1: exam1, name2: exam2 });
         }
 
+        // ── SURGICAL EDIT START: Kemas kini butang ──
+        updateStudentAchievementButtonState();
+        // ── SURGICAL EDIT END ──
         Swal.close();
 
     } catch (err) {
@@ -688,69 +825,12 @@ async function handleGenerateSpecialReport() {
 }
 
 async function handleGenerateCreditAnalysis() {
-    if (!State.hasData()) {
-        Swal.fire('Ralat', 'Sila tekan butang "Jana Analisa" dahulu untuk memuatkan data.', 'warning');
-        return;
-    }
-
-    const selectedSubject = document.getElementById('selectCreditSubject').value;
-    const school = document.getElementById('schoolSelect').value;
-    const demog = document.getElementById('demogSelect').value;
-    const isCompare = document.getElementById('toggleCompare').checked;
-
-    let filteredData1 = State.getMainData();
-    if (school !== 'SEMUA') filteredData1 = filteredData1.filter(s => s.nama_sekolah === school);
-    filteredData1 = filteredData1.filter(s => Analytics.filterDemography(s, demog));
-
-    if (filteredData1.length === 0) {
-        Swal.fire('Tiada Data', 'Tiada calon untuk kriteria Sekolah/Demografi ini.', 'info');
-        return;
-    }
-
-    let filteredData2 = [];
-    if (isCompare) {
-        let raw2 = State.getComparisonData();
-        // Fallback: Jika data kosong, cuba fetch (tapi idealnya user patut tekan Jana Analisa dulu)
-        if (raw2.length === 0) {
-            const exam2 = document.getElementById('examSelect2').value;
-            const form2 = document.getElementById('formSelect2').value;
-            if (exam2 && form2) {
-                 // Smart Fetch fallback
-                 raw2 = await fetchDataForAnalytics(exam2, form2, school);
-                 State.setComparisonData(raw2);
-            } else {
-                Swal.fire('Ralat', 'Data perbandingan hilang. Sila tekan "Jana Analisa" semula.', 'error');
-                return;
-            }
-        }
-        filteredData2 = raw2;
-        if (school !== 'SEMUA') filteredData2 = filteredData2.filter(s => s.nama_sekolah === school);
-        filteredData2 = filteredData2.filter(s => Analytics.filterDemography(s, demog));
-    }
-
-    Swal.fire({ title: 'Menjana Analisa Kredit...', didOpen: () => Swal.showLoading() });
-
-    setTimeout(() => {
-        const stats1 = Credit.calculateCreditAnalysis(filteredData1, selectedSubject);
-        const stats2 = isCompare ? Credit.calculateCreditAnalysis(filteredData2, selectedSubject) : null;
-
-        Credit.renderCreditAnalysisTable(stats1, stats2, isCompare, selectedSubject);
-
-        const subNameEl = document.getElementById('selectCreditSubject');
-        const subName = subNameEl.options[subNameEl.selectedIndex].text;
-        
-        document.getElementById('creditReportTitle').innerText = `ANALISA PENCAPAIAN KREDIT: ${subName}`;
-        document.getElementById('creditReportSubtitle').innerText = isCompare 
-            ? `Perbandingan antara ${document.getElementById('examSelect').value} vs ${document.getElementById('examSelect2').value}`
-            : `Peperiksaan: ${document.getElementById('examSelect').value}`;
-            
-        document.getElementById('creditResultContainer').classList.remove('hidden');
-        document.getElementById('creditResultContainer').scrollIntoView({ behavior: 'smooth' });
-
-        Swal.close();
-    }, 500);
+    // ── SURGICAL EDIT START: Halakan jana kredit kepada aliran gabungan satu subjek ──
+    await handleGenerateSingleSubject();
+    // ── SURGICAL EDIT END ──
 }
 
+// ── SURGICAL EDIT START: Jana Analisa Subjek dan Analisa Kredit daripada satu pilihan subjek ──
 async function handleGenerateSingleSubject() {
     if (!State.hasData()) {
         Swal.fire('Ralat', 'Sila tekan butang "Jana Analisa" dahulu untuk memuatkan data.', 'warning');
@@ -795,27 +875,38 @@ async function handleGenerateSingleSubject() {
         filteredData2 = filteredData2.filter(s => Analytics.filterDemography(s, demog));
     }
 
-    Swal.fire({ title: 'Menjana Analisa Subjek...', didOpen: () => Swal.showLoading() });
+    Swal.fire({ title: 'Menjana Analisa Subjek & Kredit...', didOpen: () => Swal.showLoading() });
 
     setTimeout(() => {
+        // ── SURGICAL EDIT START: Jana dua jadual daripada satu pilihan subjek ──
         // Panggil fungsi penjanaan dari modul Analytics
         const result = Analytics.calculateSingleSubjectMatrix(filteredData1, filteredData2, isCompare, selectedSubject);
         
         // Panggil fungsi paparan dari modul UI
         UI.renderSingleSubjectTable(result, isCompare, selectedSubject);
 
-        // ── SURGICAL EDIT START: Papar Nama Penuh Subjek pada Tajuk Jadual ──
         const fullSubjectName = NAMA_SUBJEK[selectedSubject] || selectedSubject;
-        document.getElementById('singleSubjectReportTitle').innerText = `ANALISA PENCAPAIAN SUBJEK: ${fullSubjectName}`;
-        // ── SURGICAL EDIT END ──
-        
-        document.getElementById('singleSubjectReportSubtitle').innerText = isCompare 
+        const subtitle = isCompare 
             ? `Perbandingan antara ${document.getElementById('examSelect').value} vs ${document.getElementById('examSelect2').value}`
             : `Peperiksaan: ${document.getElementById('examSelect').value}`;
-            
+
+        document.getElementById('singleSubjectReportTitle').innerText = `ANALISA PENCAPAIAN SUBJEK: ${fullSubjectName}`;
+        document.getElementById('singleSubjectReportSubtitle').innerText = subtitle;
         document.getElementById('singleSubjectResultContainer').classList.remove('hidden');
+
+        const stats1 = Credit.calculateCreditAnalysis(filteredData1, selectedSubject);
+        const stats2 = isCompare ? Credit.calculateCreditAnalysis(filteredData2, selectedSubject) : null;
+
+        Credit.renderCreditAnalysisTable(stats1, stats2, isCompare, selectedSubject);
+
+        document.getElementById('creditReportTitle').innerText = `ANALISA PENCAPAIAN KREDIT: ${fullSubjectName}`;
+        document.getElementById('creditReportSubtitle').innerText = subtitle;
+        document.getElementById('creditResultContainer').classList.remove('hidden');
+
         document.getElementById('singleSubjectResultContainer').scrollIntoView({ behavior: 'smooth' });
+        // ── SURGICAL EDIT END ──
 
         Swal.close();
     }, 500);
 }
+// ── SURGICAL EDIT END ──
