@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EDARS PPDAG - Mengenai Sistem</title>
+    
+    <!-- Integrasi Favicon -->
+    <link rel="icon" type="image/png" href="icoppdag.png">
+    
+    <!-- External Libraries (CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        ppdBlue: '#1e3a8a',
+                        ppdAmber: '#fbbf24',
+                        surface: 'var(--surface)',
+                        card: 'var(--card)',
+                        border: 'var(--border)',
+                    },
+                    fontFamily: {
+                        oswald: ['Oswald', 'sans-serif'],
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-slate-50 min-h-screen flex flex-col font-sans">
+
+    <!-- HEADER -->
+    <header class="header-banner text-white py-5 px-6 mb-10">
+        <div class="container mx-auto max-w-7xl flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="flex flex-row items-center gap-5">
+                <img src="icoppdag.png" alt="Logo PPD Alor Gajah" class="header-logo">
+                <div class="flex flex-col">
+                    <h1 class="text-2xl md:text-3xl font-bold tracking-tight font-oswald uppercase drop-shadow-sm leading-none">
+                        EDARS <span class="text-ppdAmber">PPD ALOR GAJAH</span>
+                    </h1>
+                    <p class="text-[10px] md:text-xs opacity-90 tracking-[0.15em] font-light uppercase mt-1">
+                        Maklumat & Panduan Penggunaan Sistem
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Butang Kembali -->
+            <div class="flex gap-3">
+                <button onclick="window.history.length > 1 ? history.back() : window.location.href='index.html'" class="bg-white/10 hover:bg-white/20 text-white text-[11px] font-bold py-2.5 px-5 rounded-lg border border-white/20 backdrop-blur-md transition-all flex items-center gap-2 tracking-wider font-oswald uppercase">
+                    <span>‹</span> KEMBALI
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 max-w-5xl pb-20 flex-grow animate-fade-in">
+
+        <!-- SEKSYEN 1: HERO PENGUKUHAN -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 md:p-12 mb-8 relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-2 h-full bg-gradient-to-b from-ppdBlue to-ppdAmber"></div>
+            <div class="flex flex-col md:flex-row gap-8 items-center">
+                <div class="flex-grow">
+                    <h2 class="text-3xl font-bold font-oswald text-gray-800 uppercase tracking-wide mb-4">Pengenalan Sistem V3.0</h2>
+                    <p class="text-gray-600 leading-relaxed text-sm md:text-base">
+                        <strong class="text-ppdBlue">EDARS (Exam Data Aggregation & Report System)</strong> merupakan sebuah platform pintar analitik data yang direka khas untuk memudahkan pihak pengurusan sekolah dan Pejabat Pendidikan Daerah (PPD) Alor Gajah. Ia membolehkan pelaksanaan post-mortem, analisis keciciran, dan pelaporan pencapaian peperiksaan berpusat dijalankan dengan pantas, jitu, dan bersistematik.
+                    </p>
+                </div>
+                <div class="w-24 h-24 shrink-0 bg-blue-50 text-ppdBlue rounded-2xl flex items-center justify-center text-5xl shadow-inner border border-blue-100">
+                    📈
+                </div>
+            </div>
+        </div>
+
+        <!-- SEKSYEN 2: CIRI-CIRI UTAMA -->
+        <h3 class="font-oswald text-xl font-bold text-gray-800 uppercase tracking-wider mb-6 flex items-center gap-3">
+            <span class="bg-ppdAmber w-8 h-1 rounded-full"></span> Ciri-ciri Utama
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+            <!-- Card 1 -->
+            <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow group">
+                <div class="w-12 h-12 bg-blue-50 text-ppdBlue rounded-xl flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform">🔍</div>
+                <h4 class="font-bold font-oswald text-gray-800 tracking-wide mb-2 uppercase text-sm">Penapis Dinamik</h4>
+                <p class="text-xs text-gray-500 leading-relaxed">Saring dan pecahkan data peperiksaan mengikut kriteria terperinci seperti jantina, kaum, tingkatan, sekolah, dan jenis bidang/komponen.</p>
+            </div>
+            <!-- Card 2 -->
+            <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow group">
+                <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform">📊</div>
+                <h4 class="font-bold font-oswald text-gray-800 tracking-wide mb-2 uppercase text-sm">Kad KPI Interaktif</h4>
+                <p class="text-xs text-gray-500 leading-relaxed">Pantau metrik penting secara langsung (real-time) termasuk Gred Purata (GPS/GPD), peratus Layak Sijil (LMS), dan jumlah pelajar tercicir (TLMS).</p>
+            </div>
+            <!-- Card 3 -->
+            <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow group">
+                <div class="w-12 h-12 bg-rose-50 text-rose-600 rounded-xl flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform">📥</div>
+                <h4 class="font-bold font-oswald text-gray-800 tracking-wide mb-2 uppercase text-sm">Eksport Sepantas Kilat</h4>
+                <p class="text-xs text-gray-500 leading-relaxed">Simpan mana-mana jadual yang dijanakan ke dalam format PDF yang kemas, atau muat turun ke format MS Excel untuk manipulasi data lanjut.</p>
+            </div>
+        </div>
+
+        <!-- SEKSYEN 3: MODUL ANALISIS -->
+        <h3 class="font-oswald text-xl font-bold text-gray-800 uppercase tracking-wider mb-6 flex items-center gap-3">
+            <span class="bg-ppdBlue w-8 h-1 rounded-full"></span> Modul Analisis
+        </h3>
+        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden mb-12">
+            <div class="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-gray-200">
+                
+                <div class="p-6 md:p-8 hover:bg-slate-50 transition-colors">
+                    <h4 class="font-bold font-oswald text-ppdBlue tracking-wide mb-3 uppercase flex items-center gap-2"><span class="text-lg">🏛️</span> Peringkat Daerah</h4>
+                    <ul class="text-sm text-gray-600 space-y-2 list-disc pl-5">
+                        <li><strong>Rumusan LMS:</strong> Kedudukan dan perbandingan prestasi pencapaian LMS semua sekolah dalam daerah.</li>
+                        <li><strong>Analisa Subjek:</strong> Data terperinci daftar, hadir, dan pecahan gred bagi keseluruhan subjek di peringkat daerah.</li>
+                        <li><strong>Senarai TLMS:</strong> Kenal pasti status pelajar tercicir di seluruh PPD secara berpusat.</li>
+                    </ul>
+                </div>
+
+                <div class="p-6 md:p-8 hover:bg-slate-50 transition-colors">
+                    <h4 class="font-bold font-oswald text-emerald-700 tracking-wide mb-3 uppercase flex items-center gap-2"><span class="text-lg">🏫</span> Peringkat Sekolah</h4>
+                    <ul class="text-sm text-gray-600 space-y-2 list-disc pl-5">
+                        <li><strong>Prestasi Subjek (GPMP):</strong> Analisa kekuatan dan kelemahan pencapaian mengikut mata pelajaran untuk sesebuah sekolah.</li>
+                        <li><strong>Senarai TLMS Sekolah:</strong> Penjejakan pelajar yang gagal (mengikut kelas) untuk tindakan intervensi segera di peringkat panitia.</li>
+                    </ul>
+                </div>
+
+                <div class="p-6 md:p-8 hover:bg-slate-50 transition-colors border-t border-gray-200">
+                    <h4 class="font-bold font-oswald text-indigo-700 tracking-wide mb-3 uppercase flex items-center gap-2"><span class="text-lg">⚖️</span> Mod Perbandingan</h4>
+                    <ul class="text-sm text-gray-600 space-y-2 list-disc pl-5">
+                        <li><strong>Post-Mortem Dinamik:</strong> Bandingkan Peperiksaan Semasa (E1) dengan Base Line (E2).</li>
+                        <li><strong>Indikator Visual:</strong> Mengenal pasti corak peningkatan (hijau) atau kemerosotan (merah) secara automatik bagi GPS, GPMP dan % Lulus.</li>
+                        <li><strong>Jadual KPI:</strong> Menjana dan mengeksport format Excel pintar untuk pengiraan TOV, OTI, dan AR.</li>
+                    </ul>
+                </div>
+
+                <div class="p-6 md:p-8 hover:bg-slate-50 transition-colors border-t border-gray-200">
+                    <h4 class="font-bold font-oswald text-purple-700 tracking-wide mb-3 uppercase flex items-center gap-2"><span class="text-lg">📋</span> Laporan Diagnostik Khas</h4>
+                    <ul class="text-sm text-gray-600 space-y-2 list-disc pl-5">
+                        <li><strong>Tapisan Spesifik:</strong> Tarik keluar senarai calon bermasalah mengikut kategori subjek yang dipilih secara pukal.</li>
+                        <li><strong>Pelbagai Isu:</strong> Analisis murid Tidak Hadir (TH), Gagal Mutlak (G), Berpotensi Lulus (D & E), dan Markah Sangat Lemah (≤ 10%).</li>
+                        <li><strong>Analisa Kredit:</strong> Penilaian kualiti prestasi (Cemerlang, Kepujian, Lulus) bagi subjek-subjek teras.</li>
+                    </ul>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- SEKSYEN 4: WORKFLOW -->
+        <h3 class="font-oswald text-xl font-bold text-gray-800 uppercase tracking-wider mb-6 flex items-center gap-3">
+            <span class="bg-gray-400 w-8 h-1 rounded-full"></span> Aliran Kerja Pengguna (Workflow)
+        </h3>
+        <div class="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm relative">
+            <div class="absolute top-8 bottom-8 left-[2.25rem] w-0.5 bg-gray-100 hidden md:block"></div>
+            
+            <div class="space-y-6 relative">
+                <!-- Step 1 -->
+                <div class="flex flex-col md:flex-row gap-4 items-start relative">
+                    <div class="w-8 h-8 rounded-full bg-ppdBlue text-white font-bold flex items-center justify-center shrink-0 z-10 shadow-md font-oswald">1</div>
+                    <div class="pt-1">
+                        <h4 class="font-bold text-gray-800 text-sm uppercase tracking-wide">Log Masuk Sistem</h4>
+                        <p class="text-xs text-gray-500 mt-1">Pilih antara 'Akses Awam' (paparan view-only) atau 'Akses Pentadbir' (bagi menguruskan pangkalan data CSV).</p>
+                    </div>
+                </div>
+                <!-- Step 2 -->
+                <div class="flex flex-col md:flex-row gap-4 items-start relative">
+                    <div class="w-8 h-8 rounded-full bg-ppdBlue text-white font-bold flex items-center justify-center shrink-0 z-10 shadow-md font-oswald">2</div>
+                    <div class="pt-1">
+                        <h4 class="font-bold text-gray-800 text-sm uppercase tracking-wide">Tetapkan Kriteria (Filter)</h4>
+                        <p class="text-xs text-gray-500 mt-1">Sila pastikan anda memilih 'Nama Peperiksaan' dan 'Tingkatan'. Anda boleh menyaring data mengikut sekolah dan demografi tertentu.</p>
+                    </div>
+                </div>
+                <!-- Step 3 -->
+                <div class="flex flex-col md:flex-row gap-4 items-start relative">
+                    <div class="w-8 h-8 rounded-full bg-emerald-500 text-white font-bold flex items-center justify-center shrink-0 z-10 shadow-md font-oswald">3</div>
+                    <div class="pt-1">
+                        <h4 class="font-bold text-gray-800 text-sm uppercase tracking-wide">Jana Analisa</h4>
+                        <p class="text-xs text-gray-500 mt-1">Tekan butang <strong class="text-emerald-600">JANA ANALISA</strong>. Sistem akan menyedut data dari pangkalan awan dan memproses jadual secara langsung.</p>
+                    </div>
+                </div>
+                <!-- Step 4 -->
+                <div class="flex flex-col md:flex-row gap-4 items-start relative">
+                    <div class="w-8 h-8 rounded-full bg-ppdBlue text-white font-bold flex items-center justify-center shrink-0 z-10 shadow-md font-oswald">4</div>
+                    <div class="pt-1">
+                        <h4 class="font-bold text-gray-800 text-sm uppercase tracking-wide">Teroka Laporan</h4>
+                        <p class="text-xs text-gray-500 mt-1">Semak Kad KPI utama dan tatal (scroll) ke bawah untuk melihat jadual-jadual terperinci. Gunakan butang PDF/EXCEL di setiap tajuk jadual untuk memuat turun rekod laporan.</p>
+                    </div>
+                </div>
+                <!-- Step 5 -->
+                <div class="flex flex-col md:flex-row gap-4 items-start relative">
+                    <div class="w-8 h-8 rounded-full bg-purple-500 text-white font-bold flex items-center justify-center shrink-0 z-10 shadow-md font-oswald">5</div>
+                    <div class="pt-1">
+                        <h4 class="font-bold text-gray-800 text-sm uppercase tracking-wide">Laporan Diagnostik (Pilihan)</h4>
+                        <p class="text-xs text-gray-500 mt-1">Tekan butang <strong class="text-purple-600">LAPORAN KHAS</strong> atau <strong class="text-indigo-600">ANALISA KREDIT</strong> untuk membuat siasatan lanjut mengenai prestasi gred dan calon di luar analisis asas.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="text-center py-8 text-text-muted text-[10px] font-oswald uppercase tracking-[0.3em] bg-white border-t border-gray-200 mt-auto">
+        &copy; 2026 PPD Alor Gajah. Hak Cipta Terpelihara.
+    </footer>
+
+</body>
+</html>
