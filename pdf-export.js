@@ -1,8 +1,9 @@
 // ==========================================
-// EDARS V3.0 - PDF EXPORT MODULE (VECTOR FIX & EMOJI CLEANER)
+// EDARS V3.1 - PDF EXPORT MODULE (VECTOR FIX, EMOJI CLEANER & AUTO-FIT)
 // Modul global untuk menjana laporan PDF menggunakan jsPDF & AutoTable.
 // KEMASKINI: Ditambah penapis Emoji (Folder 📂) untuk elak isu simbol pelik.
 // KEMASKINI V3.1: Logik DOM Cleansing pintar untuk lajur E3 tersembunyi.
+// KEMASKINI V3.1.1: Pembaikan Ralat Keselamatan Teks & Skala Dinamik Jadual (Surgical Fix).
 // ==========================================
 
 window.exportTableToPDF = function(tableId, reportTitle, fileNamePrefix) {
@@ -97,14 +98,15 @@ window.exportTableToPDF = function(tableId, reportTitle, fileNamePrefix) {
         startY: 40,
         theme: 'grid',
         styles: {
-            fontSize: 8, 
-            cellPadding: 3, 
+            fontSize: 7.5, // [SURGICAL EDIT] Dikurangkan (asal: 8) untuk memberi ruang kepada lajur E3
+            cellPadding: 2, // [SURGICAL EDIT] Dikurangkan (asal: 3) agar muat dalam A4 Landscape
             valign: 'middle', 
             halign: 'center',
             lineWidth: 0.1, 
             lineColor: [229, 231, 235], // Kelabu cair
             font: "helvetica", 
-            textColor: [31, 41, 55] // Kelabu gelap
+            textColor: [31, 41, 55], // Kelabu gelap
+            overflow: 'linebreak' // [SURGICAL EDIT] Memastikan teks panjang dipotong baris dengan kemas
         },
         headStyles: {
             fillColor: [30, 58, 138], // Header Biru Web
@@ -179,8 +181,13 @@ window.exportTableToPDF = function(tableId, reportTitle, fileNamePrefix) {
                     docInst.setFillColor(220, 38, 38); // #dc2626 (Red)
                 }
 
-                // 2. Kira Koordinat
-                const textWidth = docInst.getTextWidth(cell.text[0]);
+                // 2. Kira Koordinat & [SURGICAL EDIT] Null/Undefined Check (PENTING)
+                let textStr = "";
+                if (cell.text && Array.isArray(cell.text) && cell.text.length > 0 && cell.text[0] !== undefined) {
+                    textStr = cell.text[0];
+                }
+
+                const textWidth = docInst.getTextWidth(textStr);
                 const cellCenterX = cell.x + (cell.width / 2);
                 
                 // Offset: Letak di sebelah kanan teks
