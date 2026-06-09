@@ -335,24 +335,29 @@ function renderComparisonKPICards(districtStats) {
 }
 // [COMMENT SYNTAX] SURGICAL EDIT END
 
-// [COMMENT SYNTAX] SURGICAL EDIT START: DOM Cleansing & Susunan Matriks E3 -> E2 -> E1
+// [COMMENT SYNTAX] SURGICAL EDIT START: DOM Cleansing & Susunan Matriks E3 -> E2 -> E1 dengan Label Baharu
 export function renderComparisonTables(data, names) {
     const { schoolMap, subMap, districtStats } = data; 
     const { name1, name2, name3 } = names;
     const isE3 = !!name3;
 
+    // Suntik Nama Header dengan label trajektori baharu
+    const label1 = name1 ? `${name1} (Semasa)` : 'E1 (Semasa)';
+    const label2 = name2 ? `${name2} (Banding 1)` : 'E2 (Banding 1)';
+    const label3 = name3 ? `${name3} (Banding 2)` : 'E3 (Banding 2)';
+
     // 1. Suntik Nama Header
-    document.getElementById('headExam1').innerText = name1; 
-    document.getElementById('headExam2').innerText = name2;
-    document.getElementById('headSubExam1').innerText = name1; 
-    document.getElementById('headSubExam2').innerText = name2;
-    document.getElementById('headTLMSExam1').innerText = name1; 
-    document.getElementById('headTLMSExam2').innerText = name2;
+    document.getElementById('headExam1').innerText = label1; 
+    document.getElementById('headExam2').innerText = label2;
+    document.getElementById('headSubExam1').innerText = label1; 
+    document.getElementById('headSubExam2').innerText = label2;
+    document.getElementById('headTLMSExam1').innerText = label1; 
+    document.getElementById('headTLMSExam2').innerText = label2;
 
     if (isE3) {
-        if(document.getElementById('headExam3')) document.getElementById('headExam3').innerText = name3;
-        if(document.getElementById('headSubExam3')) document.getElementById('headSubExam3').innerText = name3;
-        if(document.getElementById('headTLMSExam3')) document.getElementById('headTLMSExam3').innerText = name3;
+        if(document.getElementById('headExam3')) document.getElementById('headExam3').innerText = label3;
+        if(document.getElementById('headSubExam3')) document.getElementById('headSubExam3').innerText = label3;
+        if(document.getElementById('headTLMSExam3')) document.getElementById('headTLMSExam3').innerText = label3;
     }
 
     // Toggle Kolum E3 PADA HEADER STATIK SAHAJA (DOM Cleansing)
@@ -552,21 +557,25 @@ export function renderComparisonTables(data, names) {
 }
 // [COMMENT SYNTAX] SURGICAL EDIT END
 
-// [COMMENT SYNTAX] SURGICAL EDIT START: DOM Cleansing - Matriks Komponen E3 -> E2 -> E1
+// [COMMENT SYNTAX] SURGICAL EDIT START: DOM Cleansing - Matriks Komponen E3 -> E2 -> E1 dengan Label Baharu
 export function renderComparisonComponentTable(data, names) {
     const { subMap, schoolMap, districtStats, comparisonMatrix } = data;
     const { name1, name2, name3 } = names;
     const isE3 = !!name3;
 
+    const label1 = name1 ? `${name1} (Semasa)` : 'E1 (Semasa)';
+    const label2 = name2 ? `${name2} (Banding 1)` : 'E2 (Banding 1)';
+    const label3 = name3 ? `${name3} (Banding 2)` : 'E3 (Banding 2)';
+
     // 1. Suntik Nama Header
-    document.getElementById('headCompSubExam1').innerText = name1; 
-    document.getElementById('headCompSubExam2').innerText = name2;
-    document.getElementById('headCompSchoolExam1').innerText = name1; 
-    document.getElementById('headCompSchoolExam2').innerText = name2;
+    document.getElementById('headCompSubExam1').innerText = label1; 
+    document.getElementById('headCompSubExam2').innerText = label2;
+    document.getElementById('headCompSchoolExam1').innerText = label1; 
+    document.getElementById('headCompSchoolExam2').innerText = label2;
 
     if (isE3) {
-        if(document.getElementById('headCompSubExam3')) document.getElementById('headCompSubExam3').innerText = name3;
-        if(document.getElementById('headCompSchoolExam3')) document.getElementById('headCompSchoolExam3').innerText = name3;
+        if(document.getElementById('headCompSubExam3')) document.getElementById('headCompSubExam3').innerText = label3;
+        if(document.getElementById('headCompSchoolExam3')) document.getElementById('headCompSchoolExam3').innerText = label3;
     }
 
     // Toggle Kolum E3 Header Sahaja
@@ -640,7 +649,8 @@ export function renderComparisonComponentTable(data, names) {
         }).join('');
 
     if (comparisonMatrix) {
-        renderDetailedComparisonTables(comparisonMatrix, names); // Pass names untuk header E3
+        // Passed updated names with Trajectory labels directly to internal tables
+        renderDetailedComparisonTables(comparisonMatrix, { name1: label1, name2: label2, name3: label3 }); 
     }
 
     document.getElementById('tbodyCompareCompSchools').innerHTML = Object.values(schoolMap)
@@ -735,7 +745,7 @@ function renderDetailedComparisonTables(comparisonMatrix, names) {
     });
 }
 
-// ── SURGICAL EDIT START: Renderer Analisa Subjek Spesifik ──
+// [COMMENT SYNTAX] SURGICAL EDIT START: Renderer Analisa Subjek Spesifik dengan Label Baharu
 // ==========================================
 // 7. RENDER SINGLE SUBJECT (ANALISA SUBJEK SPESIFIK)
 // ==========================================
@@ -751,8 +761,13 @@ export function renderSingleSubjectTable(result, isCompare, subjectCode, names =
     let rowsHtml = '';
 
     if (isCompare) {
-        headerHtml = Templates.getComparisonDetailHeader(names);
-        rowsHtml = schoolData.map((s, i) => Templates.getComparisonDetailRow(s, i, names)).join('');
+        const mappedNames = {
+            name1: names.name1 ? `${names.name1} (Semasa)` : 'E1 (Semasa)',
+            name2: names.name2 ? `${names.name2} (Banding 1)` : 'E2 (Banding 1)',
+            name3: names.name3 ? `${names.name3} (Banding 2)` : ''
+        };
+        headerHtml = Templates.getComparisonDetailHeader(mappedNames);
+        rowsHtml = schoolData.map((s, i) => Templates.getComparisonDetailRow(s, i, mappedNames)).join('');
     } else {
         headerHtml = Templates.getComponentSchoolHeader();
         rowsHtml = schoolData.map((s, i) => Templates.getComponentSchoolRow(s, i)).join('');
@@ -761,7 +776,7 @@ export function renderSingleSubjectTable(result, isCompare, subjectCode, names =
     thead.innerHTML = headerHtml;
     tbody.innerHTML = rowsHtml;
 }
-// ── SURGICAL EDIT END ──
+// [COMMENT SYNTAX] SURGICAL EDIT END
 
 // ── SURGICAL EDIT START: Renderer Paparan Pelajar & Pencapaian ──
 // ==========================================
@@ -929,6 +944,7 @@ function getStudentAchievementRow(row, index, subjects, isCompare, context = {})
     }
 }
 
+// [COMMENT SYNTAX] SURGICAL EDIT START: Mengemaskini thead Paparan Pelajar dengan terminologi Semasa & Banding
 function getStudentAchievementEmptyRow(colspan, message) {
     return `
         <tr>
@@ -942,6 +958,9 @@ function getStudentAchievementEmptyRow(colspan, message) {
 function getStudentAchievementHeader(subjects, isCompare, context = {}) {
     if (isCompare) {
         const isE3 = !!context.exam3;
+        const n1 = context.exam ? `${escapeStudentAchievementHTML(context.exam)} (Semasa)` : 'E1 (Semasa)';
+        const n2 = context.exam2 ? `${escapeStudentAchievementHTML(context.exam2)} (Banding 1)` : 'E2 (Banding 1)';
+        const n3 = context.exam3 ? `${escapeStudentAchievementHTML(context.exam3)} (Banding 2)` : 'E3 (Banding 2)';
 
         const subjectHeaders = subjects.map(subject => `
             <th class="border-r border-gray-300 text-center ${isE3 ? 'min-w-[180px]' : 'min-w-[140px]'} px-2 py-2" colspan="${isE3 ? 5 : 3}" title="${escapeStudentAchievementHTML(subject.nama)}">
@@ -951,11 +970,11 @@ function getStudentAchievementHeader(subjects, isCompare, context = {}) {
         `).join('');
 
         const subjectSubHeaders = subjects.map(subject => `
-            ${isE3 ? `<th class="border-r border-emerald-100/50 text-center text-[10px] bg-emerald-50/50 w-16 py-1">E3</th>` : ''}
-            <th class="border-r border-gray-200 text-center text-[10px] bg-gray-50/50 w-16 py-1">E2</th>
-            <th class="border-r border-gray-200 text-center text-[10px] bg-blue-50/50 w-16 py-1">E1</th>
-            <th class="border-r border-gray-300 text-center text-[10px] bg-gray-100 w-16 py-1">BZA 1</th>
-            ${isE3 ? `<th class="border-r border-gray-300 text-center text-[10px] bg-gray-100/50 w-16 py-1">BZA 2</th>` : ''}
+            ${isE3 ? `<th class="border-r border-emerald-100/50 text-center text-[10px] bg-emerald-50/50 w-16 py-1" title="${n3}">E3</th>` : ''}
+            <th class="border-r border-gray-200 text-center text-[10px] bg-gray-50/50 w-16 py-1" title="${n2}">E2</th>
+            <th class="border-r border-gray-200 text-center text-[10px] bg-blue-50/50 w-16 py-1" title="${n1}">E1</th>
+            <th class="border-r border-gray-300 text-center text-[10px] bg-gray-100 w-16 py-1" title="Beza E1-E2">BZA 1</th>
+            ${isE3 ? `<th class="border-r border-gray-300 text-center text-[10px] bg-gray-100/50 w-16 py-1" title="Beza E1-E3">BZA 2</th>` : ''}
         `).join('');
 
         return `
@@ -971,21 +990,21 @@ function getStudentAchievementHeader(subjects, isCompare, context = {}) {
             </tr>
             <tr class="text-[10px]">
                 <!-- Ambil -->
-                ${isE3 ? `<th class="border-r border-b border-emerald-200 text-center bg-emerald-50 py-1">E3</th>` : ''}
-                <th class="border-r border-b border-gray-300 text-center bg-gray-50 py-1">E2</th>
-                <th class="border-r border-b border-gray-200 text-center bg-gray-50 py-1">E1</th>
+                ${isE3 ? `<th class="border-r border-b border-emerald-200 text-center bg-emerald-50 py-1" title="${n3}">E3</th>` : ''}
+                <th class="border-r border-b border-gray-300 text-center bg-gray-50 py-1" title="${n2}">E2</th>
+                <th class="border-r border-b border-gray-200 text-center bg-gray-50 py-1" title="${n1}">E1</th>
                 
                 <!-- LMS -->
-                ${isE3 ? `<th class="border-r border-b border-emerald-200 text-center bg-emerald-50 py-1">E3</th>` : ''}
-                <th class="border-r border-b border-emerald-200 text-center bg-emerald-50 py-1">E2</th>
-                <th class="border-r border-b border-emerald-200 text-center bg-emerald-50 py-1">E1</th>
+                ${isE3 ? `<th class="border-r border-b border-emerald-200 text-center bg-emerald-50 py-1" title="${n3}">E3</th>` : ''}
+                <th class="border-r border-b border-emerald-200 text-center bg-emerald-50 py-1" title="${n2}">E2</th>
+                <th class="border-r border-b border-emerald-200 text-center bg-emerald-50 py-1" title="${n1}">E1</th>
 
                 <!-- GPS -->
-                ${isE3 ? `<th class="border-r border-b border-emerald-200 text-center bg-emerald-50 py-1">E3</th>` : ''}
-                <th class="border-r border-b border-indigo-200 text-center bg-indigo-50 py-1">E2</th>
-                <th class="border-r border-b border-indigo-200 text-center bg-indigo-50 py-1">E1</th>
-                <th class="border-r border-b border-indigo-300 text-center bg-indigo-100 font-bold py-1">BZA 1</th>
-                ${isE3 ? `<th class="border-r border-b border-indigo-300 text-center bg-indigo-100/50 font-bold py-1">BZA 2</th>` : ''}
+                ${isE3 ? `<th class="border-r border-b border-emerald-200 text-center bg-emerald-50 py-1" title="${n3}">E3</th>` : ''}
+                <th class="border-r border-b border-indigo-200 text-center bg-indigo-50 py-1" title="${n2}">E2</th>
+                <th class="border-r border-b border-indigo-200 text-center bg-indigo-50 py-1" title="${n1}">E1</th>
+                <th class="border-r border-b border-indigo-300 text-center bg-indigo-100 font-bold py-1" title="Beza E1-E2">BZA 1</th>
+                ${isE3 ? `<th class="border-r border-b border-indigo-300 text-center bg-indigo-100/50 font-bold py-1" title="Beza E1-E3">BZA 2</th>` : ''}
                 
                 <!-- Gred Matriks -->
                 ${subjectSubHeaders}
@@ -1017,6 +1036,7 @@ function getStudentAchievementHeader(subjects, isCompare, context = {}) {
         </tr>
     `;
 }
+// [COMMENT SYNTAX] SURGICAL EDIT END
 
 function updateStudentAchievementInfo(data, isCompare) {
     const info = document.getElementById('studentAchievementInfo');
@@ -1079,7 +1099,9 @@ export function renderStudentAchievementTable(data, context = {}) {
         
         let subtitleParts = [];
         if (isCompare && exam2Text) {
-            const comparisonStr = exam3Text ? `Perbandingan: ${examText} vs ${exam2Text} vs ${exam3Text}` : `Perbandingan: ${examText} vs ${exam2Text}`;
+            // [COMMENT SYNTAX] SURGICAL EDIT START: Mengemas kini teks Perbandingan dengan terminologi Semasa & Banding
+            const comparisonStr = exam3Text ? `Perbandingan: ${examText} (Semasa) vs ${exam2Text} (Banding 1) vs ${exam3Text} (Banding 2)` : `Perbandingan: ${examText} (Semasa) vs ${exam2Text} (Banding 1)`;
+            // [COMMENT SYNTAX] SURGICAL EDIT END
             subtitleParts = [comparisonStr, formText, schoolText].filter(Boolean);
         } else {
             subtitleParts = [examText, formText, schoolText].filter(Boolean);

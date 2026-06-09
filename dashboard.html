@@ -105,7 +105,6 @@
 
             <div class="p-6 md:p-8">
                 
-                <!-- [COMMENT SYNTAX] SURGICAL EDIT START: Menambah sokongan Mod Perbandingan 3 Peperiksaan (E3) -->
                 <!-- Suis Mod Perbandingan -->
                 <div class="flex items-center gap-3 mb-6 pb-6 border-b border-dashed border-border">
                     <label class="relative inline-flex items-center cursor-pointer">
@@ -116,29 +115,31 @@
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-6">
+                    <!-- [COMMENT SYNTAX] SURGICAL EDIT START: Menyelaras label Peperiksaan Semasa & Banding -->
                     <!-- KOLUM 1: Exam Utama -->
                     <div>
-                        <label id="lblExam1" class="block text-[9px] font-bold text-text-muted uppercase mb-2 tracking-widest">1. Peperiksaan</label>
+                        <label id="lblExam1" class="block text-[9px] font-bold text-text-muted uppercase mb-2 tracking-widest">1. Peperiksaan (Semasa)</label>
                         <select id="examSelect" class="filter-select"><option value="">Memuatkan...</option></select>
                         <label class="block text-[9px] font-bold text-text-muted uppercase mt-4 mb-2 tracking-widest">Tingkatan</label>
-                        <select id="formSelect" class="filter-select" disabled><option value="">-- Pilih Exam --</option></select>
+                        <select id="formSelect" class="filter-select" disabled><option value="">-- Pilih Tingkatan --</option></select>
                     </div>
 
                     <!-- KOLUM 2: Exam Banding 1 (Dynamic) -->
                     <div id="divExam2" class="hidden bg-ppdBlue/5 p-4 rounded-xl border border-ppdBlue/10">
                         <label class="block text-[9px] font-bold text-ppdBlue uppercase mb-2 tracking-widest">2. Peperiksaan (Banding 1)</label>
-                        <select id="examSelect2" class="filter-select border-ppdBlue/20 focus:border-ppdBlue"><option value="">-- Pilih Baseline 1 --</option></select>
+                        <select id="examSelect2" class="filter-select border-ppdBlue/20 focus:border-ppdBlue"><option value="">-- Pilih Peperiksaan --</option></select>
                         <label class="block text-[9px] font-bold text-ppdBlue uppercase mt-4 mb-2 tracking-widest">Tingkatan</label>
-                        <select id="formSelect2" class="filter-select border-ppdBlue/20 focus:border-ppdBlue" disabled><option value="">-- Pilih Exam 2 --</option></select>
+                        <select id="formSelect2" class="filter-select border-ppdBlue/20 focus:border-ppdBlue" disabled><option value="">-- Pilih Tingkatan --</option></select>
                     </div>
 
                     <!-- KOLUM 3: Exam Banding 2 (Pilihan E3) -->
                     <div id="divExam3" class="hidden bg-emerald-50/30 p-4 rounded-xl border border-emerald-100/50">
-                        <label class="block text-[9px] font-bold text-emerald-700 uppercase mb-2 tracking-widest">3. Peperiksaan (Banding 2 - Pilihan)</label>
-                        <select id="examSelect3" class="filter-select border-emerald-200 focus:border-emerald-500"><option value="">-- Pilih Baseline 2 --</option></select>
+                        <label class="block text-[9px] font-bold text-emerald-700 uppercase mb-2 tracking-widest">3. Peperiksaan (Banding 2)</label>
+                        <select id="examSelect3" class="filter-select border-emerald-200 focus:border-emerald-500"><option value="">-- Pilih Peperiksaan --</option></select>
                         <label class="block text-[9px] font-bold text-emerald-700 uppercase mt-4 mb-2 tracking-widest">Tingkatan</label>
-                        <select id="formSelect3" class="filter-select border-emerald-200 focus:border-emerald-500" disabled><option value="">-- Pilih Exam 3 --</option></select>
+                        <select id="formSelect3" class="filter-select border-emerald-200 focus:border-emerald-500" disabled><option value="">-- Pilih Tingkatan --</option></select>
                     </div>
+                    <!-- [COMMENT SYNTAX] SURGICAL EDIT END -->
 
                     <!-- KOLUM 4: Sekolah -->
                     <div>
@@ -158,23 +159,18 @@
                         <select id="componentSelect" class="filter-select"></select>
                     </div>
                 </div>
-                <!-- [COMMENT SYNTAX] SURGICAL EDIT END -->
                 
                 <!-- BARIS BUTANG TINDAKAN -->
                 <div class="mt-8 flex flex-col md:flex-row justify-end gap-3 pt-6 border-t border-border">
                     <button id="btnSpecialReport" class="w-full md:w-auto bg-purple-600 hover:bg-purple-700 text-white font-bold py-2.5 px-6 rounded-xl shadow-sm transition-all font-oswald text-[11px] uppercase tracking-wider">
                         📋 LAPORAN KHAS
                     </button>
-                    <!-- ── SURGICAL EDIT START: Butang Gabungan Analisa Subjek & Kredit ── -->
                     <button id="btnCreditAnalysis" class="w-full md:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-6 rounded-xl shadow-sm transition-all font-oswald text-[11px] uppercase tracking-wider">
                         💯🎯 ANALISA SUBJEK & KREDIT
                     </button>
-                    <!-- ── SURGICAL EDIT END ── -->
-                    <!-- ── SURGICAL EDIT START: Butang Paparan Pelajar & Pencapaian ── -->
                     <button id="btnStudentAchievement" disabled class="hidden w-full md:w-auto bg-cyan-600 hover:bg-cyan-700 disabled:bg-slate-200 disabled:cursor-not-allowed text-white font-bold py-2.5 px-6 rounded-xl shadow-sm transition-all font-oswald text-[11px] uppercase tracking-wider">
                         👨‍🎓 PAPARAN PELAJAR
                     </button>
-                    <!-- ── SURGICAL EDIT END ── -->
                     <button id="btnResetView" class="w-full md:w-auto bg-slate-500 hover:bg-slate-600 text-white font-bold py-2.5 px-6 rounded-xl shadow-sm transition-all font-oswald text-[11px] uppercase tracking-wider">
                         ↺ RESET
                     </button>
@@ -264,7 +260,6 @@
             </div>
         </div>
 
-        <!-- ── SURGICAL EDIT START: SATU PILIHAN SUBJEK UNTUK ANALISA SUBJEK & KREDIT ── -->
         <!-- VIEW B: SINGLE SUBJECT & CREDIT ANALYSIS -->
         <div id="viewCreditAnalysis" class="hidden space-y-8 animate-fade-in">
             <div id="viewSingleSubject" class="space-y-8">
@@ -315,7 +310,6 @@
                 </div>
             </div>
         </div>
-        <!-- ── SURGICAL EDIT END ── -->
 
         <!-- VIEW C: AGGREGATE (Rumusan Daerah) -->
         <div id="viewAggregate" class="hidden space-y-8">
@@ -374,7 +368,6 @@
             </div>
         </div>
 
-        <!-- ── SURGICAL EDIT START: View Paparan Pelajar & Pencapaian ── -->
         <!-- VIEW D2: STUDENT ACHIEVEMENT DETAIL -->
         <div id="viewStudentAchievement" class="hidden space-y-8 animate-fade-in">
             <div class="result-container border-t-4 border-cyan-500">
@@ -399,7 +392,6 @@
                 </div>
             </div>
         </div>
-        <!-- ── SURGICAL EDIT END ── -->
 
         <!-- VIEW E: COMPONENT -->
         <div id="viewComponent" class="hidden space-y-8">
@@ -433,7 +425,6 @@
                         <h3 class="font-bold font-oswald uppercase text-sm">Banding Subjek Komponen</h3>
                         <div class="flex gap-2"><button id="btnPdfCompareCompSubjects" class="btn-pdf">PDF</button><button id="btnExportCompareCompSubjects" class="btn-excel">EXCEL</button></div>
                     </div>
-                    <!-- [COMMENT SYNTAX] SURGICAL EDIT START: Susun semula kolum E3 -> E2 -> E1 -->
                     <div class="overflow-x-auto">
                         <table id="tableCompareCompSubjects">
                             <thead>
@@ -586,7 +577,6 @@
                     </div>
                 </div>
             </div>
-            <!-- [COMMENT SYNTAX] SURGICAL EDIT END -->
         </div>
 
     </main>

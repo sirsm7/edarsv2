@@ -217,7 +217,7 @@ function setupExportListeners() {
 // 4. UI LOGIC (VIEW CONTROLLERS)
 // ==========================================
 
-// [COMMENT SYNTAX] SURGICAL EDIT START: Kemas kini Teks Label Timeline
+// [COMMENT SYNTAX] SURGICAL EDIT START: Kemas kini Teks Label Timeline (Semasa, Banding 1, Banding 2)
 function handleModeToggle() {
     const isCompare = document.getElementById('toggleCompare').checked;
     State.setFilter('isCompareMode', isCompare);
@@ -233,7 +233,7 @@ function handleModeToggle() {
     if (isCompare) {
         divExam2.classList.remove('hidden');
         if (divExam3) divExam3.classList.remove('hidden'); // [SURGICAL EDIT] Show E3
-        lblExam1.innerText = "1. Peperiksaan 1 (Siri Mula)"; // Ubah kepada konsep timeline
+        lblExam1.innerText = "1. Peperiksaan (Semasa)"; // Diseragamkan mengikut terminologi baharu
         if (exam2Sel.options.length <= 1) {
             const exam1Opts = document.getElementById('examSelect').innerHTML;
             exam2Sel.innerHTML = exam1Opts;
@@ -426,6 +426,7 @@ function switchToSingleSubjectView() {
     // ── SURGICAL EDIT END ──
 }
 
+// [COMMENT SYNTAX] SURGICAL EDIT START: Menyelaras teks placeholder dropdown dengan terminologi baharu
 function resetDashboardView(fullReset = false) {
     hideAllViews();
 
@@ -440,17 +441,17 @@ function resetDashboardView(fullReset = false) {
         if (examSel3) examSel3.selectedIndex = 0;
         
         const formSel = document.getElementById('formSelect');
-        formSel.innerHTML = '<option value="">-- Pilih Exam --</option>';
+        formSel.innerHTML = '<option value="">-- Pilih Tingkatan --</option>';
         formSel.disabled = true;
 
         const formSel2 = document.getElementById('formSelect2');
-        formSel2.innerHTML = '<option value="">-- Pilih Exam 2 --</option>';
+        formSel2.innerHTML = '<option value="">-- Pilih Tingkatan --</option>';
         formSel2.disabled = true;
         
         // [SURGICAL EDIT] Reset E3 form
         const formSel3 = document.getElementById('formSelect3');
         if (formSel3) {
-            formSel3.innerHTML = '<option value="">-- Pilih Exam 3 --</option>';
+            formSel3.innerHTML = '<option value="">-- Pilih Tingkatan --</option>';
             formSel3.disabled = true;
         }
         
@@ -478,12 +479,13 @@ function resetDashboardView(fullReset = false) {
     updateStudentAchievementButtonState();
     // ── SURGICAL EDIT END ──
 }
+// [COMMENT SYNTAX] SURGICAL EDIT END
 
 // ==========================================
 // 5. DATA HANDLING & HANDLERS
 // ==========================================
 
-// [COMMENT SYNTAX] SURGICAL EDIT START: Label Timeline Dropdown
+// [COMMENT SYNTAX] SURGICAL EDIT START: Label Timeline Dropdown yang diseragamkan
 async function loadInitialData() {
     try {
         const exams = await fetchExamList();
@@ -491,9 +493,9 @@ async function loadInitialData() {
         const sel2 = document.getElementById('examSelect2');
         const sel3 = document.getElementById('examSelect3'); // [SURGICAL EDIT] E3
         
-        sel.innerHTML = '<option value="">-- Sila Pilih --</option>';
-        sel2.innerHTML = '<option value="">-- Pilih Peperiksaan 2 --</option>';
-        if (sel3) sel3.innerHTML = '<option value="">-- Pilih Peperiksaan 3 (Pilihan) --</option>'; // [SURGICAL EDIT]
+        sel.innerHTML = '<option value="">-- Pilih Peperiksaan --</option>';
+        sel2.innerHTML = '<option value="">-- Pilih Peperiksaan --</option>';
+        if (sel3) sel3.innerHTML = '<option value="">-- Pilih Peperiksaan --</option>'; // [SURGICAL EDIT]
         
         exams.forEach(e => {
             sel.add(new Option(e, e));
@@ -745,6 +747,7 @@ async function loadSingleAnalytics() {
     }
 }
 
+// [COMMENT SYNTAX] SURGICAL EDIT START: Menyelaras teks alert mengikut label baharu
 async function loadComparisonAnalytics() {
     const exam1 = document.getElementById('examSelect').value;
     const exam2 = document.getElementById('examSelect2').value;
@@ -757,7 +760,7 @@ async function loadComparisonAnalytics() {
     const demog = document.getElementById('demogSelect').value;
 
     if (!exam1 || !exam2 || !form1 || !form2) {
-        return Swal.fire('Ralat', 'Sila pilih sekurang-kurangnya Peperiksaan Utama dan Banding 1.', 'warning');
+        return Swal.fire('Ralat', 'Sila pilih sekurang-kurangnya Peperiksaan Semasa dan Banding 1.', 'warning');
     }
     
     // [SURGICAL EDIT] Halangan kombinasi berulang untuk E1, E2 dan E3
@@ -846,6 +849,7 @@ async function loadComparisonAnalytics() {
         Swal.fire('Ralat', 'Gagal memproses perbandingan.', 'error');
     }
 }
+// [COMMENT SYNTAX] SURGICAL EDIT END
 
 // ==========================================
 // 7. REPORT HANDLERS (SPECIAL & CREDIT)

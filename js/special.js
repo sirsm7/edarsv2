@@ -230,7 +230,7 @@ function calculateImprovement(m1, g1, m2, g2) {
 // 3. UI RENDER: DYNAMIC TABLE
 // ==========================================
 
-// [COMMENT SYNTAX] SURGICAL EDIT START: Menyuntik header dan sel E3 ➔ E2 ➔ E1 berserta Beza E1-E3
+// [COMMENT SYNTAX] SURGICAL EDIT START: Menyuntik header dan sel E3 ➔ E2 ➔ E1 berserta Beza E1-E3. Label ditukar ke Banding 1/Banding 2
 export function renderSpecialTable(results, mode, isCompareMode, showSchool = true, isE3 = false) {
     const tbody = document.getElementById('tbodySpecial');
     const titleEl = document.getElementById('specialReportTitle');
@@ -272,9 +272,9 @@ export function renderSpecialTable(results, mode, isCompareMode, showSchool = tr
 
     if (isCompareMode) {
         if (isE3) {
-            headerHtml += '<th class="text-center w-24 bg-emerald-50/50 text-emerald-800" title="Penanda Aras 2">E3 (Pilihan)</th>';
+            headerHtml += '<th class="text-center w-24 bg-emerald-50/50 text-emerald-800" title="Penanda Aras 2">E3 (Banding 2)</th>';
         }
-        headerHtml += '<th class="text-center w-24 bg-gray-50/50 text-gray-600" title="Penanda Aras 1">E2 (Asal)</th>';
+        headerHtml += '<th class="text-center w-24 bg-gray-50/50 text-gray-600" title="Penanda Aras 1">E2 (Banding 1)</th>';
         headerHtml += '<th class="text-center w-24 bg-blue-50/50 text-blue-800">E1 (Semasa)</th>';
         headerHtml += '<th class="text-center w-20" title="Beza E1 - E2">BZA 1</th>';
         if (isE3) {

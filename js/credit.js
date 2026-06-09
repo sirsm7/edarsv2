@@ -94,7 +94,7 @@ export function calculateCreditAnalysis(students, subCode) {
 // 2. LOGIK PAPARAN (RENDERING)
 // ==========================================
 
-// [COMMENT SYNTAX] SURGICAL EDIT START: Betulkan parameter untuk menyokong stats3 dan logik pemaparan matriks E3 ➔ E2 ➔ E1
+// [COMMENT SYNTAX] SURGICAL EDIT START: Pembetulan parameter untuk menyokong stats3 dan label "Banding 1/Banding 2" yang tepat
 /**
  * Menjana HTML Jadual Analisa Kredit.
  * @param {Object} stats1 - Statistik Exam 1
@@ -118,12 +118,12 @@ export function renderCreditAnalysisTable(stats1, stats2, stats3, isCompare, sub
                 <th class="px-4 py-3 bg-gray-50 border-b-2 text-left w-32 align-bottom">Kategori Gred</th>
                 ${isE3 ? `
                 <th class="px-2 py-2 bg-emerald-50/50 text-emerald-900 border-b-2 border-emerald-100 text-center" colspan="2">
-                    <span class="text-[10px] uppercase tracking-wider opacity-70 block">Pilihan</span>
+                    <span class="text-[10px] uppercase tracking-wider opacity-70 block">Banding 2</span>
                     E3
                 </th>
                 ` : ''}
                 <th class="px-2 py-2 bg-slate-50 text-slate-600 border-b-2 border-slate-200 text-center" colspan="2">
-                    <span class="text-[10px] uppercase tracking-wider opacity-70 block">Asal</span>
+                    <span class="text-[10px] uppercase tracking-wider opacity-70 block">Banding 1</span>
                     E2
                 </th>
                 <th class="px-2 py-2 bg-blue-50/50 text-blue-900 border-b-2 border-blue-100 text-center" colspan="2">
