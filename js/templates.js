@@ -476,7 +476,7 @@ export function getDetailedTableBlock(kod, subName, rows, btnPdfId, btnExcelId, 
                 <button id="${btnExcelId}" class="btn-excel text-xs">📥 EXCEL</button>
             </div>
         </div>
-        <div class="overflow-x-auto">
+        <div class="table-scroll-wrapper">
             <table id="${tableId}">
                 ${headerHtml}
                 <tbody>${rows}</tbody>

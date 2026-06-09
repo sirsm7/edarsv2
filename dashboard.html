@@ -44,6 +44,22 @@
         /* CSS Fix untuk Details/Summary Marker */
         summary::-webkit-details-marker { display: none; }
         summary { list-style: none; outline: none; }
+
+        /* [SUNTINGAN BAHARU] CSS Fix untuk Scroll Jadual & Pengepala Lekat (Limit ~10 Rows) */
+        .table-scroll-wrapper {
+            max-height: 35rem; /* Pengehadan tinggi visual kepada ~10 rekod */
+            overflow-y: auto;
+            overflow-x: auto;
+        }
+        .table-scroll-wrapper thead {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+        }
+        .table-scroll-wrapper thead th {
+            background-color: #f8fafc; /* Warna latar pengepala */
+            box-shadow: inset 0 -2px 0 0 #e2e8f0; /* Memastikan sempadan bawah sentiasa kelihatan semasa ditatal */
+        }
     </style>
 </head>
 <body class="bg-surface min-h-screen flex flex-col font-sans">
@@ -115,7 +131,6 @@
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-6">
-                    <!-- [COMMENT SYNTAX] SURGICAL EDIT START: Menyelaras label Peperiksaan Semasa & Banding -->
                     <!-- KOLUM 1: Exam Utama -->
                     <div>
                         <label id="lblExam1" class="block text-[9px] font-bold text-text-muted uppercase mb-2 tracking-widest">1. Peperiksaan (Semasa)</label>
@@ -139,7 +154,6 @@
                         <label class="block text-[9px] font-bold text-emerald-700 uppercase mt-4 mb-2 tracking-widest">Tingkatan</label>
                         <select id="formSelect3" class="filter-select border-emerald-200 focus:border-emerald-500" disabled><option value="">-- Pilih Tingkatan --</option></select>
                     </div>
-                    <!-- [COMMENT SYNTAX] SURGICAL EDIT END -->
 
                     <!-- KOLUM 4: Sekolah -->
                     <div>
@@ -256,7 +270,7 @@
                     </div>
                     <div class="flex gap-2"><button id="btnPdfSpecial" class="btn-pdf">PDF</button><button id="btnExportSpecial" class="btn-excel">EXCEL</button></div>
                 </div>
-                <div class="overflow-x-auto"><table id="tableSpecial"><thead></thead><tbody id="tbodySpecial"></tbody></table></div>
+                <div class="table-scroll-wrapper"><table id="tableSpecial"><thead></thead><tbody id="tbodySpecial"></tbody></table></div>
             </div>
         </div>
 
@@ -290,7 +304,7 @@
                             <button id="btnExportSingleSubject" class="btn-excel">EXCEL</button>
                         </div>
                     </div>
-                    <div class="overflow-x-auto">
+                    <div class="table-scroll-wrapper">
                         <table id="tableSingleSubject">
                             <thead id="theadSingleSubject"></thead>
                             <tbody id="tbodySingleSubject"></tbody>
@@ -306,7 +320,7 @@
                         </div>
                         <div class="flex gap-2"><button id="btnPdfCredit" class="btn-pdf">PDF</button><button id="btnExportCredit" class="btn-excel">EXCEL</button></div>
                     </div>
-                    <div class="overflow-x-auto"><table id="tableCreditAnalysis"><thead></thead><tbody id="tbodyCreditAnalysis"></tbody></table></div>
+                    <div class="table-scroll-wrapper"><table id="tableCreditAnalysis"><thead></thead><tbody id="tbodyCreditAnalysis"></tbody></table></div>
                 </div>
             </div>
         </div>
@@ -318,7 +332,7 @@
                     <h3 class="font-bold font-oswald uppercase text-sm">Rumusan Status LMS Sekolah</h3>
                     <div class="flex gap-2"><button id="btnPdfAggregate" class="btn-pdf">PDF</button><button id="btnExportAggregate" class="btn-excel">EXCEL</button></div>
                 </div>
-                <div class="overflow-x-auto">
+                <div class="table-scroll-wrapper">
                     <table id="tableAggregate">
                         <thead>
                             <tr><th class="border text-center" rowspan="2">Bil</th><th class="border" rowspan="2">Sekolah</th><th class="border text-center" rowspan="2">Calon</th><th class="border text-center" rowspan="2">H</th><th class="border text-center" rowspan="2">GPS</th><th class="border text-center" colspan="3">BM</th><th class="border text-center" colspan="3">SEJ</th><th class="border text-center" colspan="2">LMS</th><th class="border text-center" colspan="2">TLMS</th></tr>
@@ -335,7 +349,7 @@
                     <h3 class="font-bold font-oswald uppercase text-sm">Analisa Subjek (Daerah)</h3>
                     <div class="flex gap-2"><button id="btnPdfSubjectDistrict" class="btn-pdf">PDF</button><button id="btnExportSubjectDistrict" class="btn-excel">EXCEL</button></div>
                 </div>
-                <div class="overflow-x-auto"><table id="tableSubjectDistrict"><thead></thead><tbody id="tbodySubjectDistrict"></tbody></table></div>
+                <div class="table-scroll-wrapper"><table id="tableSubjectDistrict"><thead></thead><tbody id="tbodySubjectDistrict"></tbody></table></div>
             </div>
 
             <!-- SENARAI TLMS DAERAH -->
@@ -344,7 +358,7 @@
                     <h3 class="font-bold font-oswald uppercase text-sm text-rose-700">Senarai TLMS Daerah</h3>
                     <div class="flex gap-2"><button id="btnPdfDistrictTLMS" class="btn-pdf">PDF</button><button id="btnExportDistrictTLMS" class="btn-excel">EXCEL</button></div>
                 </div>
-                <div class="overflow-x-auto"><table id="tableDistrictTLMS"><thead><tr><th class="border w-10 text-center">Bil</th><th class="border w-24 text-center">ID / KP</th><th class="border text-left">Nama Murid</th><th class="border text-left">Sekolah</th><th class="border w-16 text-center">BM</th><th class="border w-16 text-center">SEJ</th><th class="border text-center text-rose-600">Isu</th></tr></thead><tbody id="tbodyDistrictTLMS"></tbody></table></div>
+                <div class="table-scroll-wrapper"><table id="tableDistrictTLMS"><thead><tr><th class="border w-10 text-center">Bil</th><th class="border w-24 text-center">ID / KP</th><th class="border text-left">Nama Murid</th><th class="border text-left">Sekolah</th><th class="border w-16 text-center">BM</th><th class="border w-16 text-center">SEJ</th><th class="border text-center text-rose-600">Isu</th></tr></thead><tbody id="tbodyDistrictTLMS"></tbody></table></div>
             </div>
         </div>
 
@@ -355,7 +369,7 @@
                     <h3 class="font-bold font-oswald uppercase text-sm">Analisa Mata Pelajaran Sekolah</h3>
                     <div class="flex gap-2"><button id="btnPdfSubject" class="btn-pdf">PDF</button><button id="btnExportSubject" class="btn-excel">EXCEL</button></div>
                 </div>
-                <div class="overflow-x-auto"><table id="tableSubject"><thead></thead><tbody id="tbodySubject"></tbody></table></div>
+                <div class="table-scroll-wrapper"><table id="tableSubject"><thead></thead><tbody id="tbodySubject"></tbody></table></div>
             </div>
 
             <!-- SENARAI TLMS SEKOLAH -->
@@ -364,7 +378,7 @@
                     <h3 class="font-bold font-oswald uppercase text-sm text-rose-700">Senarai Murid TLMS</h3>
                     <div class="flex gap-2"><button id="btnPdfTLMS" class="btn-pdf">PDF</button><button id="btnExportTLMS" class="btn-excel">EXCEL</button></div>
                 </div>
-                <div class="overflow-x-auto"><table id="tableTLMS"><thead><tr><th class="border w-10 text-center">Bil</th><th class="border w-24 text-center">ID / KP</th><th class="border text-left">Nama Murid</th><th class="border w-24 text-center">Kelas</th><th class="border w-16 text-center">BM</th><th class="border w-16 text-center">SEJ</th><th class="border text-center text-rose-600">Isu</th></tr></thead><tbody id="tbodyTLMS"></tbody></table></div>
+                <div class="table-scroll-wrapper"><table id="tableTLMS"><thead><tr><th class="border w-10 text-center">Bil</th><th class="border w-24 text-center">ID / KP</th><th class="border text-left">Nama Murid</th><th class="border w-24 text-center">Kelas</th><th class="border w-16 text-center">BM</th><th class="border w-16 text-center">SEJ</th><th class="border text-center text-rose-600">Isu</th></tr></thead><tbody id="tbodyTLMS"></tbody></table></div>
             </div>
         </div>
 
@@ -376,15 +390,22 @@
                         <h3 class="font-bold font-oswald uppercase text-sm text-cyan-800">Paparan Pelajar & Pencapaian</h3>
                         <p id="studentAchievementSubtitle" class="text-[10px] font-bold text-text-muted uppercase mt-1"></p>
                     </div>
-                    <div class="flex gap-2">
-                        <button id="btnPdfStudentAchievement" class="btn-pdf">PDF</button>
-                        <button id="btnExportStudentAchievement" class="btn-excel">EXCEL</button>
+                    
+                    <!-- SUNTINGAN BAHARU: Dropdown Penapis Kelas Pelajar -->
+                    <div class="flex items-center gap-3">
+                        <select id="filterKelasStudent" class="filter-select !mb-0 !py-1.5 !text-[11px] border-cyan-200 focus:border-cyan-500 w-auto bg-white">
+                            <option value="SEMUA">-- SEMUA KELAS --</option>
+                        </select>
+                        <div class="flex gap-2">
+                            <button id="btnPdfStudentAchievement" class="btn-pdf">PDF</button>
+                            <button id="btnExportStudentAchievement" class="btn-excel">EXCEL</button>
+                        </div>
                     </div>
                 </div>
                 <div id="studentAchievementInfo" class="p-4 border-b border-border bg-slate-50/50 text-[10px] font-bold text-text-muted uppercase tracking-widest">
                     Paparan ini hanya tersedia apabila pengguna memilih sekolah spesifik, bukan SEMUA SEKOLAH (DAERAH).
                 </div>
-                <div class="overflow-x-auto">
+                <div class="table-scroll-wrapper">
                     <table id="tableStudentAchievement">
                         <thead id="theadStudentAchievement"></thead>
                         <tbody id="tbodyStudentAchievement"></tbody>
@@ -400,7 +421,7 @@
                     <h3 class="font-bold font-oswald uppercase text-sm">Analisa Subjek Komponen (Rumusan)</h3>
                     <div class="flex gap-2"><button id="btnPdfCompSubject" class="btn-pdf">PDF</button><button id="btnExportCompSubject" class="btn-excel">EXCEL</button></div>
                 </div>
-                <div class="overflow-x-auto"><table id="tableCompSubject"><thead></thead><tbody id="tbodyCompSubject"></tbody></table></div>
+                <div class="table-scroll-wrapper"><table id="tableCompSubject"><thead></thead><tbody id="tbodyCompSubject"></tbody></table></div>
             </div>
 
             <div id="componentDetailedContainer" class="space-y-8"></div>
@@ -410,7 +431,7 @@
                     <h3 class="font-bold font-oswald uppercase text-sm">Pencapaian Sekolah (GPK Matrix)</h3>
                     <div class="flex gap-2"><button id="btnPdfCompSchoolMatrix" class="btn-pdf">PDF</button><button id="btnExportCompSchoolMatrix" class="btn-excel">EXCEL</button></div>
                 </div>
-                <div class="overflow-x-auto"><table id="tableCompSchoolMatrix"><thead id="theadCompSchoolMatrix"></thead><tbody id="tbodyCompSchoolMatrix"></tbody></table></div>
+                <div class="table-scroll-wrapper"><table id="tableCompSchoolMatrix"><thead id="theadCompSchoolMatrix"></thead><tbody id="tbodyCompSchoolMatrix"></tbody></table></div>
             </div>
         </div>
 
@@ -425,7 +446,7 @@
                         <h3 class="font-bold font-oswald uppercase text-sm">Banding Subjek Komponen</h3>
                         <div class="flex gap-2"><button id="btnPdfCompareCompSubjects" class="btn-pdf">PDF</button><button id="btnExportCompareCompSubjects" class="btn-excel">EXCEL</button></div>
                     </div>
-                    <div class="overflow-x-auto">
+                    <div class="table-scroll-wrapper">
                         <table id="tableCompareCompSubjects">
                             <thead>
                                 <tr>
@@ -457,7 +478,7 @@
                         <h3 class="font-bold font-oswald uppercase text-sm">Banding GPK Sekolah</h3>
                         <div class="flex gap-2"><button id="btnPdfCompareCompSchools" class="btn-pdf">PDF</button><button id="btnExportCompareCompSchools" class="btn-excel">EXCEL</button></div>
                     </div>
-                    <div class="overflow-x-auto">
+                    <div class="table-scroll-wrapper">
                         <table id="tableCompareCompSchools">
                             <thead>
                                 <tr>
@@ -493,7 +514,7 @@
                             <button id="btnExportCompareSchools" class="btn-excel">EXCEL</button>
                         </div>
                     </div>
-                    <div class="overflow-x-auto">
+                    <div class="table-scroll-wrapper">
                         <table id="tableCompareSchools">
                             <thead>
                                 <tr>
@@ -523,7 +544,7 @@
                         <h3 class="font-bold font-oswald uppercase text-sm text-ppdBlue">Banding GPMP Subjek</h3>
                         <div class="flex gap-2"><button id="btnPdfCompareSubjects" class="btn-pdf">PDF</button><button id="btnExportCompareSubjects" class="btn-excel">EXCEL</button></div>
                     </div>
-                    <div class="overflow-x-auto">
+                    <div class="table-scroll-wrapper">
                         <table id="tableCompareSubjects">
                             <thead>
                                 <tr>
@@ -553,7 +574,7 @@
                         <h3 class="font-bold font-oswald uppercase text-sm text-rose-700">Banding TLMS</h3>
                         <div class="flex gap-2"><button id="btnPdfCompareTLMS" class="btn-pdf">PDF</button><button id="btnExportCompareTLMS" class="btn-excel">EXCEL</button></div>
                     </div>
-                    <div class="overflow-x-auto">
+                    <div class="table-scroll-wrapper">
                         <table id="tableCompareTLMS">
                             <thead>
                                 <tr>

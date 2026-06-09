@@ -2,6 +2,7 @@
 // EDARS V3.0 - UI RENDER MODULE (REFACTORED)
 // Menguruskan orkestrasi DOM. Logik HTML dipindahkan ke templates.js.
 // KEMASKINI V3.1: Sokongan Paparan Matriks 3 Peperiksaan (E1, E2, E3).
+// KEMASKINI V3.1.1: Disemak & disahkan serasi dengan Table Scroll Wrapper.
 // ==========================================
 
 import { exportTableToExcel } from './utils.js';

@@ -126,10 +126,12 @@ function setupEventListeners() {
     const btnCredit = document.getElementById('btnCreditAnalysis');
     if (btnCredit) btnCredit.addEventListener('click', switchToCreditAnalysisView);
 
-    // ── SURGICAL EDIT START: Butang Paparan Pelajar & Pencapaian ──
-    // E2. Butang Paparan Pelajar & Pencapaian
+    // ── SURGICAL EDIT START: Butang Paparan Pelajar & Pencapaian & Penapis Kelas ──
     const btnStudentAchievement = document.getElementById('btnStudentAchievement');
     if (btnStudentAchievement) btnStudentAchievement.addEventListener('click', switchToStudentAchievementView);
+
+    const filterKelasStudent = document.getElementById('filterKelasStudent');
+    if (filterKelasStudent) filterKelasStudent.addEventListener('change', switchToStudentAchievementView);
     // ── SURGICAL EDIT END ──
 
     // H. Butang Analisa Subjek Spesifik
@@ -314,13 +316,38 @@ function switchToStudentAchievementView() {
         return;
     }
 
-    let filteredData = State.getMainData();
-    filteredData = filteredData.filter(s => s.nama_sekolah === school);
-    filteredData = filteredData.filter(s => Analytics.filterDemography(s, demog));
+    // Ekstrak Data Dasar
+    let baseData = State.getMainData();
+    baseData = baseData.filter(s => s.nama_sekolah === school);
+    baseData = baseData.filter(s => Analytics.filterDemography(s, demog));
 
-    if (filteredData.length === 0) {
+    if (baseData.length === 0) {
         Swal.fire('Tiada Data', 'Tiada rekod pelajar ditemui untuk sekolah dan demografi ini.', 'info');
         return;
+    }
+
+    // Ekstrak Kelas Unik & Bina Dropdown
+    const classSelect = document.getElementById('filterKelasStudent');
+    let selectedClass = 'SEMUA';
+    
+    if (classSelect) {
+        const currentVal = classSelect.value;
+        const uniqueClasses = [...new Set(baseData.map(s => s.nama_kelas))].filter(Boolean).sort();
+        
+        classSelect.innerHTML = '<option value="SEMUA">-- SEMUA KELAS --</option>';
+        uniqueClasses.forEach(c => classSelect.add(new Option(c, c)));
+        
+        // Kekalkan pilihan kelas jika wujud, elak dari terpadam apabila ditatal
+        if (uniqueClasses.includes(currentVal)) {
+            classSelect.value = currentVal;
+        }
+        selectedClass = classSelect.value;
+    }
+
+    // Tapis Data Akhir (Berdasarkan Kelas Pilihan)
+    let filteredData = baseData;
+    if (selectedClass !== 'SEMUA') {
+        filteredData = filteredData.filter(s => s.nama_kelas === selectedClass);
     }
 
     let comparisonData = [];
@@ -340,9 +367,15 @@ function switchToStudentAchievementView() {
             comparisonData2 = comparisonData2.filter(s => s.nama_sekolah === school);
             comparisonData2 = comparisonData2.filter(s => Analytics.filterDemography(s, demog));
         }
+
+        // Tapis Comparison Data Ikut Kelas
+        if (selectedClass !== 'SEMUA') {
+            comparisonData = comparisonData.filter(s => s.nama_kelas === selectedClass);
+            comparisonData2 = comparisonData2.filter(s => s.nama_kelas === selectedClass);
+        }
     }
 
-    // [SURGICAL EDIT] Panggil calculate dengan data E1, E2, E3
+    // [SURGICAL EDIT] Panggil calculate dengan data E1, E2, E3 yang telah ditapis kelas
     const result = Analytics.calculateStudentAchievementData(filteredData, comparisonData, comparisonData2);
 
     hideAllViews();
@@ -363,7 +396,7 @@ function switchToStudentAchievementView() {
         exam3 // [SURGICAL EDIT]
     });
 
-    if (view) view.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (view && selectedClass === 'SEMUA') view.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 // ── SURGICAL EDIT END ──
 
@@ -526,6 +559,13 @@ async function handleExamChange() {
     formSel.innerHTML = '<option value="">-- Pilih Tingkatan --</option>';
     forms.forEach(f => formSel.add(new Option(f, f)));
     formSel.disabled = false;
+
+    // ── SURGICAL EDIT START: Automasi Pemilihan Tingkatan ──
+    if (forms.length > 0) {
+        formSel.selectedIndex = 1; // Auto-pilih tingkatan pertama
+        formSel.dispatchEvent(new Event('change'));
+    }
+    // ── SURGICAL EDIT END ──
 }
 
 async function handleExam2Change() {
@@ -543,6 +583,13 @@ async function handleExam2Change() {
     formSel2.innerHTML = '<option value="">-- Pilih Tingkatan --</option>';
     forms.forEach(f => formSel2.add(new Option(f, f)));
     formSel2.disabled = false;
+
+    // ── SURGICAL EDIT START: Automasi Pemilihan Tingkatan ──
+    if (forms.length > 0) {
+        formSel2.selectedIndex = 1; // Auto-pilih tingkatan pertama
+        formSel2.dispatchEvent(new Event('change'));
+    }
+    // ── SURGICAL EDIT END ──
 }
 
 // [SURGICAL EDIT] Handle Exam 3 Change
@@ -561,6 +608,13 @@ async function handleExam3Change() {
     formSel3.innerHTML = '<option value="">-- Pilih Tingkatan --</option>';
     forms.forEach(f => formSel3.add(new Option(f, f)));
     formSel3.disabled = false;
+
+    // ── SURGICAL EDIT START: Automasi Pemilihan Tingkatan ──
+    if (forms.length > 0) {
+        formSel3.selectedIndex = 1; // Auto-pilih tingkatan pertama
+        formSel3.dispatchEvent(new Event('change'));
+    }
+    // ── SURGICAL EDIT END ──
 }
 
 // ── SURGICAL EDIT START: Fungsi Handle School Change ──
