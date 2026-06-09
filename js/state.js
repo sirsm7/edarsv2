@@ -1,7 +1,8 @@
 // ==========================================
-// EDARS V3.0 - STATE MANAGEMENT MODULE
+// EDARS V3.1 - STATE MANAGEMENT MODULE
 // Modul ini bertindak sebagai 'Single Source of Truth' untuk data aplikasi.
 // Menggantikan penggunaan global variables dalam main.js.
+// KEMASKINI V3.1: Sokongan E3 dan pembersihan memori.
 // ==========================================
 
 // 1. STATE PENYIMPANAN DATA (PRIVATE)
@@ -36,7 +37,9 @@ const _uiState = {
 export function setMainData(data) {
     if (Array.isArray(data)) {
         _currentDataCache = [...data]; // Buat salinan (immutable concept)
-        console.log(`[State] Data Utama dikemaskini: ${_currentDataCache.length} rekod.`);
+        if (data.length > 0) {
+            console.log(`[State] Data Utama dikemaskini: ${_currentDataCache.length} rekod.`);
+        }
     } else {
         console.error('[State] Ralat: Data utama mesti dalam bentuk Array.');
         _currentDataCache = [];
@@ -50,7 +53,9 @@ export function setMainData(data) {
 export function setComparisonData(data) {
     if (Array.isArray(data)) {
         _comparisonDataCache = [...data];
-        console.log(`[State] Data Banding 1 dikemaskini: ${_comparisonDataCache.length} rekod.`);
+        if (data.length > 0) {
+            console.log(`[State] Data Banding 1 dikemaskini: ${_comparisonDataCache.length} rekod.`);
+        }
     } else {
         console.error('[State] Ralat: Data banding mesti dalam bentuk Array.');
         _comparisonDataCache = [];
@@ -64,7 +69,9 @@ export function setComparisonData(data) {
 export function setComparisonData2(data) {
     if (Array.isArray(data)) {
         _comparisonDataCache2 = [...data];
-        console.log(`[State] Data Banding 2 (E3) dikemaskini: ${_comparisonDataCache2.length} rekod.`);
+        if (data.length > 0) {
+            console.log(`[State] Data Banding 2 (E3) dikemaskini: ${_comparisonDataCache2.length} rekod.`);
+        }
     } else {
         console.error('[State] Ralat: Data banding 2 (E3) mesti dalam bentuk Array.');
         _comparisonDataCache2 = [];
