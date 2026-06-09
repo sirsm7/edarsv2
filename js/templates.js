@@ -89,14 +89,14 @@ export function getComponentSimpleHeader() {
     </tr>`;
 }
 
-// [SURGICAL EDIT] Suntik sokongan dinamik E3 pada header matriks perbandingan
+// [COMMENT SYNTAX] SURGICAL EDIT START: Header Matriks Trajektori E1->E2->E3
 export function getComparisonDetailHeader(names = {}) {
     const isE3 = !!names.name3;
     const n1 = names.name1 || 'E1';
     const n2 = names.name2 || 'E2';
     const n3 = names.name3 || 'E3';
     
-    // Auto-adjust colspan untuk menyokong E3 dan Beza ke-2
+    // Auto-adjust colspan untuk menyokong E3 dan Beza ke-2 (Trajektori)
     const colSpan = isE3 ? 5 : 3;
 
     return `
@@ -114,32 +114,33 @@ export function getComparisonDetailHeader(names = {}) {
         <th class="text-center bg-emerald-50/50 text-emerald-700 border-r" title="${n1}">E1</th>
         <th class="text-center bg-emerald-50/30 text-gray-500 border-r" title="${n2}">E2</th>
         ${isE3 ? `<th class="text-center bg-emerald-50/50 text-emerald-600 border-r" title="${n3}">E3</th>` : ''}
-        <th class="text-center bg-emerald-100 text-emerald-900 font-bold border-r">BZA 1</th>
-        ${isE3 ? `<th class="text-center bg-emerald-100/50 text-emerald-900 font-bold border-r">BZA 2</th>` : ''}
+        <th class="text-center bg-emerald-100 text-emerald-900 font-bold border-r" title="Beza ${n2} vs ${n1}">BZA 1</th>
+        ${isE3 ? `<th class="text-center bg-emerald-100/50 text-emerald-900 font-bold border-r" title="Beza ${n3} vs ${n2}">BZA 2</th>` : ''}
 
         <!-- KEPUJIAN -->
         <th class="text-center bg-blue-50/50 text-blue-700 border-r" title="${n1}">E1</th>
         <th class="text-center bg-blue-50/30 text-gray-500 border-r" title="${n2}">E2</th>
         ${isE3 ? `<th class="text-center bg-blue-50/50 text-blue-600 border-r" title="${n3}">E3</th>` : ''}
-        <th class="text-center bg-blue-100 text-blue-900 font-bold border-r">BZA 1</th>
-        ${isE3 ? `<th class="text-center bg-blue-100/50 text-blue-900 font-bold border-r">BZA 2</th>` : ''}
+        <th class="text-center bg-blue-100 text-blue-900 font-bold border-r" title="Beza ${n2} vs ${n1}">BZA 1</th>
+        ${isE3 ? `<th class="text-center bg-blue-100/50 text-blue-900 font-bold border-r" title="Beza ${n3} vs ${n2}">BZA 2</th>` : ''}
 
         <!-- LULUS -->
         <th class="text-center bg-indigo-50/50 text-indigo-700 border-r" title="${n1}">E1</th>
         <th class="text-center bg-indigo-50/30 text-gray-500 border-r" title="${n2}">E2</th>
         ${isE3 ? `<th class="text-center bg-indigo-50/50 text-indigo-600 border-r" title="${n3}">E3</th>` : ''}
-        <th class="text-center bg-indigo-100 text-indigo-900 font-bold border-r">BZA 1</th>
-        ${isE3 ? `<th class="text-center bg-indigo-100/50 text-indigo-900 font-bold border-r">BZA 2</th>` : ''}
+        <th class="text-center bg-indigo-100 text-indigo-900 font-bold border-r" title="Beza ${n2} vs ${n1}">BZA 1</th>
+        ${isE3 ? `<th class="text-center bg-indigo-100/50 text-indigo-900 font-bold border-r" title="Beza ${n3} vs ${n2}">BZA 2</th>` : ''}
 
         <!-- GPMP -->
         <th class="text-center bg-gray-50 text-gray-800 border-r" title="${n1}">E1</th>
         <th class="text-center bg-gray-50 text-gray-500 border-r" title="${n2}">E2</th>
         ${isE3 ? `<th class="text-center bg-gray-50 text-gray-600 border-r" title="${n3}">E3</th>` : ''}
-        <th class="text-center bg-gray-200 text-gray-900 font-bold border-r">BZA 1</th>
-        ${isE3 ? `<th class="text-center bg-gray-200/50 text-gray-900 font-bold border-l border-gray-300">BZA 2</th>` : ''}
+        <th class="text-center bg-gray-200 text-gray-900 font-bold border-r" title="Beza ${n2} vs ${n1}">BZA 1</th>
+        ${isE3 ? `<th class="text-center bg-gray-200/50 text-gray-900 font-bold border-l border-gray-300" title="Beza ${n3} vs ${n2}">BZA 2</th>` : ''}
     </tr>
     </thead>`;
 }
+// [COMMENT SYNTAX] SURGICAL EDIT END
 
 // ------------------------------------------
 // KPI EXPORT HEADER (DYNAMIC & EXCEL STRUCTURE)
@@ -391,7 +392,7 @@ function formatDiff(v1, v2, isInverse = false) {
     return `<span class="${color}">${arrow} ${diffStr}</span>`;
 }
 
-// [SURGICAL EDIT] Suntik pengiraan E3 dan BZA 2 ke dalam struktur baris matriks
+// [COMMENT SYNTAX] SURGICAL EDIT START: Logik Baris Trajektori (Semasa vs Sebelumnya)
 export function getComparisonDetailRow(s, i, names = {}) {
     const isE3 = !!names.name3;
     const calcPerc = (val, total) => total > 0 ? ((val / total) * 100) : 0;
@@ -417,6 +418,7 @@ export function getComparisonDetailRow(s, i, names = {}) {
     const lus3 = s.e3 ? calcPerc(s.e3.lulus, h3) : 0;
     const gp3 = h3 > 0 ? (s.e3.point / h3) : 0;
 
+    // BZA 1: E2 - E1. BZA 2: E3 - E2. (formatDiff menerima valSemasa, valSebelum)
     return `
     <tr class="transition-colors text-gray-700 hover:bg-gray-50">
         <td class="text-center text-gray-400 border-r border-gray-100">${i+1}</td>
@@ -429,31 +431,32 @@ export function getComparisonDetailRow(s, i, names = {}) {
         <td class="text-center bg-emerald-50/30 text-emerald-800 border-r border-emerald-100 text-xs font-bold">${cem1.toFixed(2)}</td>
         <td class="text-center bg-gray-50 text-gray-400 border-r border-gray-100 text-xs">${cem2.toFixed(2)}</td>
         ${isE3 ? `<td class="text-center bg-emerald-50/20 text-emerald-600 border-r border-emerald-100 text-xs font-bold">${cem3.toFixed(2)}</td>` : ''}
-        <td class="text-center bg-emerald-50 text-xs border-r border-emerald-100">${formatDiff(cem1, cem2)}</td>
-        ${isE3 ? `<td class="text-center bg-emerald-50/50 text-xs border-r border-emerald-100">${formatDiff(cem1, cem3)}</td>` : ''}
+        <td class="text-center bg-emerald-50 text-xs border-r border-emerald-100">${formatDiff(cem2, cem1)}</td>
+        ${isE3 ? `<td class="text-center bg-emerald-50/50 text-xs border-r border-emerald-100">${formatDiff(cem3, cem2)}</td>` : ''}
 
         <!-- KEPUJIAN -->
         <td class="text-center bg-blue-50/30 text-blue-800 border-r border-blue-100 text-xs font-bold">${kep1.toFixed(2)}</td>
         <td class="text-center bg-gray-50 text-gray-400 border-r border-gray-100 text-xs">${kep2.toFixed(2)}</td>
         ${isE3 ? `<td class="text-center bg-blue-50/20 text-blue-600 border-r border-blue-100 text-xs font-bold">${kep3.toFixed(2)}</td>` : ''}
-        <td class="text-center bg-blue-50 text-xs border-r border-blue-100">${formatDiff(kep1, kep2)}</td>
-        ${isE3 ? `<td class="text-center bg-blue-50/50 text-xs border-r border-blue-100">${formatDiff(kep1, kep3)}</td>` : ''}
+        <td class="text-center bg-blue-50 text-xs border-r border-blue-100">${formatDiff(kep2, kep1)}</td>
+        ${isE3 ? `<td class="text-center bg-blue-50/50 text-xs border-r border-blue-100">${formatDiff(kep3, kep2)}</td>` : ''}
 
         <!-- LULUS -->
         <td class="text-center bg-indigo-50/30 text-indigo-800 border-r border-indigo-100 text-xs font-bold">${lus1.toFixed(2)}</td>
         <td class="text-center bg-gray-50 text-gray-400 border-r border-gray-100 text-xs">${lus2.toFixed(2)}</td>
         ${isE3 ? `<td class="text-center bg-indigo-50/20 text-indigo-600 border-r border-indigo-100 text-xs font-bold">${lus3.toFixed(2)}</td>` : ''}
-        <td class="text-center bg-indigo-50 text-xs border-r border-indigo-100">${formatDiff(lus1, lus2)}</td>
-        ${isE3 ? `<td class="text-center bg-indigo-50/50 text-xs border-r border-indigo-100">${formatDiff(lus1, lus3)}</td>` : ''}
+        <td class="text-center bg-indigo-50 text-xs border-r border-indigo-100">${formatDiff(lus2, lus1)}</td>
+        ${isE3 ? `<td class="text-center bg-indigo-50/50 text-xs border-r border-indigo-100">${formatDiff(lus3, lus2)}</td>` : ''}
 
         <!-- GPMP -->
         <td class="text-center bg-gray-100 text-gray-900 border-r border-gray-200 text-xs font-bold">${gp1.toFixed(2)}</td>
         <td class="text-center bg-gray-50 text-gray-400 border-r border-gray-100 text-xs">${gp2.toFixed(2)}</td>
         ${isE3 ? `<td class="text-center bg-gray-50/80 text-gray-600 border-r border-gray-100 text-xs font-bold">${gp3.toFixed(2)}</td>` : ''}
-        <td class="text-center bg-gray-200 text-xs border-r border-gray-200">${formatDiff(gp1, gp2, true)}</td>
-        ${isE3 ? `<td class="text-center bg-gray-200/50 text-xs border-l border-gray-200">${formatDiff(gp1, gp3, true)}</td>` : ''}
+        <td class="text-center bg-gray-200 text-xs border-r border-gray-200">${formatDiff(gp2, gp1, true)}</td>
+        ${isE3 ? `<td class="text-center bg-gray-200/50 text-xs border-l border-gray-200">${formatDiff(gp3, gp2, true)}</td>` : ''}
     </tr>`;
 }
+// [COMMENT SYNTAX] SURGICAL EDIT END
 
 // ==========================================
 // 3. CONTAINERS & WRAPPERS

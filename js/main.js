@@ -217,6 +217,7 @@ function setupExportListeners() {
 // 4. UI LOGIC (VIEW CONTROLLERS)
 // ==========================================
 
+// [COMMENT SYNTAX] SURGICAL EDIT START: Kemas kini Teks Label Timeline
 function handleModeToggle() {
     const isCompare = document.getElementById('toggleCompare').checked;
     State.setFilter('isCompareMode', isCompare);
@@ -232,7 +233,7 @@ function handleModeToggle() {
     if (isCompare) {
         divExam2.classList.remove('hidden');
         if (divExam3) divExam3.classList.remove('hidden'); // [SURGICAL EDIT] Show E3
-        lblExam1.innerText = "1. Peperiksaan (Utama)";
+        lblExam1.innerText = "1. Peperiksaan 1 (Siri Mula)"; // Ubah kepada konsep timeline
         if (exam2Sel.options.length <= 1) {
             const exam1Opts = document.getElementById('examSelect').innerHTML;
             exam2Sel.innerHTML = exam1Opts;
@@ -254,6 +255,7 @@ function handleModeToggle() {
     updateStudentAchievementButtonState();
     // ── SURGICAL EDIT END ──
 }
+// [COMMENT SYNTAX] SURGICAL EDIT END
 
 function hideAllViews() {
     // ── SURGICAL EDIT START: Tambah viewStudentAchievement ──
@@ -481,6 +483,7 @@ function resetDashboardView(fullReset = false) {
 // 5. DATA HANDLING & HANDLERS
 // ==========================================
 
+// [COMMENT SYNTAX] SURGICAL EDIT START: Label Timeline Dropdown
 async function loadInitialData() {
     try {
         const exams = await fetchExamList();
@@ -489,8 +492,8 @@ async function loadInitialData() {
         const sel3 = document.getElementById('examSelect3'); // [SURGICAL EDIT] E3
         
         sel.innerHTML = '<option value="">-- Sila Pilih --</option>';
-        sel2.innerHTML = '<option value="">-- Pilih Base Line 1 --</option>';
-        if (sel3) sel3.innerHTML = '<option value="">-- Pilih Base Line 2 --</option>'; // [SURGICAL EDIT]
+        sel2.innerHTML = '<option value="">-- Pilih Peperiksaan 2 --</option>';
+        if (sel3) sel3.innerHTML = '<option value="">-- Pilih Peperiksaan 3 (Pilihan) --</option>'; // [SURGICAL EDIT]
         
         exams.forEach(e => {
             sel.add(new Option(e, e));
@@ -501,6 +504,7 @@ async function loadInitialData() {
         console.error("Fail loading initial data", err);
     }
 }
+// [COMMENT SYNTAX] SURGICAL EDIT END
 
 async function handleExamChange() {
     const exam = this.value;
@@ -909,6 +913,7 @@ async function handleGenerateSpecialReport() {
 }
 
 // ── SURGICAL EDIT START: Jana Analisa Subjek dan Analisa Kredit daripada satu pilihan subjek ──
+// [COMMENT SYNTAX] SURGICAL EDIT START: Teks Trajektori Paparan Subjek
 async function handleGenerateSingleSubject() {
     if (!State.hasData()) {
         Swal.fire('Ralat', 'Sila tekan butang "Jana Analisa" dahulu untuk memuatkan data.', 'warning');
@@ -985,8 +990,8 @@ async function handleGenerateSingleSubject() {
         let subtitle = `Peperiksaan: ${exam1Name}`;
         if (isCompare) {
             subtitle = exam3Name 
-                ? `Perbandingan: ${exam1Name} vs ${exam2Name} vs ${exam3Name}` 
-                : `Perbandingan: ${exam1Name} vs ${exam2Name}`;
+                ? `Trajektori: ${exam1Name} ➔ ${exam2Name} ➔ ${exam3Name}` 
+                : `Perbandingan: ${exam1Name} ➔ ${exam2Name}`;
         }
 
         document.getElementById('singleSubjectReportTitle').innerText = `ANALISA PENCAPAIAN SUBJEK: ${fullSubjectName}`;
@@ -1009,4 +1014,5 @@ async function handleGenerateSingleSubject() {
         Swal.close();
     }, 500);
 }
+// [COMMENT SYNTAX] SURGICAL EDIT END
 // ── SURGICAL EDIT END ──

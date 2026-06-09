@@ -275,6 +275,7 @@ function renderDetailedComponentTables(matrix) {
 // 6. RENDER COMPARISON (PERBANDINGAN)
 // ==========================================
 
+// [COMMENT SYNTAX] SURGICAL EDIT START: Pembetulan Matematik Trajektori E2 vs E1
 function renderComparisonKPICards(districtStats) {
     const container = document.getElementById('comparisonKPIContainer');
     if (!container) return;
@@ -283,19 +284,19 @@ function renderComparisonKPICards(districtStats) {
     const labelGP = isComponent ? 'GPK' : 'GPD';
     const labelLMS = '% LMS';
 
-    // Helper Kira Beza
+    // Helper Kira Beza Trajektori Berterusan (Semasa - Sebelumnya)
     const calc = (val1, val2, isInverse = false) => {
         const v1 = parseFloat(val1);
         const v2 = parseFloat(val2);
-        const diff = v1 - v2;
+        const diff = v2 - v1; // E2 tolak E1
         let color = 'text-gray-400';
         let arrow = '-';
 
         if (diff !== 0) {
-            if (isInverse) { 
-                if (diff < 0) { color = 'text-green-600 font-bold'; arrow = '▼'; }
-                else { color = 'text-red-600 font-bold'; arrow = '▲'; }
-            } else { 
+            if (isInverse) { // Jika GPS/TLMS (Makin Rendah Makin Bagus = Prestasi Naik)
+                if (diff < 0) { color = 'text-green-600 font-bold'; arrow = '▲'; }
+                else { color = 'text-red-600 font-bold'; arrow = '▼'; }
+            } else { // Jika LMS/Cemerlang (Makin Tinggi Makin Bagus)
                 if (diff > 0) { color = 'text-green-600 font-bold'; arrow = '▲'; }
                 else { color = 'text-red-600 font-bold'; arrow = '▼'; }
             }
@@ -332,13 +333,13 @@ function renderComparisonKPICards(districtStats) {
     container.innerHTML = html;
     container.classList.remove('hidden');
 }
+// [COMMENT SYNTAX] SURGICAL EDIT END
 
-// [SURGICAL EDIT] Mengintegrasikan Header & Data E3 ke dalam jadual
+// [COMMENT SYNTAX] SURGICAL EDIT START: DOM Cleansing - Matriks Perbandingan Sekolah
 export function renderComparisonTables(data, names) {
     const { schoolMap, subMap, districtStats } = data; 
     const { name1, name2, name3 } = names;
     const isE3 = !!name3;
-    const hiddenCls = isE3 ? '' : 'hidden';
 
     // 1. Suntik Nama Header
     document.getElementById('headExam1').innerText = name1; 
@@ -354,41 +355,41 @@ export function renderComparisonTables(data, names) {
         if(document.getElementById('headTLMSExam3')) document.getElementById('headTLMSExam3').innerText = name3;
     }
 
-    // Toggle Kolum E3
-    const e3Cols = document.querySelectorAll('#viewComparison .col-e3');
+    // Toggle Kolum E3 PADA HEADER STATIK SAHAJA (DOM Cleansing)
+    const e3ColsStatic = document.querySelectorAll('#viewComparison th.col-e3');
     if (isE3) {
-        e3Cols.forEach(el => el.classList.remove('hidden'));
+        e3ColsStatic.forEach(el => el.classList.remove('hidden'));
     } else {
-        e3Cols.forEach(el => el.classList.add('hidden'));
+        e3ColsStatic.forEach(el => el.classList.add('hidden'));
     }
 
     if (districtStats) renderComparisonKPICards(districtStats);
 
-    // 2. Jadual Banding Sekolah (GPS/LMS)
+    // 2. Jadual Banding Sekolah (GPS/LMS) Dinamik Penuh
     document.getElementById('tbodyCompareSchools').innerHTML = Object.values(schoolMap)
         .sort((a,b) => (a.code || "").localeCompare(b.code || "")) 
         .map((s, i) => {
             const gps1 = s.ex1.gps; 
             const gps2 = s.ex2.gps; 
-            const diffGPS = gps1 - gps2; 
+            const diffGPS = gps2 - gps1; // E2 vs E1 
             const colorGPS = diffGPS === 0 ? 'text-gray-400' : (diffGPS < 0 ? 'text-green-600 font-bold' : 'text-red-600 font-bold'); 
             const arrowGPS = diffGPS === 0 ? '-' : (diffGPS < 0 ? '▲' : '▼'); 
 
             const lmsPerc1 = s.ex1.calonCount > 0 ? (s.ex1.lmsCount / s.ex1.calonCount) * 100 : 0;
             const lmsPerc2 = s.ex2.calonCount > 0 ? (s.ex2.lmsCount / s.ex2.calonCount) * 100 : 0;
-            const diffLMS = lmsPerc1 - lmsPerc2; 
+            const diffLMS = lmsPerc2 - lmsPerc1; 
             const colorLMS = diffLMS === 0 ? 'text-gray-400' : (diffLMS > 0 ? 'text-green-600 font-bold' : 'text-red-600 font-bold');
             const arrowLMS = diffLMS === 0 ? '-' : (diffLMS > 0 ? '▲' : '▼');
 
             // Data E3
             const calon3 = s.ex3 ? s.ex3.calonCount : 0;
             const gps3 = s.ex3 ? s.ex3.gps : 0;
-            const diffGPS3 = gps1 - gps3; 
+            const diffGPS3 = gps3 - gps2; // E3 vs E2
             const colorGPS3 = diffGPS3 === 0 ? 'text-gray-400' : (diffGPS3 < 0 ? 'text-green-600 font-bold' : 'text-red-600 font-bold'); 
             const arrowGPS3 = diffGPS3 === 0 ? '-' : (diffGPS3 < 0 ? '▲' : '▼'); 
 
             const lmsPerc3 = s.ex3 && s.ex3.calonCount > 0 ? (s.ex3.lmsCount / s.ex3.calonCount) * 100 : 0;
-            const diffLMS3 = lmsPerc1 - lmsPerc3; 
+            const diffLMS3 = lmsPerc3 - lmsPerc2; 
             const colorLMS3 = diffLMS3 === 0 ? 'text-gray-400' : (diffLMS3 > 0 ? 'text-green-600 font-bold' : 'text-red-600 font-bold');
             const arrowLMS3 = diffLMS3 === 0 ? '-' : (diffLMS3 > 0 ? '▲' : '▼');
 
@@ -408,17 +409,21 @@ export function renderComparisonTables(data, names) {
                 <td class="text-center bg-blue-50/30 text-blue-600 font-bold">${lmsPerc2.toFixed(2)}%</td>
 
                 <!-- COL E3 -->
-                <td class="text-center bg-emerald-50/30 text-gray-600 col-e3 ${hiddenCls}">${calon3}</td>
-                <td class="text-center bg-emerald-50/30 font-bold text-gray-800 col-e3 ${hiddenCls}">${gps3.toFixed(2)}</td>
-                <td class="text-center bg-emerald-50/30 text-emerald-600 font-bold col-e3 ${hiddenCls}">${lmsPerc3.toFixed(2)}%</td>
+                ${isE3 ? `
+                <td class="text-center bg-emerald-50/30 text-gray-600">${calon3}</td>
+                <td class="text-center bg-emerald-50/30 font-bold text-gray-800">${gps3.toFixed(2)}</td>
+                <td class="text-center bg-emerald-50/30 text-emerald-600 font-bold">${lmsPerc3.toFixed(2)}%</td>
+                ` : ''}
                 
                 <!-- BEZA 1 -->
-                <td class="text-center font-bold bg-gray-100 ${colorGPS}">${Math.abs(diffGPS).toFixed(2)} <span class="pdf-arrow text-xs ml-1">${arrowGPS}</span></td>
-                <td class="text-center font-bold bg-gray-100 ${colorLMS}">${Math.abs(diffLMS).toFixed(2)}% <span class="pdf-arrow text-xs ml-1">${arrowLMS}</span></td>
+                <td class="text-center font-bold bg-gray-100 ${colorGPS}" title="E2-E1">${Math.abs(diffGPS).toFixed(2)} <span class="pdf-arrow text-xs ml-1">${arrowGPS}</span></td>
+                <td class="text-center font-bold bg-gray-100 ${colorLMS}" title="E2-E1">${Math.abs(diffLMS).toFixed(2)}% <span class="pdf-arrow text-xs ml-1">${arrowLMS}</span></td>
                 
                 <!-- BEZA 2 (E3) -->
-                <td class="text-center font-bold bg-gray-100/50 border-l border-gray-200 ${colorGPS3} col-e3 ${hiddenCls}">${Math.abs(diffGPS3).toFixed(2)} <span class="pdf-arrow text-xs ml-1">${arrowGPS3}</span></td>
-                <td class="text-center font-bold bg-gray-100/50 ${colorLMS3} col-e3 ${hiddenCls}">${Math.abs(diffLMS3).toFixed(2)}% <span class="pdf-arrow text-xs ml-1">${arrowLMS3}</span></td>
+                ${isE3 ? `
+                <td class="text-center font-bold bg-gray-100/50 border-l border-gray-200 ${colorGPS3}" title="E3-E2">${Math.abs(diffGPS3).toFixed(2)} <span class="pdf-arrow text-xs ml-1">${arrowGPS3}</span></td>
+                <td class="text-center font-bold bg-gray-100/50 ${colorLMS3}" title="E3-E2">${Math.abs(diffLMS3).toFixed(2)}% <span class="pdf-arrow text-xs ml-1">${arrowLMS3}</span></td>
+                ` : ''}
             </tr>`;
         }).join('');
 
@@ -430,16 +435,16 @@ export function renderComparisonTables(data, names) {
             const tlms2 = (s.ex2.calonCount || 0) - s.ex2.lmsCount;
             const tlmsPerc1 = s.ex1.calonCount > 0 ? (tlms1 / s.ex1.calonCount) * 100 : 0;
             const tlmsPerc2 = s.ex2.calonCount > 0 ? (tlms2 / s.ex2.calonCount) * 100 : 0;
-            const diffTLMSPerc = tlmsPerc1 - tlmsPerc2;
+            const diffTLMSPerc = tlmsPerc2 - tlmsPerc1;
             const colorTLMS = diffTLMSPerc === 0 ? 'text-gray-400' : (diffTLMSPerc < 0 ? 'text-green-600 font-bold' : 'text-red-600 font-bold');
-            const arrowTLMS = diffTLMSPerc === 0 ? '-' : (diffTLMSPerc < 0 ? '▼' : '▲'); 
+            const arrowTLMS = diffTLMSPerc === 0 ? '-' : (diffTLMSPerc < 0 ? '▲' : '▼'); 
 
             // Data E3
             const tlms3 = s.ex3 ? ((s.ex3.calonCount || 0) - s.ex3.lmsCount) : 0;
             const tlmsPerc3 = s.ex3 && s.ex3.calonCount > 0 ? (tlms3 / s.ex3.calonCount) * 100 : 0;
-            const diffTLMSPerc3 = tlmsPerc1 - tlmsPerc3;
+            const diffTLMSPerc3 = tlmsPerc3 - tlmsPerc2;
             const colorTLMS3 = diffTLMSPerc3 === 0 ? 'text-gray-400' : (diffTLMSPerc3 < 0 ? 'text-green-600 font-bold' : 'text-red-600 font-bold');
-            const arrowTLMS3 = diffTLMSPerc3 === 0 ? '-' : (diffTLMSPerc3 < 0 ? '▼' : '▲');
+            const arrowTLMS3 = diffTLMSPerc3 === 0 ? '-' : (diffTLMSPerc3 < 0 ? '▲' : '▼');
 
             return `
             <tr class="transition-colors text-gray-700 hover:bg-rose-50/10">
@@ -454,16 +459,20 @@ export function renderComparisonTables(data, names) {
                 <td class="text-center bg-red-100/50 text-red-600 font-bold">${tlmsPerc2.toFixed(2)}%</td>
                 
                 <!-- COL E3 -->
-                <td class="text-center bg-red-50/50 font-bold text-gray-700 col-e3 ${hiddenCls}">${tlms3}</td>
-                <td class="text-center bg-red-50/50 text-red-600 font-bold col-e3 ${hiddenCls}">${tlmsPerc3.toFixed(2)}%</td>
+                ${isE3 ? `
+                <td class="text-center bg-red-50/50 font-bold text-gray-700">${tlms3}</td>
+                <td class="text-center bg-red-50/50 text-red-600 font-bold">${tlmsPerc3.toFixed(2)}%</td>
+                ` : ''}
 
                 <!-- BEZA 1 -->
-                <td class="text-center font-bold bg-gray-100 ${colorTLMS}">${Math.abs(tlms1 - tlms2)}</td>
-                <td class="text-center font-bold bg-gray-100 ${colorTLMS}">${Math.abs(diffTLMSPerc).toFixed(2)}% <span class="pdf-arrow text-xs ml-1">${arrowTLMS}</span></td>
+                <td class="text-center font-bold bg-gray-100 ${colorTLMS}" title="E2-E1">${Math.abs(tlms2 - tlms1)}</td>
+                <td class="text-center font-bold bg-gray-100 ${colorTLMS}" title="E2-E1">${Math.abs(diffTLMSPerc).toFixed(2)}% <span class="pdf-arrow text-xs ml-1">${arrowTLMS}</span></td>
 
                 <!-- BEZA 2 (E3) -->
-                <td class="text-center font-bold bg-gray-100/50 border-l border-gray-200 ${colorTLMS3} col-e3 ${hiddenCls}">${Math.abs(tlms1 - tlms3)}</td>
-                <td class="text-center font-bold bg-gray-100/50 ${colorTLMS3} col-e3 ${hiddenCls}">${Math.abs(diffTLMSPerc3).toFixed(2)}% <span class="pdf-arrow text-xs ml-1">${arrowTLMS3}</span></td>
+                ${isE3 ? `
+                <td class="text-center font-bold bg-gray-100/50 border-l border-gray-200 ${colorTLMS3}" title="E3-E2">${Math.abs(tlms3 - tlms2)}</td>
+                <td class="text-center font-bold bg-gray-100/50 ${colorTLMS3}" title="E3-E2">${Math.abs(diffTLMSPerc3).toFixed(2)}% <span class="pdf-arrow text-xs ml-1">${arrowTLMS3}</span></td>
+                ` : ''}
             </tr>`;
         }).join('');
 
@@ -474,25 +483,27 @@ export function renderComparisonTables(data, names) {
             const getStats = (o) => ({ gpmp: o && o.ct > 0 ? (o.pt/o.ct) : 0, perc: o && o.ct > 0 ? (o.lulus/o.ct)*100 : 0 }); 
             const st1 = getStats(s.ex1); 
             const st2 = getStats(s.ex2); 
-            const diffGP = st1.gpmp - st2.gpmp; 
+            const diffGP = st2.gpmp - st1.gpmp; 
             const isGPBetter = diffGP < 0; 
             const colorClassGP = diffGP === 0 ? 'text-gray-400' : (isGPBetter ? 'text-green-600 font-bold' : 'text-red-600 font-bold'); 
-            const arrowVisual = diffGP > 0 ? '▲' : (diffGP < 0 ? '▼' : '-');
+            const arrowVisual = diffGP === 0 ? '-' : (isGPBetter ? '▲' : '▼');
 
-            const diffLulus = st1.perc - st2.perc;
+            const diffLulus = st2.perc - st1.perc;
             const isLulusBetter = diffLulus > 0;
             const colorClassLulus = diffLulus === 0 ? 'text-gray-400' : (isLulusBetter ? 'text-green-600 font-bold' : 'text-red-600 font-bold');
+            const arrowVisualLulus = diffLulus === 0 ? '-' : (isLulusBetter ? '▲' : '▼');
             
             // Data E3
             const st3 = s.ex3 ? getStats(s.ex3) : { gpmp: 0, perc: 0 };
-            const diffGP3 = st1.gpmp - st3.gpmp; 
+            const diffGP3 = st3.gpmp - st2.gpmp; 
             const isGPBetter3 = diffGP3 < 0; 
             const colorClassGP3 = diffGP3 === 0 ? 'text-gray-400' : (isGPBetter3 ? 'text-green-600 font-bold' : 'text-red-600 font-bold'); 
-            const arrowVisual3 = diffGP3 > 0 ? '▲' : (diffGP3 < 0 ? '▼' : '-');
+            const arrowVisual3 = diffGP3 === 0 ? '-' : (isGPBetter3 ? '▲' : '▼');
 
-            const diffLulus3 = st1.perc - st3.perc;
+            const diffLulus3 = st3.perc - st2.perc;
             const isLulusBetter3 = diffLulus3 > 0;
             const colorClassLulus3 = diffLulus3 === 0 ? 'text-gray-400' : (isLulusBetter3 ? 'text-green-600 font-bold' : 'text-red-600 font-bold');
+            const arrowVisualLulus3 = diffLulus3 === 0 ? '-' : (isLulusBetter3 ? '▲' : '▼');
 
             return `
             <tr class="transition-colors text-gray-700 hover:bg-orange-50/20">
@@ -506,28 +517,31 @@ export function renderComparisonTables(data, names) {
                 <td class="text-center bg-orange-50/30 font-bold text-gray-800">${st2.gpmp.toFixed(2)}</td>
 
                 <!-- COL E3 -->
-                <td class="text-center bg-emerald-50/30 text-blue-700 font-medium col-e3 ${hiddenCls}">${st3.perc.toFixed(2)}%</td>
-                <td class="text-center bg-emerald-50/30 font-bold text-gray-800 col-e3 ${hiddenCls}">${st3.gpmp.toFixed(2)}</td>
+                ${isE3 ? `
+                <td class="text-center bg-emerald-50/30 text-blue-700 font-medium">${st3.perc.toFixed(2)}%</td>
+                <td class="text-center bg-emerald-50/30 font-bold text-gray-800">${st3.gpmp.toFixed(2)}</td>
+                ` : ''}
 
                 <!-- BEZA 1 -->
-                <td class="text-center font-bold bg-gray-100 ${colorClassGP}">${Math.abs(diffGP).toFixed(2)}</td>
-                <td class="text-center font-bold bg-gray-100 ${colorClassLulus}">${Math.abs(diffLulus).toFixed(2)}%</td>
+                <td class="text-center font-bold bg-gray-100 ${colorClassGP}" title="E2-E1">${Math.abs(diffGP).toFixed(2)}</td>
+                <td class="text-center font-bold bg-gray-100 ${colorClassLulus}" title="E2-E1">${Math.abs(diffLulus).toFixed(2)}%</td>
                 <td class="text-center font-bold ${colorClassGP}"><span class="pdf-arrow text-sm">${arrowVisual}</span></td>
 
                 <!-- BEZA 2 (E3) -->
-                <td class="text-center font-bold bg-gray-100/50 border-l border-gray-200 ${colorClassGP3} col-e3 ${hiddenCls}">${Math.abs(diffGP3).toFixed(2)}</td>
-                <td class="text-center font-bold bg-gray-100/50 ${colorClassLulus3} col-e3 ${hiddenCls}">${Math.abs(diffLulus3).toFixed(2)}%</td>
-                <td class="text-center font-bold ${colorClassGP3} col-e3 ${hiddenCls}"><span class="pdf-arrow text-sm">${arrowVisual3}</span></td>
+                ${isE3 ? `
+                <td class="text-center font-bold bg-gray-100/50 border-l border-gray-200 ${colorClassGP3}" title="E3-E2">${Math.abs(diffGP3).toFixed(2)}</td>
+                <td class="text-center font-bold bg-gray-100/50 ${colorClassLulus3}" title="E3-E2">${Math.abs(diffLulus3).toFixed(2)}%</td>
+                <td class="text-center font-bold ${colorClassGP3}"><span class="pdf-arrow text-sm">${arrowVisual3}</span></td>
+                ` : ''}
             </tr>`;
         }).join('');
 }
 
-// [SURGICAL EDIT] Mengintegrasikan Header & Data E3 ke dalam jadual komponen
+// [COMMENT SYNTAX] SURGICAL EDIT START: DOM Cleansing - Matriks Komponen
 export function renderComparisonComponentTable(data, names) {
     const { subMap, schoolMap, districtStats, comparisonMatrix } = data;
     const { name1, name2, name3 } = names;
     const isE3 = !!name3;
-    const hiddenCls = isE3 ? '' : 'hidden';
 
     // 1. Suntik Nama Header
     document.getElementById('headCompSubExam1').innerText = name1; 
@@ -540,12 +554,12 @@ export function renderComparisonComponentTable(data, names) {
         if(document.getElementById('headCompSchoolExam3')) document.getElementById('headCompSchoolExam3').innerText = name3;
     }
 
-    // Toggle Kolum E3
-    const e3Cols = document.querySelectorAll('#viewComparison .col-e3');
+    // Toggle Kolum E3 Header Sahaja
+    const e3ColsStatic = document.querySelectorAll('#viewComparison th.col-e3');
     if (isE3) {
-        e3Cols.forEach(el => el.classList.remove('hidden'));
+        e3ColsStatic.forEach(el => el.classList.remove('hidden'));
     } else {
-        e3Cols.forEach(el => el.classList.add('hidden'));
+        e3ColsStatic.forEach(el => el.classList.add('hidden'));
     }
 
     if (districtStats) renderComparisonKPICards(districtStats);
@@ -556,23 +570,23 @@ export function renderComparisonComponentTable(data, names) {
             const getStats = (o) => ({ gpmp: o && o.ct > 0 ? (o.pt/o.ct) : 0, perc: o && o.ct > 0 ? (o.lulus/o.ct)*100 : 0 }); 
             const st1 = getStats(s.ex1); 
             const st2 = getStats(s.ex2); 
-            const diffGP = st1.gpmp - st2.gpmp; 
+            const diffGP = st2.gpmp - st1.gpmp; 
             const isGPBetter = diffGP < 0; 
             const colorClassGP = diffGP === 0 ? 'text-gray-400' : (isGPBetter ? 'text-green-600 font-bold' : 'text-red-600 font-bold'); 
-            const arrowVisual = diffGP > 0 ? '▲' : (diffGP < 0 ? '▼' : '-');
+            const arrowVisual = diffGP === 0 ? '-' : (isGPBetter ? '▲' : '▼');
             
-            const diffLulus = st1.perc - st2.perc;
+            const diffLulus = st2.perc - st1.perc;
             const isLulusBetter = diffLulus > 0;
             const colorClassLulus = diffLulus === 0 ? 'text-gray-400' : (isLulusBetter ? 'text-green-600 font-bold' : 'text-red-600 font-bold');
             
             // Data E3
             const st3 = s.ex3 ? getStats(s.ex3) : { gpmp: 0, perc: 0 };
-            const diffGP3 = st1.gpmp - st3.gpmp; 
+            const diffGP3 = st3.gpmp - st2.gpmp; 
             const isGPBetter3 = diffGP3 < 0; 
             const colorClassGP3 = diffGP3 === 0 ? 'text-gray-400' : (isGPBetter3 ? 'text-green-600 font-bold' : 'text-red-600 font-bold'); 
-            const arrowVisual3 = diffGP3 > 0 ? '▲' : (diffGP3 < 0 ? '▼' : '-');
+            const arrowVisual3 = diffGP3 === 0 ? '-' : (isGPBetter3 ? '▲' : '▼');
 
-            const diffLulus3 = st1.perc - st3.perc;
+            const diffLulus3 = st3.perc - st2.perc;
             const isLulusBetter3 = diffLulus3 > 0;
             const colorClassLulus3 = diffLulus3 === 0 ? 'text-gray-400' : (isLulusBetter3 ? 'text-green-600 font-bold' : 'text-red-600 font-bold');
 
@@ -587,8 +601,10 @@ export function renderComparisonComponentTable(data, names) {
                 <td class="text-center bg-pink-50/30 font-bold text-gray-800">${st2.gpmp.toFixed(2)}</td>
 
                 <!-- COL E3 -->
-                <td class="text-center bg-emerald-50/30 text-blue-700 font-medium col-e3 ${hiddenCls}">${st3.perc.toFixed(2)}%</td>
-                <td class="text-center bg-emerald-50/30 font-bold text-gray-800 col-e3 ${hiddenCls}">${st3.gpmp.toFixed(2)}</td>
+                ${isE3 ? `
+                <td class="text-center bg-emerald-50/30 text-blue-700 font-medium">${st3.perc.toFixed(2)}%</td>
+                <td class="text-center bg-emerald-50/30 font-bold text-gray-800">${st3.gpmp.toFixed(2)}</td>
+                ` : ''}
 
                 <!-- BEZA 1 -->
                 <td class="text-center font-bold bg-gray-100 ${colorClassGP}">${Math.abs(diffGP).toFixed(2)}</td>
@@ -596,9 +612,11 @@ export function renderComparisonComponentTable(data, names) {
                 <td class="text-center font-bold ${colorClassGP}"><span class="pdf-arrow text-sm">${arrowVisual}</span></td>
 
                 <!-- BEZA 2 (E3) -->
-                <td class="text-center font-bold bg-gray-100/50 border-l border-gray-200 ${colorClassGP3} col-e3 ${hiddenCls}">${Math.abs(diffGP3).toFixed(2)}</td>
-                <td class="text-center font-bold bg-gray-100/50 ${colorClassLulus3} col-e3 ${hiddenCls}">${Math.abs(diffLulus3).toFixed(2)}%</td>
-                <td class="text-center font-bold ${colorClassGP3} col-e3 ${hiddenCls}"><span class="pdf-arrow text-sm">${arrowVisual3}</span></td>
+                ${isE3 ? `
+                <td class="text-center font-bold bg-gray-100/50 border-l border-gray-200 ${colorClassGP3}">${Math.abs(diffGP3).toFixed(2)}</td>
+                <td class="text-center font-bold bg-gray-100/50 ${colorClassLulus3}">${Math.abs(diffLulus3).toFixed(2)}%</td>
+                <td class="text-center font-bold ${colorClassGP3}"><span class="pdf-arrow text-sm">${arrowVisual3}</span></td>
+                ` : ''}
             </tr>`;
         }).join('');
 
@@ -611,15 +629,15 @@ export function renderComparisonComponentTable(data, names) {
         .map((s, i) => {
             const gpk1 = s.ex1.gpk;
             const gpk2 = s.ex2.gpk;
-            const diffGPK = gpk1 - gpk2;
+            const diffGPK = gpk2 - gpk1;
             const colorClass = diffGPK === 0 ? 'text-gray-400' : (diffGPK < 0 ? 'text-green-600 font-bold' : 'text-red-600 font-bold');
-            const arrowVisual = diffGPK > 0 ? '▲' : (diffGPK < 0 ? '▼' : '-');
+            const arrowVisual = diffGPK === 0 ? '-' : (diffGPK < 0 ? '▲' : '▼');
 
             // Data E3
             const gpk3 = s.ex3 ? s.ex3.gpk : 0;
-            const diffGPK3 = gpk1 - gpk3;
+            const diffGPK3 = gpk3 - gpk2;
             const colorClass3 = diffGPK3 === 0 ? 'text-gray-400' : (diffGPK3 < 0 ? 'text-green-600 font-bold' : 'text-red-600 font-bold');
-            const arrowVisual3 = diffGPK3 > 0 ? '▲' : (diffGPK3 < 0 ? '▼' : '-');
+            const arrowVisual3 = diffGPK3 === 0 ? '-' : (diffGPK3 < 0 ? '▲' : '▼');
 
             return `
             <tr class="transition-colors text-gray-700 hover:bg-purple-50/10">
@@ -634,19 +652,24 @@ export function renderComparisonComponentTable(data, names) {
                 <td class="text-center bg-purple-100/30 font-bold text-gray-800">${gpk2.toFixed(2)}</td>
 
                 <!-- COL E3 -->
-                <td class="text-center bg-emerald-50/30 text-gray-500 text-xs col-e3 ${hiddenCls}">${s.ex3 ? s.ex3.calon : 0}</td>
-                <td class="text-center bg-emerald-50/30 font-bold text-gray-800 col-e3 ${hiddenCls}">${gpk3.toFixed(2)}</td>
+                ${isE3 ? `
+                <td class="text-center bg-emerald-50/30 text-gray-500 text-xs">${s.ex3 ? s.ex3.calon : 0}</td>
+                <td class="text-center bg-emerald-50/30 font-bold text-gray-800">${gpk3.toFixed(2)}</td>
+                ` : ''}
 
                 <!-- BEZA 1 -->
                 <td class="text-center font-bold bg-gray-100 ${colorClass}">${Math.abs(diffGPK).toFixed(2)}</td>
                 <td class="text-center font-bold ${colorClass}"><span class="pdf-arrow text-sm">${arrowVisual}</span></td>
 
                 <!-- BEZA 2 (E3) -->
-                <td class="text-center font-bold bg-gray-100/50 border-l border-gray-200 ${colorClass3} col-e3 ${hiddenCls}">${Math.abs(diffGPK3).toFixed(2)}</td>
-                <td class="text-center font-bold ${colorClass3} col-e3 ${hiddenCls}"><span class="pdf-arrow text-sm">${arrowVisual3}</span></td>
+                ${isE3 ? `
+                <td class="text-center font-bold bg-gray-100/50 border-l border-gray-200 ${colorClass3}">${Math.abs(diffGPK3).toFixed(2)}</td>
+                <td class="text-center font-bold ${colorClass3}"><span class="pdf-arrow text-sm">${arrowVisual3}</span></td>
+                ` : ''}
             </tr>`;
         }).join('');
 }
+// [COMMENT SYNTAX] SURGICAL EDIT END
 
 function renderDetailedComparisonTables(comparisonMatrix, names) {
     const container = document.getElementById('comparisonDetailedContainer');
@@ -791,7 +814,7 @@ function getStudentAchievementRow(row, index, subjects, isCompare, context = {})
                 diffHtml = sr.diffStatus.label;
             }
 
-            // Perbezaan E1 vs E3
+            // Perbezaan E3 vs E2 (Trajektori)
             let diffHtml2 = '-';
             let diffClass2 = 'text-gray-400';
             if (isE3 && sr.diffStatus2) {

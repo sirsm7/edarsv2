@@ -927,7 +927,7 @@ export function getStudentAchievementSubjectCodes(students, comparisonStudents =
     return Array.from(subjectSet).sort(studentAchievementCompareSubjects);
 }
 
-// [SURGICAL EDIT] Menyokong E3 dan beza matematik E1 vs E3
+// [SURGICAL EDIT] Menyokong E3 dan beza matematik Trajektori E2 vs E1 dan E3 vs E2
 export function calculateStudentAchievementData(students, comparisonStudents = [], comparisonStudents2 = [], options = {}) {
     const source = Array.isArray(students) ? students : [];
     const compSource = Array.isArray(comparisonStudents) ? comparisonStudents : [];
@@ -1003,7 +1003,6 @@ export function calculateStudentAchievementData(students, comparisonStudents = [
                 countedSubjects++;
             }
 
-            // PERBANDINGAN E1 VS E2
             let compMark = '';
             let compGrade = '';
             let compIsTaken = false;
@@ -1038,16 +1037,17 @@ export function calculateStudentAchievementData(students, comparisonStudents = [
                 }
             }
 
+            // [COMMENT SYNTAX] SURGICAL EDIT START: Logik Trajektori E2 vs E1
             let diffStatus = { type: 'NONE', label: '-', val: 0 };
             if (compIsTaken && isTaken) {
                 if (studentAchievementIsAbsentGrade(grade) && studentAchievementIsAbsentGrade(compGrade)) diffStatus = { type: 'SAME', label: '-', val: 0 };
-                else if (studentAchievementIsAbsentGrade(grade) && !studentAchievementIsAbsentGrade(compGrade)) diffStatus = { type: 'DOWN', label: '▼ TH', val: -1 };
-                else if (!studentAchievementIsAbsentGrade(grade) && studentAchievementIsAbsentGrade(compGrade)) diffStatus = { type: 'UP', label: '▲ HDR', val: 1 };
+                else if (studentAchievementIsAbsentGrade(grade) && !studentAchievementIsAbsentGrade(compGrade)) diffStatus = { type: 'UP', label: '▲ HDR', val: 1 };
+                else if (!studentAchievementIsAbsentGrade(grade) && studentAchievementIsAbsentGrade(compGrade)) diffStatus = { type: 'DOWN', label: '▼ TH', val: -1 };
                 else {
                     const v1 = parseFloat(mark);
                     const v2 = parseFloat(compMark);
                     if (!isNaN(v1) && !isNaN(v2)) {
-                        const diff = v1 - v2;
+                        const diff = v2 - v1; // E2 - E1
                         if (diff > 0) diffStatus = { type: 'UP', label: `▲ +${diff}`, val: diff };
                         else if (diff < 0) diffStatus = { type: 'DOWN', label: `▼ ${Math.abs(diff)}`, val: diff };
                         else diffStatus = { type: 'SAME', label: '-', val: 0 };
@@ -1055,20 +1055,21 @@ export function calculateStudentAchievementData(students, comparisonStudents = [
                          const p1 = GRED_POINTS[grade];
                          const p2 = GRED_POINTS[compGrade];
                          if (p1 !== undefined && p2 !== undefined) {
-                             const diff = p2 - p1; 
+                             const diff = p1 - p2; // Point rendah lebih baik (E1 - E2)
                              if (diff > 0) diffStatus = { type: 'UP', label: `▲`, val: diff };
                              else if (diff < 0) diffStatus = { type: 'DOWN', label: `▼`, val: diff };
                              else diffStatus = { type: 'SAME', label: '-', val: 0 };
                          }
                     }
                 }
-            } else if (isTaken && !compIsTaken) {
+            } else if (compIsTaken && !isTaken) {
                 diffStatus = { type: 'NEW', label: 'BARU', val: 0 };
-            } else if (!isTaken && compIsTaken) {
+            } else if (!compIsTaken && isTaken) {
                 diffStatus = { type: 'DROP', label: 'GUGUR', val: 0 };
             }
+            // [COMMENT SYNTAX] SURGICAL EDIT END
 
-            // PERBANDINGAN E1 VS E3
+            // DATA E3
             let comp2Mark = '';
             let comp2Grade = '';
             let comp2IsTaken = false;
@@ -1103,35 +1104,43 @@ export function calculateStudentAchievementData(students, comparisonStudents = [
                 }
             }
 
+            // [COMMENT SYNTAX] SURGICAL EDIT START: Logik Trajektori E3 vs E2
             let diffStatus2 = { type: 'NONE', label: '-', val: 0 };
-            if (comp2IsTaken && isTaken) {
-                if (studentAchievementIsAbsentGrade(grade) && studentAchievementIsAbsentGrade(comp2Grade)) diffStatus2 = { type: 'SAME', label: '-', val: 0 };
-                else if (studentAchievementIsAbsentGrade(grade) && !studentAchievementIsAbsentGrade(comp2Grade)) diffStatus2 = { type: 'DOWN', label: '▼ TH', val: -1 };
-                else if (!studentAchievementIsAbsentGrade(grade) && studentAchievementIsAbsentGrade(comp2Grade)) diffStatus2 = { type: 'UP', label: '▲ HDR', val: 1 };
+            
+            // Baseline untuk perbandingan E3 ialah E2, jika tiada E2, guna E1
+            let baseMark = compIsTaken ? compMark : mark;
+            let baseGrade = compIsTaken ? compGrade : grade;
+            let baseIsTaken = compIsTaken || isTaken;
+
+            if (comp2IsTaken && baseIsTaken) {
+                if (studentAchievementIsAbsentGrade(baseGrade) && studentAchievementIsAbsentGrade(comp2Grade)) diffStatus2 = { type: 'SAME', label: '-', val: 0 };
+                else if (studentAchievementIsAbsentGrade(baseGrade) && !studentAchievementIsAbsentGrade(comp2Grade)) diffStatus2 = { type: 'UP', label: '▲ HDR', val: 1 };
+                else if (!studentAchievementIsAbsentGrade(baseGrade) && studentAchievementIsAbsentGrade(comp2Grade)) diffStatus2 = { type: 'DOWN', label: '▼ TH', val: -1 };
                 else {
-                    const v1 = parseFloat(mark);
-                    const v2 = parseFloat(comp2Mark);
-                    if (!isNaN(v1) && !isNaN(v2)) {
-                        const diff = v1 - v2;
-                        if (diff > 0) diffStatus2 = { type: 'UP', label: `▲ +${diff}`, val: diff };
-                        else if (diff < 0) diffStatus2 = { type: 'DOWN', label: `▼ ${Math.abs(diff)}`, val: diff };
+                    const vBase = parseFloat(baseMark);
+                    const v3 = parseFloat(comp2Mark);
+                    if (!isNaN(vBase) && !isNaN(v3)) {
+                        const diff2 = v3 - vBase; // E3 - Base
+                        if (diff2 > 0) diffStatus2 = { type: 'UP', label: `▲ +${diff2}`, val: diff2 };
+                        else if (diff2 < 0) diffStatus2 = { type: 'DOWN', label: `▼ ${Math.abs(diff2)}`, val: diff2 };
                         else diffStatus2 = { type: 'SAME', label: '-', val: 0 };
-                    } else if (grade !== comp2Grade) {
-                         const p1 = GRED_POINTS[grade];
-                         const p2 = GRED_POINTS[comp2Grade];
-                         if (p1 !== undefined && p2 !== undefined) {
-                             const diff = p2 - p1; 
-                             if (diff > 0) diffStatus2 = { type: 'UP', label: `▲`, val: diff };
-                             else if (diff < 0) diffStatus2 = { type: 'DOWN', label: `▼`, val: diff };
+                    } else if (baseGrade !== comp2Grade) {
+                         const pBase = GRED_POINTS[baseGrade];
+                         const p3 = GRED_POINTS[comp2Grade];
+                         if (pBase !== undefined && p3 !== undefined) {
+                             const diff2 = pBase - p3; // Point rendah lebih baik (Base - E3)
+                             if (diff2 > 0) diffStatus2 = { type: 'UP', label: `▲`, val: diff2 };
+                             else if (diff2 < 0) diffStatus2 = { type: 'DOWN', label: `▼`, val: diff2 };
                              else diffStatus2 = { type: 'SAME', label: '-', val: 0 };
                          }
                     }
                 }
-            } else if (isTaken && !comp2IsTaken) {
+            } else if (comp2IsTaken && !baseIsTaken) {
                 diffStatus2 = { type: 'NEW', label: 'BARU', val: 0 };
-            } else if (!isTaken && comp2IsTaken) {
+            } else if (!comp2IsTaken && baseIsTaken) {
                 diffStatus2 = { type: 'DROP', label: 'GUGUR', val: 0 };
             }
+            // [COMMENT SYNTAX] SURGICAL EDIT END
 
             return {
                 kod: subjectCode,
@@ -1176,6 +1185,7 @@ export function calculateStudentAchievementData(students, comparisonStudents = [
         const issueText = studentAchievementBuildIssueText(subjectResults);
         const achievementText = studentAchievementBuildAchievementText(subjectResults);
 
+        // [COMMENT SYNTAX] SURGICAL EDIT START: Logik GPS Trajektori E2 vs E1
         let comparison = null;
         if (compMarks) {
             const compGBM = studentAchievementGetSubjectGrade(compMarks, 'BM');
@@ -1183,10 +1193,13 @@ export function calculateStudentAchievementData(students, comparisonStudents = [
             const compIsLMS = studentAchievementIsPassingGrade(compGBM) && studentAchievementIsPassingGrade(compGSEJ);
             const compGps = compCountedSubjects > 0 ? compTotalPoint / compCountedSubjects : 0;
             
-            const gpsDiff = gps - compGps;
             let gpsImprovement = 'NONE';
             let gpsDiffText = '-';
+            let finalGpsDiff = 0;
+            
             if (compCountedSubjects > 0 && countedSubjects > 0) {
+                const gpsDiff = compGps - gps; // E2 - E1 (Nilai Negatif = GPS Turun = UP)
+                finalGpsDiff = gpsDiff;
                 if (gpsDiff < 0) { gpsImprovement = 'UP'; gpsDiffText = `▲ ${Math.abs(gpsDiff).toFixed(2)}`; }
                 else if (gpsDiff > 0) { gpsImprovement = 'DOWN'; gpsDiffText = `▼ ${Math.abs(gpsDiff).toFixed(2)}`; }
                 else { gpsImprovement = 'SAME'; gpsDiffText = '-'; }
@@ -1200,13 +1213,15 @@ export function calculateStudentAchievementData(students, comparisonStudents = [
                 totalCredit: compTotalCredit,
                 gps: compGps,
                 gpsText: compCountedSubjects > 0 ? compGps.toFixed(2) : '-',
-                gpsDiff: Math.abs(gpsDiff).toFixed(2),
+                gpsDiff: Math.abs(finalGpsDiff).toFixed(2),
                 gpsImprovement,
                 gpsDiffText,
                 lmsStatus: compIsLMS ? 'LMS' : 'TLMS'
             };
         }
+        // [COMMENT SYNTAX] SURGICAL EDIT END
 
+        // [COMMENT SYNTAX] SURGICAL EDIT START: Logik GPS Trajektori E3 vs E2
         let comparison2 = null;
         if (compMarks2) {
             const comp2GBM = studentAchievementGetSubjectGrade(compMarks2, 'BM');
@@ -1214,10 +1229,16 @@ export function calculateStudentAchievementData(students, comparisonStudents = [
             const comp2IsLMS = studentAchievementIsPassingGrade(comp2GBM) && studentAchievementIsPassingGrade(comp2GSEJ);
             const comp2Gps = comp2CountedSubjects > 0 ? comp2TotalPoint / comp2CountedSubjects : 0;
             
-            const gpsDiff2 = gps - comp2Gps;
             let gpsImprovement2 = 'NONE';
             let gpsDiffText2 = '-';
-            if (comp2CountedSubjects > 0 && countedSubjects > 0) {
+            let finalGpsDiff2 = 0;
+            
+            let baseGps = compCountedSubjects > 0 ? compGps : gps;
+            let baseCount = compCountedSubjects > 0 ? compCountedSubjects : countedSubjects;
+
+            if (comp2CountedSubjects > 0 && baseCount > 0) {
+                const gpsDiff2 = comp2Gps - baseGps; // E3 - Base
+                finalGpsDiff2 = gpsDiff2;
                 if (gpsDiff2 < 0) { gpsImprovement2 = 'UP'; gpsDiffText2 = `▲ ${Math.abs(gpsDiff2).toFixed(2)}`; }
                 else if (gpsDiff2 > 0) { gpsImprovement2 = 'DOWN'; gpsDiffText2 = `▼ ${Math.abs(gpsDiff2).toFixed(2)}`; }
                 else { gpsImprovement2 = 'SAME'; gpsDiffText2 = '-'; }
@@ -1231,12 +1252,13 @@ export function calculateStudentAchievementData(students, comparisonStudents = [
                 totalCredit: comp2TotalCredit,
                 gps: comp2Gps,
                 gpsText: comp2CountedSubjects > 0 ? comp2Gps.toFixed(2) : '-',
-                gpsDiff: Math.abs(gpsDiff2).toFixed(2),
+                gpsDiff: Math.abs(finalGpsDiff2).toFixed(2),
                 gpsImprovement: gpsImprovement2,
                 gpsDiffText: gpsDiffText2,
                 lmsStatus: comp2IsLMS ? 'LMS' : 'TLMS'
             };
         }
+        // [COMMENT SYNTAX] SURGICAL EDIT END
 
         return {
             bil: index + 1,
@@ -1359,16 +1381,17 @@ export function getStudentAchievementExportRows(studentAchievementData, isCompar
             item['GPS E2'] = row.comparison ? row.comparison.gpsText : '-';
             if (row.comparison2) item['GPS E3'] = row.comparison2.gpsText; // [SURGICAL EDIT]
 
-            item['Beza GPS (E1-E2)'] = row.comparison && row.comparison.gpsImprovement !== 'NONE'
+            // [COMMENT SYNTAX] SURGICAL EDIT START: Label Eksport Trajektori
+            item['Beza GPS (E2-E1)'] = row.comparison && row.comparison.gpsImprovement !== 'NONE'
                 ? (row.comparison.gpsImprovement === 'UP' ? `+${row.comparison.gpsDiff}` : (row.comparison.gpsImprovement === 'DOWN' ? `-${row.comparison.gpsDiff}` : '0.00'))
                 : '-';
                 
-            // [SURGICAL EDIT] Tambah Beza E1 vs E3
             if (row.comparison2) {
-                item['Beza GPS (E1-E3)'] = row.comparison2.gpsImprovement !== 'NONE'
+                item['Beza GPS (E3-E2)'] = row.comparison2.gpsImprovement !== 'NONE'
                     ? (row.comparison2.gpsImprovement === 'UP' ? `+${row.comparison2.gpsDiff}` : (row.comparison2.gpsImprovement === 'DOWN' ? `-${row.comparison2.gpsDiff}` : '0.00'))
                     : '-';
             }
+            // [COMMENT SYNTAX] SURGICAL EDIT END
         } else {
             item['Bil Subjek'] = row.totalTaken;
             item['Bil Lulus'] = row.totalPass;
@@ -1386,8 +1409,10 @@ export function getStudentAchievementExportRows(studentAchievementData, isCompar
                 item[`${subject.kod} E2`] = subjectResult ? subjectResult.compDisplay : '-';
                 if (row.comparison2) item[`${subject.kod} E3`] = subjectResult ? subjectResult.comp2Display : '-'; // [SURGICAL EDIT]
                 
-                item[`${subject.kod} Beza (E1-E2)`] = subjectResult ? subjectResult.diffStatus.label : '-';
-                if (row.comparison2) item[`${subject.kod} Beza (E1-E3)`] = subjectResult ? subjectResult.diffStatus2.label : '-'; // [SURGICAL EDIT]
+                // [COMMENT SYNTAX] SURGICAL EDIT START: Label Eksport Subjek Trajektori
+                item[`${subject.kod} Beza (E2-E1)`] = subjectResult ? subjectResult.diffStatus.label : '-';
+                if (row.comparison2) item[`${subject.kod} Beza (E3-E2)`] = subjectResult ? subjectResult.diffStatus2.label : '-';
+                // [COMMENT SYNTAX] SURGICAL EDIT END
             } else {
                 item[subject.kod] = subjectResult ? subjectResult.markah || '-' : '-';
                 item[`G${subject.kod}`] = subjectResult ? subjectResult.gred || '-' : '-';
