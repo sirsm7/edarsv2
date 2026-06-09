@@ -476,7 +476,6 @@ function getDistrictSimpleStats(list, isComponent = false, targetSubjects = []) 
     return stats;
 }
 
-// [SURGICAL EDIT] Kemas kini penerimaan list3 untuk modul Banding General
 export function calculateComparisonGeneral(list1, list2, list3 = []) {
     const stats1 = getDistrictSimpleStats(list1);
     const stats2 = getDistrictSimpleStats(list2);
@@ -492,7 +491,7 @@ export function calculateComparisonGeneral(list1, list2, list3 = []) {
                     name: s.nama_sekolah, code: s.kod_sekolah, 
                     ex1: { pt: 0, ct: 0, gps: 0, calonCount: 0, lmsCount: 0 }, 
                     ex2: { pt: 0, ct: 0, gps: 0, calonCount: 0, lmsCount: 0 },
-                    ex3: { pt: 0, ct: 0, gps: 0, calonCount: 0, lmsCount: 0 } // [SURGICAL EDIT] 
+                    ex3: { pt: 0, ct: 0, gps: 0, calonCount: 0, lmsCount: 0 }
                 };
             }
             const sc = schoolMap[s.nama_sekolah];
@@ -527,7 +526,7 @@ export function calculateComparisonGeneral(list1, list2, list3 = []) {
     };
     processSchools(list1, 'ex1');
     processSchools(list2, 'ex2');
-    if (list3.length) processSchools(list3, 'ex3'); // [SURGICAL EDIT]
+    if (list3.length) processSchools(list3, 'ex3');
 
     // 2. Proses Subjek
     const subMap = {};
@@ -547,7 +546,7 @@ export function calculateComparisonGeneral(list1, list2, list3 = []) {
                             kod: kod, nama: NAMA_SUBJEK[kod] || kod, 
                             ex1: { pt: 0, ct: 0, lulus: 0, ambil: 0 }, 
                             ex2: { pt: 0, ct: 0, lulus: 0, ambil: 0 },
-                            ex3: { pt: 0, ct: 0, lulus: 0, ambil: 0 } // [SURGICAL EDIT] 
+                            ex3: { pt: 0, ct: 0, lulus: 0, ambil: 0 }
                         };
                         const obj = subMap[kod][key];
                         obj.ambil++;
@@ -564,7 +563,7 @@ export function calculateComparisonGeneral(list1, list2, list3 = []) {
     };
     processSubjects(list1, 'ex1');
     processSubjects(list2, 'ex2');
-    if (list3.length) processSubjects(list3, 'ex3'); // [SURGICAL EDIT]
+    if (list3.length) processSubjects(list3, 'ex3');
 
     // GARBAGE COLLECTOR
     Object.keys(subMap).forEach(kod => {
@@ -582,18 +581,17 @@ export function calculateComparisonGeneral(list1, list2, list3 = []) {
 // -----------------------------------------------------------
 // NEW: ADVANCED COMPARISON LOGIC (MATRIKS GABUNGAN E1,E2,E3)
 // -----------------------------------------------------------
-// [SURGICAL EDIT] Kemas kini list3 untuk modul Komponen Perbandingan
 export function calculateComparisonComponent(list1, list2, list3 = [], compCode) {
     const targetSubjects = COMPONENT_MAP[compCode] || [];
     
     const stats1 = getDistrictSimpleStats(list1, true, targetSubjects);
     const stats2 = getDistrictSimpleStats(list2, true, targetSubjects);
-    const stats3 = getDistrictSimpleStats(list3, true, targetSubjects); // [SURGICAL EDIT]
+    const stats3 = getDistrictSimpleStats(list3, true, targetSubjects);
     const districtStats = { ex1: stats1, ex2: stats2, ex3: stats3, isComponent: true };
 
     const matrix1 = generateMatrixData(list1, targetSubjects, null, null, null);
     const matrix2 = generateMatrixData(list2, targetSubjects, null, null, null);
-    const matrix3 = generateMatrixData(list3, targetSubjects, null, null, null); // [SURGICAL EDIT]
+    const matrix3 = generateMatrixData(list3, targetSubjects, null, null, null);
 
     let comparisonMatrix = {};
     const allSubjects = new Set([...Object.keys(matrix1), ...Object.keys(matrix2), ...Object.keys(matrix3)]);
@@ -602,13 +600,13 @@ export function calculateComparisonComponent(list1, list2, list3 = [], compCode)
         comparisonMatrix[kod] = {};
         const schools1 = matrix1[kod] || {};
         const schools2 = matrix2[kod] || {};
-        const schools3 = matrix3[kod] || {}; // [SURGICAL EDIT]
+        const schools3 = matrix3[kod] || {};
         const allSchools = new Set([...Object.keys(schools1), ...Object.keys(schools2), ...Object.keys(schools3)]);
 
         allSchools.forEach(schName => {
             const d1 = schools1[schName]; 
             const d2 = schools2[schName]; 
-            const d3 = schools3[schName]; // [SURGICAL EDIT]
+            const d3 = schools3[schName];
             const baseInfo = d1 || d2 || d3;
             
             comparisonMatrix[kod][schName] = {
@@ -616,7 +614,7 @@ export function calculateComparisonComponent(list1, list2, list3 = [], compCode)
                 code: baseInfo.code,
                 e1: d1 || { daftar:0, hadir:0, cemerlang:0, kepujian:0, kredit:0, point:0, lulus:0 },
                 e2: d2 || { daftar:0, hadir:0, cemerlang:0, kepujian:0, kredit:0, point:0, lulus:0 },
-                e3: d3 || { daftar:0, hadir:0, cemerlang:0, kepujian:0, kredit:0, point:0, lulus:0 } // [SURGICAL EDIT]
+                e3: d3 || { daftar:0, hadir:0, cemerlang:0, kepujian:0, kredit:0, point:0, lulus:0 }
             };
         });
     });
@@ -630,7 +628,7 @@ export function calculateComparisonComponent(list1, list2, list3 = [], compCode)
                     name: s.nama_sekolah, code: s.kod_sekolah, 
                     ex1: { pt: 0, ct: 0, gpk: 0, calon: 0 }, 
                     ex2: { pt: 0, ct: 0, gpk: 0, calon: 0 },
-                    ex3: { pt: 0, ct: 0, gpk: 0, calon: 0 } // [SURGICAL EDIT]
+                    ex3: { pt: 0, ct: 0, gpk: 0, calon: 0 }
                 };
             }
             const sc = schoolMap[s.nama_sekolah];
@@ -662,7 +660,7 @@ export function calculateComparisonComponent(list1, list2, list3 = [], compCode)
     };
     processCompSchools(list1, 'ex1');
     processCompSchools(list2, 'ex2');
-    if (list3.length) processCompSchools(list3, 'ex3'); // [SURGICAL EDIT]
+    if (list3.length) processCompSchools(list3, 'ex3');
 
     // 5. Proses Subjek Ringkas (Jadual Atas)
     const subMap = {};
@@ -683,7 +681,7 @@ export function calculateComparisonComponent(list1, list2, list3 = [], compCode)
                                 kod: kod, nama: NAMA_SUBJEK[kod] || kod, 
                                 ex1: { pt: 0, ct: 0, lulus: 0, ambil: 0 }, 
                                 ex2: { pt: 0, ct: 0, lulus: 0, ambil: 0 },
-                                ex3: { pt: 0, ct: 0, lulus: 0, ambil: 0 } // [SURGICAL EDIT]
+                                ex3: { pt: 0, ct: 0, lulus: 0, ambil: 0 }
                             };
                             const obj = subMap[kod][key];
                             obj.ambil++;
@@ -701,7 +699,7 @@ export function calculateComparisonComponent(list1, list2, list3 = [], compCode)
     };
     processCompSubjects(list1, 'ex1');
     processCompSubjects(list2, 'ex2');
-    if (list3.length) processCompSubjects(list3, 'ex3'); // [SURGICAL EDIT]
+    if (list3.length) processCompSubjects(list3, 'ex3');
 
     // GARBAGE COLLECTOR
     Object.keys(subMap).forEach(kod => {
@@ -725,7 +723,6 @@ export function calculateComparisonComponent(list1, list2, list3 = [], compCode)
 // -----------------------------------------------------------
 // NEW: SINGLE SUBJECT ANALYSIS (ANALISA SUBJEK SPESIFIK)
 // -----------------------------------------------------------
-// [SURGICAL EDIT] Parameter list3 untuk E3 disuntik
 export function calculateSingleSubjectMatrix(list1, list2, list3 = [], isCompare, subjectCode) {
     const targetSubjects = [subjectCode];
     
@@ -745,8 +742,8 @@ export function calculateSingleSubjectMatrix(list1, list2, list3 = [], isCompare
         const matrix2 = generateMatrixData(list2, targetSubjects, null, null, null);
         const schools2 = matrix2[subjectCode] || {};
         
-        const matrix3 = generateMatrixData(list3, targetSubjects, null, null, null); // [SURGICAL EDIT]
-        const schools3 = matrix3[subjectCode] || {}; // [SURGICAL EDIT]
+        const matrix3 = generateMatrixData(list3, targetSubjects, null, null, null);
+        const schools3 = matrix3[subjectCode] || {};
         
         let comparisonMatrix = {};
         
@@ -756,7 +753,7 @@ export function calculateSingleSubjectMatrix(list1, list2, list3 = [], isCompare
         allSchools.forEach(schName => {
             const d1 = schools1[schName]; 
             const d2 = schools2[schName]; 
-            const d3 = schools3[schName]; // [SURGICAL EDIT]
+            const d3 = schools3[schName];
             const baseInfo = d1 || d2 || d3; // Untuk dapatkan kod sekolah
             
             comparisonMatrix[schName] = {
@@ -765,7 +762,7 @@ export function calculateSingleSubjectMatrix(list1, list2, list3 = [], isCompare
                 // Pastikan tiada ralat undefined jika sekolah tiada dalam salah satu exam
                 e1: d1 || { daftar:0, hadir:0, cemerlang:0, kepujian:0, kredit:0, point:0, lulus:0, 'A+':0, 'A':0, 'A-':0, 'B+':0, 'B':0, 'C+':0, 'C':0, 'D':0, 'E':0, 'G':0 },
                 e2: d2 || { daftar:0, hadir:0, cemerlang:0, kepujian:0, kredit:0, point:0, lulus:0, 'A+':0, 'A':0, 'A-':0, 'B+':0, 'B':0, 'C+':0, 'C':0, 'D':0, 'E':0, 'G':0 },
-                e3: d3 || { daftar:0, hadir:0, cemerlang:0, kepujian:0, kredit:0, point:0, lulus:0, 'A+':0, 'A':0, 'A-':0, 'B+':0, 'B':0, 'C+':0, 'C':0, 'D':0, 'E':0, 'G':0 } // [SURGICAL EDIT]
+                e3: d3 || { daftar:0, hadir:0, cemerlang:0, kepujian:0, kredit:0, point:0, lulus:0, 'A+':0, 'A':0, 'A-':0, 'B+':0, 'B':0, 'C+':0, 'C':0, 'D':0, 'E':0, 'G':0 }
             };
         });
 
@@ -886,7 +883,6 @@ function studentAchievementBuildAchievementText(subjects) {
         .join(' | ');
 }
 
-// [SURGICAL EDIT] Memastikan Subjek E3 turut dijejak
 export function getStudentAchievementSubjectCodes(students, comparisonStudents = [], comparisonStudents2 = []) {
     const subjectSet = new Set();
     const allStudents = [
@@ -927,7 +923,7 @@ export function getStudentAchievementSubjectCodes(students, comparisonStudents =
     return Array.from(subjectSet).sort(studentAchievementCompareSubjects);
 }
 
-// [SURGICAL EDIT] Menyokong E3 dan beza matematik Trajektori E2 vs E1 dan E3 vs E2
+// [COMMENT SYNTAX] SURGICAL EDIT START: Logik Matematik Trajektori Paparan Pelajar (E1 - E2) & (E1 - E3)
 export function calculateStudentAchievementData(students, comparisonStudents = [], comparisonStudents2 = [], options = {}) {
     const source = Array.isArray(students) ? students : [];
     const compSource = Array.isArray(comparisonStudents) ? comparisonStudents : [];
@@ -1037,17 +1033,17 @@ export function calculateStudentAchievementData(students, comparisonStudents = [
                 }
             }
 
-            // [COMMENT SYNTAX] SURGICAL EDIT START: Logik Trajektori E2 vs E1
+            // Perbezaan BZA 1: E1 - E2
             let diffStatus = { type: 'NONE', label: '-', val: 0 };
             if (compIsTaken && isTaken) {
                 if (studentAchievementIsAbsentGrade(grade) && studentAchievementIsAbsentGrade(compGrade)) diffStatus = { type: 'SAME', label: '-', val: 0 };
-                else if (studentAchievementIsAbsentGrade(grade) && !studentAchievementIsAbsentGrade(compGrade)) diffStatus = { type: 'UP', label: '▲ HDR', val: 1 };
-                else if (!studentAchievementIsAbsentGrade(grade) && studentAchievementIsAbsentGrade(compGrade)) diffStatus = { type: 'DOWN', label: '▼ TH', val: -1 };
+                else if (studentAchievementIsAbsentGrade(grade) && !studentAchievementIsAbsentGrade(compGrade)) diffStatus = { type: 'DOWN', label: '▼ TH', val: -1 };
+                else if (!studentAchievementIsAbsentGrade(grade) && studentAchievementIsAbsentGrade(compGrade)) diffStatus = { type: 'UP', label: '▲ HDR', val: 1 };
                 else {
                     const v1 = parseFloat(mark);
                     const v2 = parseFloat(compMark);
                     if (!isNaN(v1) && !isNaN(v2)) {
-                        const diff = v2 - v1; // E2 - E1
+                        const diff = v1 - v2; // E1 - E2 (Markah lebih tinggi adalah lebih baik)
                         if (diff > 0) diffStatus = { type: 'UP', label: `▲ +${diff}`, val: diff };
                         else if (diff < 0) diffStatus = { type: 'DOWN', label: `▼ ${Math.abs(diff)}`, val: diff };
                         else diffStatus = { type: 'SAME', label: '-', val: 0 };
@@ -1055,19 +1051,18 @@ export function calculateStudentAchievementData(students, comparisonStudents = [
                          const p1 = GRED_POINTS[grade];
                          const p2 = GRED_POINTS[compGrade];
                          if (p1 !== undefined && p2 !== undefined) {
-                             const diff = p1 - p2; // Point rendah lebih baik (E1 - E2)
-                             if (diff > 0) diffStatus = { type: 'UP', label: `▲`, val: diff };
-                             else if (diff < 0) diffStatus = { type: 'DOWN', label: `▼`, val: diff };
+                             const diff = p1 - p2; // E1 - E2 (Mata gred lebih rendah adalah lebih baik)
+                             if (diff < 0) diffStatus = { type: 'UP', label: `▲`, val: Math.abs(diff) };
+                             else if (diff > 0) diffStatus = { type: 'DOWN', label: `▼`, val: Math.abs(diff) };
                              else diffStatus = { type: 'SAME', label: '-', val: 0 };
                          }
                     }
                 }
-            } else if (compIsTaken && !isTaken) {
-                diffStatus = { type: 'NEW', label: 'BARU', val: 0 };
             } else if (!compIsTaken && isTaken) {
+                diffStatus = { type: 'NEW', label: 'BARU', val: 0 };
+            } else if (compIsTaken && !isTaken) {
                 diffStatus = { type: 'DROP', label: 'GUGUR', val: 0 };
             }
-            // [COMMENT SYNTAX] SURGICAL EDIT END
 
             // DATA E3
             let comp2Mark = '';
@@ -1104,43 +1099,37 @@ export function calculateStudentAchievementData(students, comparisonStudents = [
                 }
             }
 
-            // [COMMENT SYNTAX] SURGICAL EDIT START: Logik Trajektori E3 vs E2
+            // Perbezaan BZA 2: E1 - E3
             let diffStatus2 = { type: 'NONE', label: '-', val: 0 };
-            
-            // Baseline untuk perbandingan E3 ialah E2, jika tiada E2, guna E1
-            let baseMark = compIsTaken ? compMark : mark;
-            let baseGrade = compIsTaken ? compGrade : grade;
-            let baseIsTaken = compIsTaken || isTaken;
 
-            if (comp2IsTaken && baseIsTaken) {
-                if (studentAchievementIsAbsentGrade(baseGrade) && studentAchievementIsAbsentGrade(comp2Grade)) diffStatus2 = { type: 'SAME', label: '-', val: 0 };
-                else if (studentAchievementIsAbsentGrade(baseGrade) && !studentAchievementIsAbsentGrade(comp2Grade)) diffStatus2 = { type: 'UP', label: '▲ HDR', val: 1 };
-                else if (!studentAchievementIsAbsentGrade(baseGrade) && studentAchievementIsAbsentGrade(comp2Grade)) diffStatus2 = { type: 'DOWN', label: '▼ TH', val: -1 };
+            if (comp2IsTaken && isTaken) {
+                if (studentAchievementIsAbsentGrade(grade) && studentAchievementIsAbsentGrade(comp2Grade)) diffStatus2 = { type: 'SAME', label: '-', val: 0 };
+                else if (studentAchievementIsAbsentGrade(grade) && !studentAchievementIsAbsentGrade(comp2Grade)) diffStatus2 = { type: 'DOWN', label: '▼ TH', val: -1 };
+                else if (!studentAchievementIsAbsentGrade(grade) && studentAchievementIsAbsentGrade(comp2Grade)) diffStatus2 = { type: 'UP', label: '▲ HDR', val: 1 };
                 else {
-                    const vBase = parseFloat(baseMark);
+                    const v1 = parseFloat(mark);
                     const v3 = parseFloat(comp2Mark);
-                    if (!isNaN(vBase) && !isNaN(v3)) {
-                        const diff2 = v3 - vBase; // E3 - Base
+                    if (!isNaN(v1) && !isNaN(v3)) {
+                        const diff2 = v1 - v3; // E1 - E3
                         if (diff2 > 0) diffStatus2 = { type: 'UP', label: `▲ +${diff2}`, val: diff2 };
                         else if (diff2 < 0) diffStatus2 = { type: 'DOWN', label: `▼ ${Math.abs(diff2)}`, val: diff2 };
                         else diffStatus2 = { type: 'SAME', label: '-', val: 0 };
-                    } else if (baseGrade !== comp2Grade) {
-                         const pBase = GRED_POINTS[baseGrade];
+                    } else if (grade !== comp2Grade) {
+                         const p1 = GRED_POINTS[grade];
                          const p3 = GRED_POINTS[comp2Grade];
-                         if (pBase !== undefined && p3 !== undefined) {
-                             const diff2 = pBase - p3; // Point rendah lebih baik (Base - E3)
-                             if (diff2 > 0) diffStatus2 = { type: 'UP', label: `▲`, val: diff2 };
-                             else if (diff2 < 0) diffStatus2 = { type: 'DOWN', label: `▼`, val: diff2 };
+                         if (p1 !== undefined && p3 !== undefined) {
+                             const diff2 = p1 - p3; // E1 - E3
+                             if (diff2 < 0) diffStatus2 = { type: 'UP', label: `▲`, val: Math.abs(diff2) };
+                             else if (diff2 > 0) diffStatus2 = { type: 'DOWN', label: `▼`, val: Math.abs(diff2) };
                              else diffStatus2 = { type: 'SAME', label: '-', val: 0 };
                          }
                     }
                 }
-            } else if (comp2IsTaken && !baseIsTaken) {
+            } else if (!comp2IsTaken && isTaken) {
                 diffStatus2 = { type: 'NEW', label: 'BARU', val: 0 };
-            } else if (!comp2IsTaken && baseIsTaken) {
+            } else if (comp2IsTaken && !isTaken) {
                 diffStatus2 = { type: 'DROP', label: 'GUGUR', val: 0 };
             }
-            // [COMMENT SYNTAX] SURGICAL EDIT END
 
             return {
                 kod: subjectCode,
@@ -1185,7 +1174,7 @@ export function calculateStudentAchievementData(students, comparisonStudents = [
         const issueText = studentAchievementBuildIssueText(subjectResults);
         const achievementText = studentAchievementBuildAchievementText(subjectResults);
 
-        // [COMMENT SYNTAX] SURGICAL EDIT START: Logik GPS Trajektori E2 vs E1
+        // Pengiraan GPS Trajektori E1 - E2
         let comparison = null;
         if (compMarks) {
             const compGBM = studentAchievementGetSubjectGrade(compMarks, 'BM');
@@ -1198,7 +1187,7 @@ export function calculateStudentAchievementData(students, comparisonStudents = [
             let finalGpsDiff = 0;
             
             if (compCountedSubjects > 0 && countedSubjects > 0) {
-                const gpsDiff = compGps - gps; // E2 - E1 (Nilai Negatif = GPS Turun = UP)
+                const gpsDiff = gps - compGps; // E1 - E2 (GPS rendah = baik)
                 finalGpsDiff = gpsDiff;
                 if (gpsDiff < 0) { gpsImprovement = 'UP'; gpsDiffText = `▲ ${Math.abs(gpsDiff).toFixed(2)}`; }
                 else if (gpsDiff > 0) { gpsImprovement = 'DOWN'; gpsDiffText = `▼ ${Math.abs(gpsDiff).toFixed(2)}`; }
@@ -1219,9 +1208,8 @@ export function calculateStudentAchievementData(students, comparisonStudents = [
                 lmsStatus: compIsLMS ? 'LMS' : 'TLMS'
             };
         }
-        // [COMMENT SYNTAX] SURGICAL EDIT END
 
-        // [COMMENT SYNTAX] SURGICAL EDIT START: Logik GPS Trajektori E3 vs E2
+        // Pengiraan GPS Trajektori E1 - E3
         let comparison2 = null;
         if (compMarks2) {
             const comp2GBM = studentAchievementGetSubjectGrade(compMarks2, 'BM');
@@ -1232,12 +1220,9 @@ export function calculateStudentAchievementData(students, comparisonStudents = [
             let gpsImprovement2 = 'NONE';
             let gpsDiffText2 = '-';
             let finalGpsDiff2 = 0;
-            
-            let baseGps = compCountedSubjects > 0 ? compGps : gps;
-            let baseCount = compCountedSubjects > 0 ? compCountedSubjects : countedSubjects;
 
-            if (comp2CountedSubjects > 0 && baseCount > 0) {
-                const gpsDiff2 = comp2Gps - baseGps; // E3 - Base
+            if (comp2CountedSubjects > 0 && countedSubjects > 0) {
+                const gpsDiff2 = gps - comp2Gps; // E1 - E3 (GPS rendah = baik)
                 finalGpsDiff2 = gpsDiff2;
                 if (gpsDiff2 < 0) { gpsImprovement2 = 'UP'; gpsDiffText2 = `▲ ${Math.abs(gpsDiff2).toFixed(2)}`; }
                 else if (gpsDiff2 > 0) { gpsImprovement2 = 'DOWN'; gpsDiffText2 = `▼ ${Math.abs(gpsDiff2).toFixed(2)}`; }
@@ -1292,7 +1277,7 @@ export function calculateStudentAchievementData(students, comparisonStudents = [
             issueText,
             achievementText,
             comparison,
-            comparison2 // [SURGICAL EDIT] Data E3
+            comparison2
         };
     });
 
@@ -1367,31 +1352,30 @@ export function getStudentAchievementExportRows(studentAchievementData, isCompar
         if (isCompare) {
             item['Subjek E1'] = row.totalTaken;
             item['Subjek E2'] = row.comparison ? row.comparison.totalTaken : '-';
-            if (row.comparison2) item['Subjek E3'] = row.comparison2.totalTaken; // [SURGICAL EDIT]
+            if (row.comparison2) item['Subjek E3'] = row.comparison2.totalTaken; 
 
             item['Lulus E1'] = row.totalPass;
             item['Lulus E2'] = row.comparison ? row.comparison.totalPass : '-';
-            if (row.comparison2) item['Lulus E3'] = row.comparison2.totalPass; // [SURGICAL EDIT]
+            if (row.comparison2) item['Lulus E3'] = row.comparison2.totalPass; 
 
             item['LMS E1'] = row.lmsStatus;
             item['LMS E2'] = row.comparison ? row.comparison.lmsStatus : '-';
-            if (row.comparison2) item['LMS E3'] = row.comparison2.lmsStatus; // [SURGICAL EDIT]
+            if (row.comparison2) item['LMS E3'] = row.comparison2.lmsStatus; 
 
             item['GPS E1'] = row.gpsText;
             item['GPS E2'] = row.comparison ? row.comparison.gpsText : '-';
-            if (row.comparison2) item['GPS E3'] = row.comparison2.gpsText; // [SURGICAL EDIT]
+            if (row.comparison2) item['GPS E3'] = row.comparison2.gpsText; 
 
-            // [COMMENT SYNTAX] SURGICAL EDIT START: Label Eksport Trajektori
-            item['Beza GPS (E2-E1)'] = row.comparison && row.comparison.gpsImprovement !== 'NONE'
+            // Label Eksport Matematik Trajektori (Semasa vs Baseline)
+            item['Beza GPS (E1-E2)'] = row.comparison && row.comparison.gpsImprovement !== 'NONE'
                 ? (row.comparison.gpsImprovement === 'UP' ? `+${row.comparison.gpsDiff}` : (row.comparison.gpsImprovement === 'DOWN' ? `-${row.comparison.gpsDiff}` : '0.00'))
                 : '-';
                 
             if (row.comparison2) {
-                item['Beza GPS (E3-E2)'] = row.comparison2.gpsImprovement !== 'NONE'
+                item['Beza GPS (E1-E3)'] = row.comparison2.gpsImprovement !== 'NONE'
                     ? (row.comparison2.gpsImprovement === 'UP' ? `+${row.comparison2.gpsDiff}` : (row.comparison2.gpsImprovement === 'DOWN' ? `-${row.comparison2.gpsDiff}` : '0.00'))
                     : '-';
             }
-            // [COMMENT SYNTAX] SURGICAL EDIT END
         } else {
             item['Bil Subjek'] = row.totalTaken;
             item['Bil Lulus'] = row.totalPass;
@@ -1407,12 +1391,11 @@ export function getStudentAchievementExportRows(studentAchievementData, isCompar
             if (isCompare) {
                 item[`${subject.kod} E1`] = subjectResult ? subjectResult.display : '-';
                 item[`${subject.kod} E2`] = subjectResult ? subjectResult.compDisplay : '-';
-                if (row.comparison2) item[`${subject.kod} E3`] = subjectResult ? subjectResult.comp2Display : '-'; // [SURGICAL EDIT]
+                if (row.comparison2) item[`${subject.kod} E3`] = subjectResult ? subjectResult.comp2Display : '-'; 
                 
-                // [COMMENT SYNTAX] SURGICAL EDIT START: Label Eksport Subjek Trajektori
-                item[`${subject.kod} Beza (E2-E1)`] = subjectResult ? subjectResult.diffStatus.label : '-';
-                if (row.comparison2) item[`${subject.kod} Beza (E3-E2)`] = subjectResult ? subjectResult.diffStatus2.label : '-';
-                // [COMMENT SYNTAX] SURGICAL EDIT END
+                // Label Eksport Matematik Subjek (Semasa vs Baseline)
+                item[`${subject.kod} Beza (E1-E2)`] = subjectResult ? subjectResult.diffStatus.label : '-';
+                if (row.comparison2) item[`${subject.kod} Beza (E1-E3)`] = subjectResult ? subjectResult.diffStatus2.label : '-';
             } else {
                 item[subject.kod] = subjectResult ? subjectResult.markah || '-' : '-';
                 item[`G${subject.kod}`] = subjectResult ? subjectResult.gred || '-' : '-';

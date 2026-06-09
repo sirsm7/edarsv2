@@ -433,22 +433,22 @@
                         <h3 class="font-bold font-oswald uppercase text-sm">Banding Subjek Komponen</h3>
                         <div class="flex gap-2"><button id="btnPdfCompareCompSubjects" class="btn-pdf">PDF</button><button id="btnExportCompareCompSubjects" class="btn-excel">EXCEL</button></div>
                     </div>
-                    <!-- [COMMENT SYNTAX] SURGICAL EDIT START: Struktur Jadual dengan Lajur E3 (Tersembunyi by default) -->
+                    <!-- [COMMENT SYNTAX] SURGICAL EDIT START: Susun semula kolum E3 -> E2 -> E1 -->
                     <div class="overflow-x-auto">
                         <table id="tableCompareCompSubjects">
                             <thead>
                                 <tr>
                                     <th class="border" rowspan="2">Bil</th><th class="border" rowspan="2">Kod</th><th class="border" rowspan="2">Subjek</th>
-                                    <th class="border text-center" colspan="2" id="headCompSubExam1">E1</th>
-                                    <th class="border text-center" colspan="2" id="headCompSubExam2">E2</th>
                                     <th class="border text-center col-e3 hidden" colspan="2" id="headCompSubExam3">E3</th>
+                                    <th class="border text-center" colspan="2" id="headCompSubExam2">E2</th>
+                                    <th class="border text-center" colspan="2" id="headCompSubExam1">E1</th>
                                     <th class="border text-center" colspan="3">Beza (E1-E2)</th>
                                     <th class="border text-center col-e3 hidden" colspan="3">Beza (E1-E3)</th>
                                 </tr>
                                 <tr>
-                                    <th class="border text-center">%L</th><th class="border text-center">GP</th>
-                                    <th class="border text-center">%L</th><th class="border text-center">GP</th>
                                     <th class="border text-center col-e3 hidden">%L</th><th class="border text-center col-e3 hidden">GP</th>
+                                    <th class="border text-center">%L</th><th class="border text-center">GP</th>
+                                    <th class="border text-center">%L</th><th class="border text-center">GP</th>
                                     <th class="border text-center">GP</th><th class="border text-center">%L</th><th class="border text-center">S</th>
                                     <th class="border text-center col-e3 hidden">GP</th><th class="border text-center col-e3 hidden">%L</th><th class="border text-center col-e3 hidden">S</th>
                                 </tr>
@@ -471,16 +471,16 @@
                             <thead>
                                 <tr>
                                     <th class="border" rowspan="2">Bil</th><th class="border" rowspan="2">Sekolah</th>
-                                    <th class="border text-center" colspan="2" id="headCompSchoolExam1">E1</th>
-                                    <th class="border text-center" colspan="2" id="headCompSchoolExam2">E2</th>
                                     <th class="border text-center col-e3 hidden" colspan="2" id="headCompSchoolExam3">E3</th>
+                                    <th class="border text-center" colspan="2" id="headCompSchoolExam2">E2</th>
+                                    <th class="border text-center" colspan="2" id="headCompSchoolExam1">E1</th>
                                     <th class="border text-center" colspan="2">Beza (E1-E2)</th>
                                     <th class="border text-center col-e3 hidden" colspan="2">Beza (E1-E3)</th>
                                 </tr>
                                 <tr>
-                                    <th class="border text-center">Calon</th><th class="border text-center">GPK</th>
-                                    <th class="border text-center">Calon</th><th class="border text-center">GPK</th>
                                     <th class="border text-center col-e3 hidden">Calon</th><th class="border text-center col-e3 hidden">GPK</th>
+                                    <th class="border text-center">Calon</th><th class="border text-center">GPK</th>
+                                    <th class="border text-center">Calon</th><th class="border text-center">GPK</th>
                                     <th class="border text-center">GPK</th><th class="border text-center">S</th>
                                     <th class="border text-center col-e3 hidden">GPK</th><th class="border text-center col-e3 hidden">S</th>
                                 </tr>
@@ -507,16 +507,16 @@
                             <thead>
                                 <tr>
                                     <th class="border" rowspan="2">Bil</th><th class="border" rowspan="2">Sekolah</th>
-                                    <th class="border text-center" colspan="3" id="headExam1">E1</th>
-                                    <th class="border text-center" colspan="3" id="headExam2">E2</th>
                                     <th class="border text-center col-e3 hidden" colspan="3" id="headExam3">E3</th>
+                                    <th class="border text-center" colspan="3" id="headExam2">E2</th>
+                                    <th class="border text-center" colspan="3" id="headExam1">E1</th>
                                     <th class="border text-center" colspan="2">Beza (E1-E2)</th>
                                     <th class="border text-center col-e3 hidden" colspan="2">Beza (E1-E3)</th>
                                 </tr>
                                 <tr>
-                                    <th class="border text-center">Calon</th><th class="border text-center">GPS</th><th class="border text-center">%L</th>
-                                    <th class="border text-center">Calon</th><th class="border text-center">GPS</th><th class="border text-center">%L</th>
                                     <th class="border text-center col-e3 hidden">Calon</th><th class="border text-center col-e3 hidden">GPS</th><th class="border text-center col-e3 hidden">%L</th>
+                                    <th class="border text-center">Calon</th><th class="border text-center">GPS</th><th class="border text-center">%L</th>
+                                    <th class="border text-center">Calon</th><th class="border text-center">GPS</th><th class="border text-center">%L</th>
                                     <th class="border text-center">GPS</th><th class="border text-center">LMS</th>
                                     <th class="border text-center col-e3 hidden">GPS</th><th class="border text-center col-e3 hidden">LMS</th>
                                 </tr>
@@ -537,16 +537,16 @@
                             <thead>
                                 <tr>
                                     <th class="border" rowspan="2">Bil</th><th class="border" rowspan="2">Kod</th><th class="border" rowspan="2">Subjek</th>
-                                    <th class="border text-center" colspan="2" id="headSubExam1">E1</th>
-                                    <th class="border text-center" colspan="2" id="headSubExam2">E2</th>
                                     <th class="border text-center col-e3 hidden" colspan="2" id="headSubExam3">E3</th>
+                                    <th class="border text-center" colspan="2" id="headSubExam2">E2</th>
+                                    <th class="border text-center" colspan="2" id="headSubExam1">E1</th>
                                     <th class="border text-center" colspan="3">Beza (E1-E2)</th>
                                     <th class="border text-center col-e3 hidden" colspan="3">Beza (E1-E3)</th>
                                 </tr>
                                 <tr>
-                                    <th class="border text-center">%L</th><th class="border text-center">GP</th>
-                                    <th class="border text-center">%L</th><th class="border text-center">GP</th>
                                     <th class="border text-center col-e3 hidden">%L</th><th class="border text-center col-e3 hidden">GP</th>
+                                    <th class="border text-center">%L</th><th class="border text-center">GP</th>
+                                    <th class="border text-center">%L</th><th class="border text-center">GP</th>
                                     <th class="border text-center">GP</th><th class="border text-center">%L</th><th class="border text-center">S</th>
                                     <th class="border text-center col-e3 hidden">GP</th><th class="border text-center col-e3 hidden">%L</th><th class="border text-center col-e3 hidden">S</th>
                                 </tr>
@@ -567,16 +567,16 @@
                             <thead>
                                 <tr>
                                     <th class="border" rowspan="2">Bil</th><th class="border" rowspan="2">Sekolah</th>
-                                    <th class="border text-center" colspan="2" id="headTLMSExam1">E1</th>
-                                    <th class="border text-center" colspan="2" id="headTLMSExam2">E2</th>
                                     <th class="border text-center col-e3 hidden" colspan="2" id="headTLMSExam3">E3</th>
+                                    <th class="border text-center" colspan="2" id="headTLMSExam2">E2</th>
+                                    <th class="border text-center" colspan="2" id="headTLMSExam1">E1</th>
                                     <th class="border text-center" colspan="2">Beza (E1-E2)</th>
                                     <th class="border text-center col-e3 hidden" colspan="2">Beza (E1-E3)</th>
                                 </tr>
                                 <tr>
-                                    <th class="border text-center">T</th><th class="border text-center">%T</th>
-                                    <th class="border text-center">T</th><th class="border text-center">%T</th>
                                     <th class="border text-center col-e3 hidden">T</th><th class="border text-center col-e3 hidden">%T</th>
+                                    <th class="border text-center">T</th><th class="border text-center">%T</th>
+                                    <th class="border text-center">T</th><th class="border text-center">%T</th>
                                     <th class="border text-center">J</th><th class="border text-center">%</th>
                                     <th class="border text-center col-e3 hidden">J</th><th class="border text-center col-e3 hidden">%</th>
                                 </tr>

@@ -275,7 +275,7 @@ function renderDetailedComponentTables(matrix) {
 // 6. RENDER COMPARISON (PERBANDINGAN)
 // ==========================================
 
-// [COMMENT SYNTAX] SURGICAL EDIT START: Pembetulan Matematik Trajektori E2 vs E1
+// [COMMENT SYNTAX] SURGICAL EDIT START: Pembetulan Matematik Trajektori E1 vs E2
 function renderComparisonKPICards(districtStats) {
     const container = document.getElementById('comparisonKPIContainer');
     if (!container) return;
@@ -284,11 +284,11 @@ function renderComparisonKPICards(districtStats) {
     const labelGP = isComponent ? 'GPK' : 'GPD';
     const labelLMS = '% LMS';
 
-    // Helper Kira Beza Trajektori Berterusan (Semasa - Sebelumnya)
-    const calc = (val1, val2, isInverse = false) => {
-        const v1 = parseFloat(val1);
-        const v2 = parseFloat(val2);
-        const diff = v2 - v1; // E2 tolak E1
+    // Helper Kira Beza Trajektori Berterusan (Semasa - Asal/Sebelumnya)
+    const calc = (valSemasa, valLama, isInverse = false) => {
+        const v1 = parseFloat(valSemasa);
+        const v2 = parseFloat(valLama);
+        const diff = v1 - v2; // E1 tolak E2
         let color = 'text-gray-400';
         let arrow = '-';
 
@@ -335,7 +335,7 @@ function renderComparisonKPICards(districtStats) {
 }
 // [COMMENT SYNTAX] SURGICAL EDIT END
 
-// [COMMENT SYNTAX] SURGICAL EDIT START: DOM Cleansing - Matriks Perbandingan Sekolah
+// [COMMENT SYNTAX] SURGICAL EDIT START: DOM Cleansing & Susunan Matriks E3 -> E2 -> E1
 export function renderComparisonTables(data, names) {
     const { schoolMap, subMap, districtStats } = data; 
     const { name1, name2, name3 } = names;
@@ -371,27 +371,31 @@ export function renderComparisonTables(data, names) {
         .map((s, i) => {
             const gps1 = s.ex1.gps; 
             const gps2 = s.ex2.gps; 
-            const diffGPS = gps2 - gps1; // E2 vs E1 
-            const colorGPS = diffGPS === 0 ? 'text-gray-400' : (diffGPS < 0 ? 'text-green-600 font-bold' : 'text-red-600 font-bold'); 
-            const arrowGPS = diffGPS === 0 ? '-' : (diffGPS < 0 ? '▲' : '▼'); 
+            const diffGPS = gps1 - gps2; // E1 vs E2 (Baseline Math)
+            const isGPBetter = diffGPS < 0; // GPS rendah = baik
+            const colorGPS = diffGPS === 0 ? 'text-gray-400' : (isGPBetter ? 'text-green-600 font-bold' : 'text-red-600 font-bold'); 
+            const arrowGPS = diffGPS === 0 ? '-' : (isGPBetter ? '▲' : '▼'); 
 
             const lmsPerc1 = s.ex1.calonCount > 0 ? (s.ex1.lmsCount / s.ex1.calonCount) * 100 : 0;
             const lmsPerc2 = s.ex2.calonCount > 0 ? (s.ex2.lmsCount / s.ex2.calonCount) * 100 : 0;
-            const diffLMS = lmsPerc2 - lmsPerc1; 
-            const colorLMS = diffLMS === 0 ? 'text-gray-400' : (diffLMS > 0 ? 'text-green-600 font-bold' : 'text-red-600 font-bold');
-            const arrowLMS = diffLMS === 0 ? '-' : (diffLMS > 0 ? '▲' : '▼');
+            const diffLMS = lmsPerc1 - lmsPerc2; 
+            const isLMSBetter = diffLMS > 0; // LMS tinggi = baik
+            const colorLMS = diffLMS === 0 ? 'text-gray-400' : (isLMSBetter ? 'text-green-600 font-bold' : 'text-red-600 font-bold');
+            const arrowLMS = diffLMS === 0 ? '-' : (isLMSBetter ? '▲' : '▼');
 
             // Data E3
             const calon3 = s.ex3 ? s.ex3.calonCount : 0;
             const gps3 = s.ex3 ? s.ex3.gps : 0;
-            const diffGPS3 = gps3 - gps2; // E3 vs E2
-            const colorGPS3 = diffGPS3 === 0 ? 'text-gray-400' : (diffGPS3 < 0 ? 'text-green-600 font-bold' : 'text-red-600 font-bold'); 
-            const arrowGPS3 = diffGPS3 === 0 ? '-' : (diffGPS3 < 0 ? '▲' : '▼'); 
+            const diffGPS3 = gps1 - gps3; // E1 vs E3 (Baseline Math)
+            const isGPBetter3 = diffGPS3 < 0;
+            const colorGPS3 = diffGPS3 === 0 ? 'text-gray-400' : (isGPBetter3 ? 'text-green-600 font-bold' : 'text-red-600 font-bold'); 
+            const arrowGPS3 = diffGPS3 === 0 ? '-' : (isGPBetter3 ? '▲' : '▼'); 
 
             const lmsPerc3 = s.ex3 && s.ex3.calonCount > 0 ? (s.ex3.lmsCount / s.ex3.calonCount) * 100 : 0;
-            const diffLMS3 = lmsPerc3 - lmsPerc2; 
-            const colorLMS3 = diffLMS3 === 0 ? 'text-gray-400' : (diffLMS3 > 0 ? 'text-green-600 font-bold' : 'text-red-600 font-bold');
-            const arrowLMS3 = diffLMS3 === 0 ? '-' : (diffLMS3 > 0 ? '▲' : '▼');
+            const diffLMS3 = lmsPerc1 - lmsPerc3; 
+            const isLMSBetter3 = diffLMS3 > 0;
+            const colorLMS3 = diffLMS3 === 0 ? 'text-gray-400' : (isLMSBetter3 ? 'text-green-600 font-bold' : 'text-red-600 font-bold');
+            const arrowLMS3 = diffLMS3 === 0 ? '-' : (isLMSBetter3 ? '▲' : '▼');
 
             return `
             <tr class="transition-colors text-gray-700 hover:bg-cyan-50/10">
@@ -400,29 +404,32 @@ export function renderComparisonTables(data, names) {
                     <span class="text-gray-400 text-[10px] block leading-none">[${s.code}]</span>
                     <span class="font-semibold uppercase text-xs tracking-tight text-gray-800">${s.name}</span>
                 </td>
-                <td class="text-center bg-gray-50/50 text-gray-600">${s.ex1.calonCount || 0}</td>
-                <td class="text-center bg-gray-50/50 font-bold text-gray-800">${gps1.toFixed(2)}</td>
-                <td class="text-center bg-gray-50/50 text-blue-600 font-bold">${lmsPerc1.toFixed(2)}%</td>
                 
-                <td class="text-center bg-blue-50/30 text-gray-600">${s.ex2.calonCount || 0}</td>
-                <td class="text-center bg-blue-50/30 font-bold text-gray-800">${gps2.toFixed(2)}</td>
-                <td class="text-center bg-blue-50/30 text-blue-600 font-bold">${lmsPerc2.toFixed(2)}%</td>
-
                 <!-- COL E3 -->
                 ${isE3 ? `
                 <td class="text-center bg-emerald-50/30 text-gray-600">${calon3}</td>
                 <td class="text-center bg-emerald-50/30 font-bold text-gray-800">${gps3.toFixed(2)}</td>
                 <td class="text-center bg-emerald-50/30 text-emerald-600 font-bold">${lmsPerc3.toFixed(2)}%</td>
                 ` : ''}
+
+                <!-- COL E2 -->
+                <td class="text-center bg-gray-50/50 text-gray-600">${s.ex2.calonCount || 0}</td>
+                <td class="text-center bg-gray-50/50 font-bold text-gray-800">${gps2.toFixed(2)}</td>
+                <td class="text-center bg-gray-50/50 text-blue-600 font-bold">${lmsPerc2.toFixed(2)}%</td>
                 
-                <!-- BEZA 1 -->
-                <td class="text-center font-bold bg-gray-100 ${colorGPS}" title="E2-E1">${Math.abs(diffGPS).toFixed(2)} <span class="pdf-arrow text-xs ml-1">${arrowGPS}</span></td>
-                <td class="text-center font-bold bg-gray-100 ${colorLMS}" title="E2-E1">${Math.abs(diffLMS).toFixed(2)}% <span class="pdf-arrow text-xs ml-1">${arrowLMS}</span></td>
+                <!-- COL E1 -->
+                <td class="text-center bg-blue-50/30 text-gray-600">${s.ex1.calonCount || 0}</td>
+                <td class="text-center bg-blue-50/30 font-bold text-gray-800">${gps1.toFixed(2)}</td>
+                <td class="text-center bg-blue-50/30 text-blue-600 font-bold">${lmsPerc1.toFixed(2)}%</td>
+
+                <!-- BEZA 1 (E1 - E2) -->
+                <td class="text-center font-bold bg-gray-100 ${colorGPS}" title="E1-E2">${Math.abs(diffGPS).toFixed(2)} <span class="pdf-arrow text-xs ml-1">${arrowGPS}</span></td>
+                <td class="text-center font-bold bg-gray-100 ${colorLMS}" title="E1-E2">${Math.abs(diffLMS).toFixed(2)}% <span class="pdf-arrow text-xs ml-1">${arrowLMS}</span></td>
                 
-                <!-- BEZA 2 (E3) -->
+                <!-- BEZA 2 (E1 - E3) -->
                 ${isE3 ? `
-                <td class="text-center font-bold bg-gray-100/50 border-l border-gray-200 ${colorGPS3}" title="E3-E2">${Math.abs(diffGPS3).toFixed(2)} <span class="pdf-arrow text-xs ml-1">${arrowGPS3}</span></td>
-                <td class="text-center font-bold bg-gray-100/50 ${colorLMS3}" title="E3-E2">${Math.abs(diffLMS3).toFixed(2)}% <span class="pdf-arrow text-xs ml-1">${arrowLMS3}</span></td>
+                <td class="text-center font-bold bg-gray-100/50 border-l border-gray-200 ${colorGPS3}" title="E1-E3">${Math.abs(diffGPS3).toFixed(2)} <span class="pdf-arrow text-xs ml-1">${arrowGPS3}</span></td>
+                <td class="text-center font-bold bg-gray-100/50 ${colorLMS3}" title="E1-E3">${Math.abs(diffLMS3).toFixed(2)}% <span class="pdf-arrow text-xs ml-1">${arrowLMS3}</span></td>
                 ` : ''}
             </tr>`;
         }).join('');
@@ -435,14 +442,14 @@ export function renderComparisonTables(data, names) {
             const tlms2 = (s.ex2.calonCount || 0) - s.ex2.lmsCount;
             const tlmsPerc1 = s.ex1.calonCount > 0 ? (tlms1 / s.ex1.calonCount) * 100 : 0;
             const tlmsPerc2 = s.ex2.calonCount > 0 ? (tlms2 / s.ex2.calonCount) * 100 : 0;
-            const diffTLMSPerc = tlmsPerc2 - tlmsPerc1;
+            const diffTLMSPerc = tlmsPerc1 - tlmsPerc2; // E1 - E2 (Rendah = Baik)
             const colorTLMS = diffTLMSPerc === 0 ? 'text-gray-400' : (diffTLMSPerc < 0 ? 'text-green-600 font-bold' : 'text-red-600 font-bold');
             const arrowTLMS = diffTLMSPerc === 0 ? '-' : (diffTLMSPerc < 0 ? '▲' : '▼'); 
 
             // Data E3
             const tlms3 = s.ex3 ? ((s.ex3.calonCount || 0) - s.ex3.lmsCount) : 0;
             const tlmsPerc3 = s.ex3 && s.ex3.calonCount > 0 ? (tlms3 / s.ex3.calonCount) * 100 : 0;
-            const diffTLMSPerc3 = tlmsPerc3 - tlmsPerc2;
+            const diffTLMSPerc3 = tlmsPerc1 - tlmsPerc3; // E1 - E3
             const colorTLMS3 = diffTLMSPerc3 === 0 ? 'text-gray-400' : (diffTLMSPerc3 < 0 ? 'text-green-600 font-bold' : 'text-red-600 font-bold');
             const arrowTLMS3 = diffTLMSPerc3 === 0 ? '-' : (diffTLMSPerc3 < 0 ? '▲' : '▼');
 
@@ -453,10 +460,6 @@ export function renderComparisonTables(data, names) {
                     <span class="text-gray-400 text-[10px] block leading-none">[${s.code}]</span>
                     <span class="font-semibold uppercase text-xs tracking-tight">${s.name}</span>
                 </td>
-                <td class="text-center bg-red-50/30 font-bold text-gray-700">${tlms1}</td>
-                <td class="text-center bg-red-50/30 text-red-600 font-bold">${tlmsPerc1.toFixed(2)}%</td>
-                <td class="text-center bg-red-100/50 font-bold text-gray-700">${tlms2}</td>
-                <td class="text-center bg-red-100/50 text-red-600 font-bold">${tlmsPerc2.toFixed(2)}%</td>
                 
                 <!-- COL E3 -->
                 ${isE3 ? `
@@ -464,14 +467,22 @@ export function renderComparisonTables(data, names) {
                 <td class="text-center bg-red-50/50 text-red-600 font-bold">${tlmsPerc3.toFixed(2)}%</td>
                 ` : ''}
 
-                <!-- BEZA 1 -->
-                <td class="text-center font-bold bg-gray-100 ${colorTLMS}" title="E2-E1">${Math.abs(tlms2 - tlms1)}</td>
-                <td class="text-center font-bold bg-gray-100 ${colorTLMS}" title="E2-E1">${Math.abs(diffTLMSPerc).toFixed(2)}% <span class="pdf-arrow text-xs ml-1">${arrowTLMS}</span></td>
+                <!-- COL E2 -->
+                <td class="text-center bg-red-50/30 font-bold text-gray-700">${tlms2}</td>
+                <td class="text-center bg-red-50/30 text-red-600 font-bold">${tlmsPerc2.toFixed(2)}%</td>
 
-                <!-- BEZA 2 (E3) -->
+                <!-- COL E1 -->
+                <td class="text-center bg-red-100/50 font-bold text-gray-700">${tlms1}</td>
+                <td class="text-center bg-red-100/50 text-red-600 font-bold">${tlmsPerc1.toFixed(2)}%</td>
+
+                <!-- BEZA 1 (E1 - E2) -->
+                <td class="text-center font-bold bg-gray-100 ${colorTLMS}" title="E1-E2">${Math.abs(tlms1 - tlms2)}</td>
+                <td class="text-center font-bold bg-gray-100 ${colorTLMS}" title="E1-E2">${Math.abs(diffTLMSPerc).toFixed(2)}% <span class="pdf-arrow text-xs ml-1">${arrowTLMS}</span></td>
+
+                <!-- BEZA 2 (E1 - E3) -->
                 ${isE3 ? `
-                <td class="text-center font-bold bg-gray-100/50 border-l border-gray-200 ${colorTLMS3}" title="E3-E2">${Math.abs(tlms3 - tlms2)}</td>
-                <td class="text-center font-bold bg-gray-100/50 ${colorTLMS3}" title="E3-E2">${Math.abs(diffTLMSPerc3).toFixed(2)}% <span class="pdf-arrow text-xs ml-1">${arrowTLMS3}</span></td>
+                <td class="text-center font-bold bg-gray-100/50 border-l border-gray-200 ${colorTLMS3}" title="E1-E3">${Math.abs(tlms1 - tlms3)}</td>
+                <td class="text-center font-bold bg-gray-100/50 ${colorTLMS3}" title="E1-E3">${Math.abs(diffTLMSPerc3).toFixed(2)}% <span class="pdf-arrow text-xs ml-1">${arrowTLMS3}</span></td>
                 ` : ''}
             </tr>`;
         }).join('');
@@ -483,24 +494,24 @@ export function renderComparisonTables(data, names) {
             const getStats = (o) => ({ gpmp: o && o.ct > 0 ? (o.pt/o.ct) : 0, perc: o && o.ct > 0 ? (o.lulus/o.ct)*100 : 0 }); 
             const st1 = getStats(s.ex1); 
             const st2 = getStats(s.ex2); 
-            const diffGP = st2.gpmp - st1.gpmp; 
+            const diffGP = st1.gpmp - st2.gpmp; // E1 - E2
             const isGPBetter = diffGP < 0; 
             const colorClassGP = diffGP === 0 ? 'text-gray-400' : (isGPBetter ? 'text-green-600 font-bold' : 'text-red-600 font-bold'); 
             const arrowVisual = diffGP === 0 ? '-' : (isGPBetter ? '▲' : '▼');
 
-            const diffLulus = st2.perc - st1.perc;
+            const diffLulus = st1.perc - st2.perc; // E1 - E2
             const isLulusBetter = diffLulus > 0;
             const colorClassLulus = diffLulus === 0 ? 'text-gray-400' : (isLulusBetter ? 'text-green-600 font-bold' : 'text-red-600 font-bold');
             const arrowVisualLulus = diffLulus === 0 ? '-' : (isLulusBetter ? '▲' : '▼');
             
             // Data E3
             const st3 = s.ex3 ? getStats(s.ex3) : { gpmp: 0, perc: 0 };
-            const diffGP3 = st3.gpmp - st2.gpmp; 
+            const diffGP3 = st1.gpmp - st3.gpmp; // E1 - E3
             const isGPBetter3 = diffGP3 < 0; 
             const colorClassGP3 = diffGP3 === 0 ? 'text-gray-400' : (isGPBetter3 ? 'text-green-600 font-bold' : 'text-red-600 font-bold'); 
             const arrowVisual3 = diffGP3 === 0 ? '-' : (isGPBetter3 ? '▲' : '▼');
 
-            const diffLulus3 = st3.perc - st2.perc;
+            const diffLulus3 = st1.perc - st3.perc; // E1 - E3
             const isLulusBetter3 = diffLulus3 > 0;
             const colorClassLulus3 = diffLulus3 === 0 ? 'text-gray-400' : (isLulusBetter3 ? 'text-green-600 font-bold' : 'text-red-600 font-bold');
             const arrowVisualLulus3 = diffLulus3 === 0 ? '-' : (isLulusBetter3 ? '▲' : '▼');
@@ -511,33 +522,37 @@ export function renderComparisonTables(data, names) {
                 <td class="text-center font-bold text-gray-600">${s.kod}</td>
                 <td class="text-xs font-medium uppercase text-left tracking-wide">${s.nama}</td>
                 
-                <td class="text-center bg-gray-50/50 text-blue-700 font-medium">${st1.perc.toFixed(2)}%</td>
-                <td class="text-center bg-gray-50/50 font-bold text-gray-800">${st1.gpmp.toFixed(2)}</td>
-                <td class="text-center bg-orange-50/30 text-blue-700 font-medium">${st2.perc.toFixed(2)}%</td>
-                <td class="text-center bg-orange-50/30 font-bold text-gray-800">${st2.gpmp.toFixed(2)}</td>
-
                 <!-- COL E3 -->
                 ${isE3 ? `
                 <td class="text-center bg-emerald-50/30 text-blue-700 font-medium">${st3.perc.toFixed(2)}%</td>
                 <td class="text-center bg-emerald-50/30 font-bold text-gray-800">${st3.gpmp.toFixed(2)}</td>
                 ` : ''}
 
-                <!-- BEZA 1 -->
-                <td class="text-center font-bold bg-gray-100 ${colorClassGP}" title="E2-E1">${Math.abs(diffGP).toFixed(2)}</td>
-                <td class="text-center font-bold bg-gray-100 ${colorClassLulus}" title="E2-E1">${Math.abs(diffLulus).toFixed(2)}%</td>
+                <!-- COL E2 -->
+                <td class="text-center bg-gray-50/50 text-blue-700 font-medium">${st2.perc.toFixed(2)}%</td>
+                <td class="text-center bg-gray-50/50 font-bold text-gray-800">${st2.gpmp.toFixed(2)}</td>
+
+                <!-- COL E1 -->
+                <td class="text-center bg-orange-50/30 text-blue-700 font-medium">${st1.perc.toFixed(2)}%</td>
+                <td class="text-center bg-orange-50/30 font-bold text-gray-800">${st1.gpmp.toFixed(2)}</td>
+
+                <!-- BEZA 1 (E1 - E2) -->
+                <td class="text-center font-bold bg-gray-100 ${colorClassGP}" title="E1-E2">${Math.abs(diffGP).toFixed(2)}</td>
+                <td class="text-center font-bold bg-gray-100 ${colorClassLulus}" title="E1-E2">${Math.abs(diffLulus).toFixed(2)}%</td>
                 <td class="text-center font-bold ${colorClassGP}"><span class="pdf-arrow text-sm">${arrowVisual}</span></td>
 
-                <!-- BEZA 2 (E3) -->
+                <!-- BEZA 2 (E1 - E3) -->
                 ${isE3 ? `
-                <td class="text-center font-bold bg-gray-100/50 border-l border-gray-200 ${colorClassGP3}" title="E3-E2">${Math.abs(diffGP3).toFixed(2)}</td>
-                <td class="text-center font-bold bg-gray-100/50 ${colorClassLulus3}" title="E3-E2">${Math.abs(diffLulus3).toFixed(2)}%</td>
+                <td class="text-center font-bold bg-gray-100/50 border-l border-gray-200 ${colorClassGP3}" title="E1-E3">${Math.abs(diffGP3).toFixed(2)}</td>
+                <td class="text-center font-bold bg-gray-100/50 ${colorClassLulus3}" title="E1-E3">${Math.abs(diffLulus3).toFixed(2)}%</td>
                 <td class="text-center font-bold ${colorClassGP3}"><span class="pdf-arrow text-sm">${arrowVisual3}</span></td>
                 ` : ''}
             </tr>`;
         }).join('');
 }
+// [COMMENT SYNTAX] SURGICAL EDIT END
 
-// [COMMENT SYNTAX] SURGICAL EDIT START: DOM Cleansing - Matriks Komponen
+// [COMMENT SYNTAX] SURGICAL EDIT START: DOM Cleansing - Matriks Komponen E3 -> E2 -> E1
 export function renderComparisonComponentTable(data, names) {
     const { subMap, schoolMap, districtStats, comparisonMatrix } = data;
     const { name1, name2, name3 } = names;
@@ -570,23 +585,23 @@ export function renderComparisonComponentTable(data, names) {
             const getStats = (o) => ({ gpmp: o && o.ct > 0 ? (o.pt/o.ct) : 0, perc: o && o.ct > 0 ? (o.lulus/o.ct)*100 : 0 }); 
             const st1 = getStats(s.ex1); 
             const st2 = getStats(s.ex2); 
-            const diffGP = st2.gpmp - st1.gpmp; 
+            const diffGP = st1.gpmp - st2.gpmp; // E1 - E2
             const isGPBetter = diffGP < 0; 
             const colorClassGP = diffGP === 0 ? 'text-gray-400' : (isGPBetter ? 'text-green-600 font-bold' : 'text-red-600 font-bold'); 
             const arrowVisual = diffGP === 0 ? '-' : (isGPBetter ? '▲' : '▼');
             
-            const diffLulus = st2.perc - st1.perc;
+            const diffLulus = st1.perc - st2.perc; // E1 - E2
             const isLulusBetter = diffLulus > 0;
             const colorClassLulus = diffLulus === 0 ? 'text-gray-400' : (isLulusBetter ? 'text-green-600 font-bold' : 'text-red-600 font-bold');
             
             // Data E3
             const st3 = s.ex3 ? getStats(s.ex3) : { gpmp: 0, perc: 0 };
-            const diffGP3 = st3.gpmp - st2.gpmp; 
+            const diffGP3 = st1.gpmp - st3.gpmp; // E1 - E3
             const isGPBetter3 = diffGP3 < 0; 
             const colorClassGP3 = diffGP3 === 0 ? 'text-gray-400' : (isGPBetter3 ? 'text-green-600 font-bold' : 'text-red-600 font-bold'); 
             const arrowVisual3 = diffGP3 === 0 ? '-' : (isGPBetter3 ? '▲' : '▼');
 
-            const diffLulus3 = st3.perc - st2.perc;
+            const diffLulus3 = st1.perc - st3.perc; // E1 - E3
             const isLulusBetter3 = diffLulus3 > 0;
             const colorClassLulus3 = diffLulus3 === 0 ? 'text-gray-400' : (isLulusBetter3 ? 'text-green-600 font-bold' : 'text-red-600 font-bold');
 
@@ -595,23 +610,27 @@ export function renderComparisonComponentTable(data, names) {
                 <td class="text-center text-gray-400">${i+1}</td>
                 <td class="text-center font-bold text-gray-600">${s.kod}</td>
                 <td class="text-xs font-medium uppercase text-left tracking-wide">${s.nama}</td>
-                <td class="text-center bg-gray-50/50 text-blue-700 font-medium">${st1.perc.toFixed(2)}%</td>
-                <td class="text-center bg-gray-50/50 font-bold text-gray-800">${st1.gpmp.toFixed(2)}</td>
-                <td class="text-center bg-pink-50/30 text-blue-700 font-medium">${st2.perc.toFixed(2)}%</td>
-                <td class="text-center bg-pink-50/30 font-bold text-gray-800">${st2.gpmp.toFixed(2)}</td>
-
+                
                 <!-- COL E3 -->
                 ${isE3 ? `
                 <td class="text-center bg-emerald-50/30 text-blue-700 font-medium">${st3.perc.toFixed(2)}%</td>
                 <td class="text-center bg-emerald-50/30 font-bold text-gray-800">${st3.gpmp.toFixed(2)}</td>
                 ` : ''}
 
-                <!-- BEZA 1 -->
+                <!-- COL E2 -->
+                <td class="text-center bg-gray-50/50 text-blue-700 font-medium">${st2.perc.toFixed(2)}%</td>
+                <td class="text-center bg-gray-50/50 font-bold text-gray-800">${st2.gpmp.toFixed(2)}</td>
+
+                <!-- COL E1 -->
+                <td class="text-center bg-pink-50/30 text-blue-700 font-medium">${st1.perc.toFixed(2)}%</td>
+                <td class="text-center bg-pink-50/30 font-bold text-gray-800">${st1.gpmp.toFixed(2)}</td>
+
+                <!-- BEZA 1 (E1 - E2) -->
                 <td class="text-center font-bold bg-gray-100 ${colorClassGP}">${Math.abs(diffGP).toFixed(2)}</td>
                 <td class="text-center font-bold bg-gray-100 ${colorClassLulus}">${Math.abs(diffLulus).toFixed(2)}%</td>
                 <td class="text-center font-bold ${colorClassGP}"><span class="pdf-arrow text-sm">${arrowVisual}</span></td>
 
-                <!-- BEZA 2 (E3) -->
+                <!-- BEZA 2 (E1 - E3) -->
                 ${isE3 ? `
                 <td class="text-center font-bold bg-gray-100/50 border-l border-gray-200 ${colorClassGP3}">${Math.abs(diffGP3).toFixed(2)}</td>
                 <td class="text-center font-bold bg-gray-100/50 ${colorClassLulus3}">${Math.abs(diffLulus3).toFixed(2)}%</td>
@@ -629,13 +648,13 @@ export function renderComparisonComponentTable(data, names) {
         .map((s, i) => {
             const gpk1 = s.ex1.gpk;
             const gpk2 = s.ex2.gpk;
-            const diffGPK = gpk2 - gpk1;
+            const diffGPK = gpk1 - gpk2; // E1 - E2
             const colorClass = diffGPK === 0 ? 'text-gray-400' : (diffGPK < 0 ? 'text-green-600 font-bold' : 'text-red-600 font-bold');
             const arrowVisual = diffGPK === 0 ? '-' : (diffGPK < 0 ? '▲' : '▼');
 
             // Data E3
             const gpk3 = s.ex3 ? s.ex3.gpk : 0;
-            const diffGPK3 = gpk3 - gpk2;
+            const diffGPK3 = gpk1 - gpk3; // E1 - E3
             const colorClass3 = diffGPK3 === 0 ? 'text-gray-400' : (diffGPK3 < 0 ? 'text-green-600 font-bold' : 'text-red-600 font-bold');
             const arrowVisual3 = diffGPK3 === 0 ? '-' : (diffGPK3 < 0 ? '▲' : '▼');
 
@@ -646,10 +665,6 @@ export function renderComparisonComponentTable(data, names) {
                     <span class="text-gray-400 text-[10px] block leading-none">[${s.code}]</span>
                     <span class="font-semibold uppercase text-xs tracking-tight text-gray-800">${s.name}</span>
                 </td>
-                <td class="text-center bg-purple-50/30 text-gray-500 text-xs">${s.ex1.calon}</td>
-                <td class="text-center bg-purple-50/30 font-bold text-gray-800">${gpk1.toFixed(2)}</td>
-                <td class="text-center bg-purple-100/30 text-gray-500 text-xs">${s.ex2.calon}</td>
-                <td class="text-center bg-purple-100/30 font-bold text-gray-800">${gpk2.toFixed(2)}</td>
 
                 <!-- COL E3 -->
                 ${isE3 ? `
@@ -657,11 +672,19 @@ export function renderComparisonComponentTable(data, names) {
                 <td class="text-center bg-emerald-50/30 font-bold text-gray-800">${gpk3.toFixed(2)}</td>
                 ` : ''}
 
-                <!-- BEZA 1 -->
+                <!-- COL E2 -->
+                <td class="text-center bg-purple-50/30 text-gray-500 text-xs">${s.ex2.calon}</td>
+                <td class="text-center bg-purple-50/30 font-bold text-gray-800">${gpk2.toFixed(2)}</td>
+
+                <!-- COL E1 -->
+                <td class="text-center bg-purple-100/30 text-gray-500 text-xs">${s.ex1.calon}</td>
+                <td class="text-center bg-purple-100/30 font-bold text-gray-800">${gpk1.toFixed(2)}</td>
+
+                <!-- BEZA 1 (E1 - E2) -->
                 <td class="text-center font-bold bg-gray-100 ${colorClass}">${Math.abs(diffGPK).toFixed(2)}</td>
                 <td class="text-center font-bold ${colorClass}"><span class="pdf-arrow text-sm">${arrowVisual}</span></td>
 
-                <!-- BEZA 2 (E3) -->
+                <!-- BEZA 2 (E1 - E3) -->
                 ${isE3 ? `
                 <td class="text-center font-bold bg-gray-100/50 border-l border-gray-200 ${colorClass3}">${Math.abs(diffGPK3).toFixed(2)}</td>
                 <td class="text-center font-bold ${colorClass3}"><span class="pdf-arrow text-sm">${arrowVisual3}</span></td>
@@ -786,7 +809,7 @@ function getStudentAchievementSubjectDisplay(subjectResult) {
     return `${escapeStudentAchievementHTML(markah)} <span class="text-[10px] text-gray-500">(${escapeStudentAchievementHTML(gred)})</span>`;
 }
 
-// [SURGICAL EDIT] Mengintegrasikan Data Subjek E3 dan Beza 2 dalam paparan pelajar
+// [COMMENT SYNTAX] SURGICAL EDIT START: Mengintegrasikan Data Subjek E3 -> E2 -> E1 dan Beza Matematik (E1 - E2/E3)
 function getStudentAchievementRow(row, index, subjects, isCompare, context = {}) {
     if (isCompare) {
         const isE3 = !!context.exam3;
@@ -814,7 +837,7 @@ function getStudentAchievementRow(row, index, subjects, isCompare, context = {})
                 diffHtml = sr.diffStatus.label;
             }
 
-            // Perbezaan E3 vs E2 (Trajektori)
+            // Perbezaan E1 vs E3 (Trajektori)
             let diffHtml2 = '-';
             let diffClass2 = 'text-gray-400';
             if (isE3 && sr.diffStatus2) {
@@ -832,9 +855,9 @@ function getStudentAchievementRow(row, index, subjects, isCompare, context = {})
             const bgE1 = sr.isTaken && !sr.isPass && sr.gred !== 'TH' && sr.gred !== 'T' ? 'bg-red-50/20 text-red-700 font-bold' : (sr.isTaken ? 'bg-blue-50/10 text-gray-800' : 'bg-gray-50/20 text-gray-400');
 
             return `
-                <td class="text-center align-middle border-r border-gray-100 ${bgE1}">${e1Display}</td>
-                <td class="text-center align-middle border-r border-gray-100 bg-gray-50/30 text-gray-500 text-xs">${e2Display}</td>
                 ${isE3 ? `<td class="text-center align-middle border-r border-emerald-100/50 bg-emerald-50/20 text-emerald-800/80 text-xs">${e3Display}</td>` : ''}
+                <td class="text-center align-middle border-r border-gray-100 bg-gray-50/30 text-gray-500 text-xs">${e2Display}</td>
+                <td class="text-center align-middle border-r border-gray-100 ${bgE1}">${e1Display}</td>
                 <td class="text-center align-middle border-r border-gray-200 bg-gray-50/50 text-[10px] ${diffClass}">${diffHtml}</td>
                 ${isE3 ? `<td class="text-center align-middle border-r border-gray-200 bg-gray-100/30 text-[10px] ${diffClass2}">${diffHtml2}</td>` : ''}
             `;
@@ -854,19 +877,19 @@ function getStudentAchievementRow(row, index, subjects, isCompare, context = {})
                 <td class="text-center font-semibold text-gray-700 border-r border-gray-200">${escapeStudentAchievementHTML(row.kelas || '-')}</td>
                 
                 <!-- Subjek Diambil -->
-                <td class="text-center font-bold text-blue-700 bg-gray-50/50 border-r border-gray-100">${totalTakenE1}</td>
-                <td class="text-center text-gray-500 bg-gray-50/50 border-r border-gray-200">${totalTakenE2}</td>
                 ${isE3 ? `<td class="text-center text-emerald-700 bg-emerald-50/50 border-r border-gray-200">${totalTakenE3}</td>` : ''}
+                <td class="text-center text-gray-500 bg-gray-50/50 border-r border-gray-200">${totalTakenE2}</td>
+                <td class="text-center font-bold text-blue-700 bg-gray-50/50 border-r border-gray-100">${totalTakenE1}</td>
                 
                 <!-- Status LMS -->
-                <td class="text-center font-bold border-r border-gray-100 ${row.lmsStatus === 'LMS' ? 'text-emerald-700 bg-emerald-50/50' : 'text-rose-700 bg-rose-50/50'}">${escapeStudentAchievementHTML(row.lmsStatus || '-')}</td>
-                <td class="text-center text-[10px] font-semibold border-r border-emerald-100 ${comp.lmsStatus === 'LMS' ? 'text-emerald-600 bg-emerald-50/30' : 'text-rose-600 bg-rose-50/30'}">${escapeStudentAchievementHTML(comp.lmsStatus || '-')}</td>
                 ${isE3 ? `<td class="text-center text-[10px] font-semibold border-r border-emerald-100 ${comp2.lmsStatus === 'LMS' ? 'text-emerald-600 bg-emerald-50/30' : 'text-rose-600 bg-rose-50/30'}">${escapeStudentAchievementHTML(comp2.lmsStatus || '-')}</td>` : ''}
+                <td class="text-center text-[10px] font-semibold border-r border-emerald-100 ${comp.lmsStatus === 'LMS' ? 'text-emerald-600 bg-emerald-50/30' : 'text-rose-600 bg-rose-50/30'}">${escapeStudentAchievementHTML(comp.lmsStatus || '-')}</td>
+                <td class="text-center font-bold border-r border-gray-100 ${row.lmsStatus === 'LMS' ? 'text-emerald-700 bg-emerald-50/50' : 'text-rose-700 bg-rose-50/50'}">${escapeStudentAchievementHTML(row.lmsStatus || '-')}</td>
                 
                 <!-- GPS -->
-                <td class="text-center font-bold text-gray-900 bg-indigo-50/50 border-r border-gray-100">${escapeStudentAchievementHTML(row.gpsText || '-')}</td>
-                <td class="text-center text-gray-500 bg-indigo-50/30 border-r border-gray-100 text-xs">${escapeStudentAchievementHTML(comp.gpsText || '-')}</td>
                 ${isE3 ? `<td class="text-center text-emerald-700 bg-emerald-50/30 border-r border-gray-100 text-xs">${escapeStudentAchievementHTML(comp2.gpsText || '-')}</td>` : ''}
+                <td class="text-center text-gray-500 bg-indigo-50/30 border-r border-gray-100 text-xs">${escapeStudentAchievementHTML(comp.gpsText || '-')}</td>
+                <td class="text-center font-bold text-gray-900 bg-indigo-50/50 border-r border-gray-100">${escapeStudentAchievementHTML(row.gpsText || '-')}</td>
                 <td class="text-center font-bold bg-indigo-100/50 border-r border-indigo-200 text-xs ${gpsDiffClass}">${escapeStudentAchievementHTML(comp.gpsDiffText || '-')}</td>
                 ${isE3 ? `<td class="text-center font-bold bg-indigo-100/50 border-r border-indigo-200 text-xs ${gpsDiffClass2}">${escapeStudentAchievementHTML(comp2.gpsDiffText || '-')}</td>` : ''}
                 
@@ -916,7 +939,6 @@ function getStudentAchievementEmptyRow(colspan, message) {
     `;
 }
 
-// [SURGICAL EDIT] Mengintegrasikan Header E3 dan BZA 2 dalam paparan pelajar
 function getStudentAchievementHeader(subjects, isCompare, context = {}) {
     if (isCompare) {
         const isE3 = !!context.exam3;
@@ -929,9 +951,9 @@ function getStudentAchievementHeader(subjects, isCompare, context = {}) {
         `).join('');
 
         const subjectSubHeaders = subjects.map(subject => `
-            <th class="border-r border-gray-200 text-center text-[10px] bg-blue-50/50 w-16 py-1">E1</th>
-            <th class="border-r border-gray-200 text-center text-[10px] bg-gray-50/50 w-16 py-1">E2</th>
             ${isE3 ? `<th class="border-r border-emerald-100/50 text-center text-[10px] bg-emerald-50/50 w-16 py-1">E3</th>` : ''}
+            <th class="border-r border-gray-200 text-center text-[10px] bg-gray-50/50 w-16 py-1">E2</th>
+            <th class="border-r border-gray-200 text-center text-[10px] bg-blue-50/50 w-16 py-1">E1</th>
             <th class="border-r border-gray-300 text-center text-[10px] bg-gray-100 w-16 py-1">BZA 1</th>
             ${isE3 ? `<th class="border-r border-gray-300 text-center text-[10px] bg-gray-100/50 w-16 py-1">BZA 2</th>` : ''}
         `).join('');
@@ -949,19 +971,19 @@ function getStudentAchievementHeader(subjects, isCompare, context = {}) {
             </tr>
             <tr class="text-[10px]">
                 <!-- Ambil -->
-                <th class="border-r border-b border-gray-200 text-center bg-gray-50 py-1">E1</th>
-                <th class="border-r border-b border-gray-300 text-center bg-gray-50 py-1">E2</th>
                 ${isE3 ? `<th class="border-r border-b border-emerald-200 text-center bg-emerald-50 py-1">E3</th>` : ''}
+                <th class="border-r border-b border-gray-300 text-center bg-gray-50 py-1">E2</th>
+                <th class="border-r border-b border-gray-200 text-center bg-gray-50 py-1">E1</th>
                 
                 <!-- LMS -->
-                <th class="border-r border-b border-emerald-200 text-center bg-emerald-50 py-1">E1</th>
-                <th class="border-r border-b border-emerald-200 text-center bg-emerald-50 py-1">E2</th>
                 ${isE3 ? `<th class="border-r border-b border-emerald-200 text-center bg-emerald-50 py-1">E3</th>` : ''}
+                <th class="border-r border-b border-emerald-200 text-center bg-emerald-50 py-1">E2</th>
+                <th class="border-r border-b border-emerald-200 text-center bg-emerald-50 py-1">E1</th>
 
                 <!-- GPS -->
-                <th class="border-r border-b border-indigo-200 text-center bg-indigo-50 py-1">E1</th>
-                <th class="border-r border-b border-indigo-200 text-center bg-indigo-50 py-1">E2</th>
                 ${isE3 ? `<th class="border-r border-b border-emerald-200 text-center bg-emerald-50 py-1">E3</th>` : ''}
+                <th class="border-r border-b border-indigo-200 text-center bg-indigo-50 py-1">E2</th>
+                <th class="border-r border-b border-indigo-200 text-center bg-indigo-50 py-1">E1</th>
                 <th class="border-r border-b border-indigo-300 text-center bg-indigo-100 font-bold py-1">BZA 1</th>
                 ${isE3 ? `<th class="border-r border-b border-indigo-300 text-center bg-indigo-100/50 font-bold py-1">BZA 2</th>` : ''}
                 
@@ -1079,4 +1101,4 @@ export function renderStudentAchievementTable(data, context = {}) {
         .map((row, index) => getStudentAchievementRow(row, index, subjects, isCompare, context))
         .join('');
 }
-// ── SURGICAL EDIT END ──
+// [COMMENT SYNTAX] SURGICAL EDIT END
