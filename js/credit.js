@@ -94,17 +94,21 @@ export function calculateCreditAnalysis(students, subCode) {
 // 2. LOGIK PAPARAN (RENDERING)
 // ==========================================
 
+// [COMMENT SYNTAX] SURGICAL EDIT START: Betulkan parameter untuk menyokong stats3 dan logik pemaparan matriks E3 ➔ E2 ➔ E1
 /**
  * Menjana HTML Jadual Analisa Kredit.
  * @param {Object} stats1 - Statistik Exam 1
  * @param {Object} stats2 - Statistik Exam 2 (jika ada)
+ * @param {Object} stats3 - Statistik Exam 3 (jika ada)
  * @param {boolean} isCompare - Adakah mod perbandingan aktif?
  * @param {string} subjectName - Nama subjek
  */
-export function renderCreditAnalysisTable(stats1, stats2, isCompare, subjectName) {
+export function renderCreditAnalysisTable(stats1, stats2, stats3, isCompare, subjectName) {
     const thead = document.querySelector('#tableCreditAnalysis thead');
     const tbody = document.getElementById('tbodyCreditAnalysis');
     if (!tbody || !thead) return;
+
+    const isE3 = isCompare && stats3 !== null && stats3 !== undefined;
 
     // A. SETUP HEADER (Dinamik ikut mod - Modern Clean Style)
     // Gunakan background lembut untuk membezakan seksyen tanpa border tebal
@@ -112,13 +116,19 @@ export function renderCreditAnalysisTable(stats1, stats2, isCompare, subjectName
         thead.innerHTML = `
             <tr>
                 <th class="px-4 py-3 bg-gray-50 border-b-2 text-left w-32 align-bottom">Kategori Gred</th>
-                <th class="px-2 py-2 bg-blue-50/50 text-blue-900 border-b-2 border-blue-100 text-center" colspan="2">
-                    <span class="text-[10px] uppercase tracking-wider opacity-70 block">Semasa</span>
-                    E1
+                ${isE3 ? `
+                <th class="px-2 py-2 bg-emerald-50/50 text-emerald-900 border-b-2 border-emerald-100 text-center" colspan="2">
+                    <span class="text-[10px] uppercase tracking-wider opacity-70 block">Pilihan</span>
+                    E3
                 </th>
+                ` : ''}
                 <th class="px-2 py-2 bg-slate-50 text-slate-600 border-b-2 border-slate-200 text-center" colspan="2">
                     <span class="text-[10px] uppercase tracking-wider opacity-70 block">Asal</span>
                     E2
+                </th>
+                <th class="px-2 py-2 bg-blue-50/50 text-blue-900 border-b-2 border-blue-100 text-center" colspan="2">
+                    <span class="text-[10px] uppercase tracking-wider opacity-70 block">Semasa</span>
+                    E1
                 </th>
                 <th class="px-2 py-2 bg-indigo-50/50 text-indigo-900 border-b-2 border-indigo-100 text-center" colspan="2">
                     <span class="text-[10px] uppercase tracking-wider opacity-70 block">Analisis</span>
@@ -129,14 +139,24 @@ export function renderCreditAnalysisTable(stats1, stats2, isCompare, subjectName
             <tr class="text-[10px] uppercase text-gray-500">
                 <th class="bg-gray-50 border-b"></th> <!-- Spacer for Gred Column -->
                 
-                <th class="bg-blue-50/30 text-center py-2 border-b text-blue-800">Bil</th>
-                <th class="bg-blue-50/30 text-center py-2 border-b text-blue-800">%</th>
+                ${isE3 ? `
+                <th class="bg-emerald-50/30 text-center py-2 border-b text-emerald-800">Bil</th>
+                <th class="bg-emerald-50/30 text-center py-2 border-b text-emerald-800">%</th>
+                ` : ''}
                 
                 <th class="bg-slate-50 text-center py-2 border-b text-slate-600">Bil</th>
                 <th class="bg-slate-50 text-center py-2 border-b text-slate-600">%</th>
                 
+                <th class="bg-blue-50/30 text-center py-2 border-b text-blue-800">Bil</th>
+                <th class="bg-blue-50/30 text-center py-2 border-b text-blue-800">%</th>
+                
+                ${isE3 ? `
+                <th class="bg-indigo-50/30 text-center py-2 border-b text-indigo-800" title="Beza E1-E2">BZA 1 (%)</th>
+                <th class="bg-indigo-50/30 text-center py-2 border-b text-indigo-800" title="Beza E1-E3">BZA 2 (%)</th>
+                ` : `
                 <th class="bg-indigo-50/30 text-center py-2 border-b text-indigo-800">Bil</th>
                 <th class="bg-indigo-50/30 text-center py-2 border-b text-indigo-800">%</th>
+                `}
                 
                 <th class="bg-gray-50 text-center py-2 border-b">Kumpulan</th>
                 <th class="bg-gray-50 text-center py-2 border-b">Pencapaian</th>
@@ -171,7 +191,8 @@ export function renderCreditAnalysisTable(stats1, stats2, isCompare, subjectName
 
     let html = '';
     const hadir1 = stats1.total.hadir; // Peratus dikira dari HADIR, bukan DAFTAR
-    const hadir2 = isCompare ? stats2.total.hadir : 0;
+    const hadir2 = isCompare && stats2 ? stats2.total.hadir : 0;
+    const hadir3 = isE3 ? stats3.total.hadir : 0;
 
     const calcPerc = (val, total) => total > 0 ? ((val / total) * 100).toFixed(2) : "0.00";
     
@@ -193,20 +214,35 @@ export function renderCreditAnalysisTable(stats1, stats2, isCompare, subjectName
         html += `<td class="px-4 py-3 font-bold font-oswald text-gray-700 bg-white">${g}</td>`;
 
         if (isCompare) {
-            const count2 = stats2.grades[g] || 0;
+            const count2 = stats2 ? (stats2.grades[g] || 0) : 0;
             const perc2 = calcPerc(count2, hadir2);
+            
+            const count3 = isE3 ? (stats3.grades[g] || 0) : 0;
+            const perc3 = isE3 ? calcPerc(count3, hadir3) : "0.00";
+
             const diffBil = getDiff(count1, count2);
-            const diffPerc = getDiff(parseFloat(perc1), parseFloat(perc2));
+            const diffPerc1 = getDiff(parseFloat(perc1), parseFloat(perc2));
+            const diffPerc2 = isE3 ? getDiff(parseFloat(perc1), parseFloat(perc3)) : null;
 
             html += `
-                <td class="px-2 py-2 font-medium text-gray-700 bg-blue-50/10 text-center">${count1}</td>
-                <td class="px-2 py-2 font-bold text-blue-600 bg-blue-50/10 text-center">${perc1}%</td>
-                
+                ${isE3 ? `
+                <td class="px-2 py-2 font-medium text-gray-500 bg-emerald-50/30 text-center">${count3}</td>
+                <td class="px-2 py-2 text-emerald-600 font-bold bg-emerald-50/30 text-xs text-center">${perc3}%</td>
+                ` : ''}
+
                 <td class="px-2 py-2 font-medium text-gray-500 bg-slate-50/30 text-center">${count2}</td>
                 <td class="px-2 py-2 text-gray-400 bg-slate-50/30 text-xs text-center">${perc2}%</td>
                 
+                <td class="px-2 py-2 font-medium text-gray-700 bg-blue-50/10 text-center">${count1}</td>
+                <td class="px-2 py-2 font-bold text-blue-600 bg-blue-50/10 text-center">${perc1}%</td>
+                
+                ${isE3 ? `
+                <td class="px-2 py-2 font-medium ${diffPerc1.color} ${diffPerc1.bg} rounded text-center text-xs" title="E1-E2">${diffPerc1.val.toFixed(2)}%</td>
+                <td class="px-2 py-2 font-medium ${diffPerc2.color} ${diffPerc2.bg} rounded text-center text-xs border-l border-indigo-100/50" title="E1-E3">${diffPerc2.val.toFixed(2)}%</td>
+                ` : `
                 <td class="px-2 py-2 font-medium ${diffBil.color} ${diffBil.bg} rounded text-center text-xs">${diffBil.txt}</td>
-                <td class="px-2 py-2 font-medium ${diffPerc.color} ${diffPerc.bg} rounded text-center text-xs">${diffPerc.val.toFixed(2)}%</td>
+                <td class="px-2 py-2 font-medium ${diffPerc1.color} ${diffPerc1.bg} rounded text-center text-xs">${diffPerc1.val.toFixed(2)}%</td>
+                `}
             `;
         } else {
             html += `
@@ -223,23 +259,40 @@ export function renderCreditAnalysisTable(stats1, stats2, isCompare, subjectName
                 let catContent = '';
 
                 if (isCompare) {
-                    const catCount2 = stats2.cats[row.key] || 0;
+                    const catCount2 = stats2 ? (stats2.cats[row.key] || 0) : 0;
                     const catPerc2 = calcPerc(catCount2, hadir2);
-                    const diffCat = getDiff(parseFloat(catPerc1), parseFloat(catPerc2));
+                    const diffCat1 = getDiff(parseFloat(catPerc1), parseFloat(catPerc2));
                     
+                    let e3Html = '';
+                    if (isE3) {
+                        const catCount3 = stats3.cats[row.key] || 0;
+                        const catPerc3 = calcPerc(catCount3, hadir3);
+                        const diffCat2 = getDiff(parseFloat(catPerc1), parseFloat(catPerc3));
+                        
+                        e3Html = `
+                            <div class="text-[10px] text-gray-400 mt-0.5">
+                                E3: ${catPerc3}% (${catCount3})
+                            </div>
+                            <div class="text-xs ${diffCat2.color} mt-0.5 flex items-center gap-1 bg-white px-2 py-0.5 rounded shadow-sm border border-gray-100" title="E1-E3">
+                                <span class="text-[10px]">${diffCat2.arrow}</span> ${Math.abs(diffCat2.val).toFixed(2)}% (BZA2)
+                            </div>
+                        `;
+                    }
+
                     catContent = `
                         <div class="flex flex-col gap-1 items-center justify-center h-full py-1">
                             <div class="flex items-baseline gap-2">
-                                <span class="text-sm font-bold text-gray-800">${catPerc1}%</span>
+                                <span class="text-sm font-bold text-gray-800" title="E1">${catPerc1}%</span>
                                 <span class="text-[10px] text-gray-400">(${catCount1})</span>
                             </div>
                             <div class="w-full h-px bg-gray-200 my-0.5"></div>
                             <div class="text-[10px] text-gray-400">
                                 E2: ${catPerc2}% (${catCount2})
                             </div>
-                            <div class="text-xs ${diffCat.color} mt-1 flex items-center gap-1 bg-white px-2 py-0.5 rounded shadow-sm border border-gray-100">
-                                <span class="text-[10px]">${diffCat.arrow}</span> ${Math.abs(diffCat.val).toFixed(2)}%
+                            <div class="text-xs ${diffCat1.color} mt-1 flex items-center gap-1 bg-white px-2 py-0.5 rounded shadow-sm border border-gray-100" title="E1-E2">
+                                <span class="text-[10px]">${diffCat1.arrow}</span> ${Math.abs(diffCat1.val).toFixed(2)}% ${isE3 ? '(BZA1)' : ''}
                             </div>
+                            ${e3Html}
                         </div>
                     `;
                 } else {
@@ -276,7 +329,12 @@ export function renderCreditAnalysisTable(stats1, stats2, isCompare, subjectName
         <tr class="bg-gray-800 text-white font-bold text-sm">
             <td class="px-4 py-3 text-right uppercase tracking-wider font-oswald text-gray-300 text-xs">JUMLAH HADIR</td>
             ${isCompare 
-                ? `<td class="px-2 py-2 text-center bg-gray-700/50" colspan="2">${hadir1}</td><td class="px-2 py-2 text-center text-gray-400 bg-gray-700/30" colspan="2">${hadir2}</td><td class="px-2 py-2 bg-gray-800" colspan="2"></td>` 
+                ? `
+                   ${isE3 ? `<td class="px-2 py-2 text-center text-emerald-400 bg-gray-700/40" colspan="2">${hadir3}</td>` : ''}
+                   <td class="px-2 py-2 text-center text-gray-400 bg-gray-700/30" colspan="2">${hadir2}</td>
+                   <td class="px-2 py-2 text-center bg-gray-700/50" colspan="2">${hadir1}</td>
+                   <td class="px-2 py-2 bg-gray-800" colspan="2"></td>
+                  ` 
                 : `<td class="px-4 py-3 text-center bg-gray-700/50 text-white text-lg font-oswald">${hadir1}</td><td class="px-4 py-3 bg-gray-800"></td>`
             }
             <td colspan="2" class="bg-gray-800"></td>
@@ -285,6 +343,7 @@ export function renderCreditAnalysisTable(stats1, stats2, isCompare, subjectName
 
     tbody.innerHTML = html;
 }
+// [COMMENT SYNTAX] SURGICAL EDIT END
 
 // ==========================================
 // 3. EXPORT SETUP

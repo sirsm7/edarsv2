@@ -64,14 +64,16 @@ export function toggleAllSubjects(isChecked) {
 // 2. CORE LOGIC: FILTER & COMPARE
 // ==========================================
 
+// [COMMENT SYNTAX] SURGICAL EDIT START: Menambah sokongan parameter E3 (comparisonStudents2) dan logik pengekstrakan markahnya
 /**
  * Menjana data laporan khas berdasarkan kriteria.
  * @param {Array} students - Data pelajar (E1)
  * @param {Array} selectedSubjects - Subjek yang dipilih user
  * @param {string} mode - Mode tapisan (TH, G, DE, LE10)
  * @param {Array} comparisonStudents - Data pelajar banding (E2) - Optional
+ * @param {Array} comparisonStudents2 - Data pelajar banding (E3) - Optional
  */
-export function generateSpecialReportData(students, selectedSubjects, mode, comparisonStudents = []) {
+export function generateSpecialReportData(students, selectedSubjects, mode, comparisonStudents = [], comparisonStudents2 = []) {
     let results = [];
     
     // Bina Map untuk carian pantas data perbandingan (Exam 2)
@@ -79,6 +81,14 @@ export function generateSpecialReportData(students, selectedSubjects, mode, comp
     if (comparisonStudents && comparisonStudents.length > 0) {
         comparisonStudents.forEach(s => {
             if (s.id_individu) comparisonMap.set(s.id_individu, s);
+        });
+    }
+
+    // Bina Map untuk carian pantas data perbandingan (Exam 3)
+    const comparisonMap2 = new Map();
+    if (comparisonStudents2 && comparisonStudents2.length > 0) {
+        comparisonStudents2.forEach(s => {
+            if (s.id_individu) comparisonMap2.set(s.id_individu, s);
         });
     }
 
@@ -119,8 +129,9 @@ export function generateSpecialReportData(students, selectedSubjects, mode, comp
             if (isMatch) {
                 const fullName = NAMA_SUBJEK[subCode] || subCode;
                 let compData = null;
+                let compData2 = null;
 
-                // LOGIK PERBANDINGAN PINTAR
+                // LOGIK PERBANDINGAN PINTAR E1 vs E2
                 if (comparisonMap.size > 0) {
                     const match = comparisonMap.get(s.id_individu);
                     if (match) {
@@ -138,6 +149,24 @@ export function generateSpecialReportData(students, selectedSubjects, mode, comp
                     }
                 }
 
+                // LOGIK PERBANDINGAN PINTAR E1 vs E3
+                if (comparisonMap2.size > 0) {
+                    const match2 = comparisonMap2.get(s.id_individu);
+                    if (match2) {
+                        const marks3 = match2.markah_data || {};
+                        const gred3 = getGrade(marks3, subCode);
+                        let rawMark3 = marks3[subCode] || marks3[`${subCode}`] || "-";
+                        
+                        compData2 = {
+                            markah: rawMark3,
+                            gred: gred3,
+                            status: calculateImprovement(rawMark, gred, rawMark3, gred3)
+                        };
+                    } else {
+                        compData2 = { markah: '-', gred: '-', status: { type: 'NEW', label: 'BARU' } }; 
+                    }
+                }
+
                 results.push({
                     nama: s.nama_murid,
                     kelas: s.kelas,
@@ -146,7 +175,8 @@ export function generateSpecialReportData(students, selectedSubjects, mode, comp
                     nama_subjek: fullName,
                     markah: rawMark,
                     gred: gred,
-                    comparison: compData 
+                    comparison: compData,
+                    comparison2: compData2
                 });
             }
         });
@@ -168,6 +198,7 @@ export function generateSpecialReportData(students, selectedSubjects, mode, comp
 
     return results;
 }
+// [COMMENT SYNTAX] SURGICAL EDIT END
 
 function calculateImprovement(m1, g1, m2, g2) {
     const m2Clean = String(m2).trim();
@@ -199,7 +230,8 @@ function calculateImprovement(m1, g1, m2, g2) {
 // 3. UI RENDER: DYNAMIC TABLE
 // ==========================================
 
-export function renderSpecialTable(results, mode, isCompareMode, showSchool = true) {
+// [COMMENT SYNTAX] SURGICAL EDIT START: Menyuntik header dan sel E3 ➔ E2 ➔ E1 berserta Beza E1-E3
+export function renderSpecialTable(results, mode, isCompareMode, showSchool = true, isE3 = false) {
     const tbody = document.getElementById('tbodySpecial');
     const titleEl = document.getElementById('specialReportTitle');
     const subtitleEl = document.getElementById('specialReportSubtitle');
@@ -239,9 +271,15 @@ export function renderSpecialTable(results, mode, isCompareMode, showSchool = tr
     }
 
     if (isCompareMode) {
-        headerHtml += '<th class="text-center w-28 bg-blue-50/50 text-blue-800">E1 (Semasa)</th>';
-        headerHtml += '<th class="text-center w-28 bg-gray-50/50 text-gray-600">E2 (Asal)</th>';
-        headerHtml += '<th class="text-center w-28">Beza</th>';
+        if (isE3) {
+            headerHtml += '<th class="text-center w-24 bg-emerald-50/50 text-emerald-800" title="Penanda Aras 2">E3 (Pilihan)</th>';
+        }
+        headerHtml += '<th class="text-center w-24 bg-gray-50/50 text-gray-600" title="Penanda Aras 1">E2 (Asal)</th>';
+        headerHtml += '<th class="text-center w-24 bg-blue-50/50 text-blue-800">E1 (Semasa)</th>';
+        headerHtml += '<th class="text-center w-20" title="Beza E1 - E2">BZA 1</th>';
+        if (isE3) {
+            headerHtml += '<th class="text-center w-20" title="Beza E1 - E3">BZA 2</th>';
+        }
     } else {
         headerHtml += '<th class="text-center w-24">Markah</th>';
         headerHtml += '<th class="text-center w-20">Gred</th>';
@@ -262,10 +300,7 @@ export function renderSpecialTable(results, mode, isCompareMode, showSchool = tr
     let counter = 1;
     
     // Kira Colspan untuk baris Grouping
-    // Asas: Bil(1) + Nama(1) + Kelas(1) = 3
-    // Tambahan: Sekolah (1 jika showSchool)
-    // Data: Compare(3) atau Single(2)
-    const colSpan = 3 + (showSchool ? 1 : 0) + (isCompareMode ? 3 : 2);
+    const colSpan = 3 + (showSchool ? 1 : 0) + (isCompareMode ? (isE3 ? 5 : 3) : 2);
 
     results.forEach((r) => {
         if (r.subjek !== currentSubject) {
@@ -286,7 +321,7 @@ export function renderSpecialTable(results, mode, isCompareMode, showSchool = tr
             counter = 1; 
         }
 
-        html += `<tr class="transition-colors hover:bg-gray-50">`;
+        html += `<tr class="transition-colors hover:bg-gray-50 border-b border-gray-100">`;
         html += `<td class="text-center text-gray-400 font-medium">${counter++}</td>`;
         html += `<td class="font-medium uppercase text-gray-700">${r.nama}</td>`;
         html += `<td class="text-center text-gray-500 font-medium text-xs">${r.kelas}</td>`;
@@ -297,27 +332,52 @@ export function renderSpecialTable(results, mode, isCompareMode, showSchool = tr
 
         if (isCompareMode) {
             const c = r.comparison || { markah: '-', gred: '-', status: { type: 'NONE', label: '-' } };
+            const c2 = r.comparison2 || { markah: '-', gred: '-', status: { type: 'NONE', label: '-' } };
             
-            let bezaClass = "text-gray-400 font-medium";
-            let bezaBg = "bg-transparent";
-            
-            if (c.status.type === 'UP') { bezaClass = "text-green-600 font-bold"; bezaBg = "bg-green-50/50"; }
-            else if (c.status.type === 'DOWN') { bezaClass = "text-red-600 font-bold"; bezaBg = "bg-red-50/50"; }
-            else if (c.status.type === 'NEW') { bezaClass = "text-blue-600 font-bold"; bezaBg = "bg-blue-50/50"; }
+            const getBezaUI = (status) => {
+                let bezaClass = "text-gray-400 font-medium";
+                let bezaBg = "bg-transparent";
+                if (status.type === 'UP') { bezaClass = "text-green-600 font-bold"; bezaBg = "bg-green-50/50"; }
+                else if (status.type === 'DOWN') { bezaClass = "text-red-600 font-bold"; bezaBg = "bg-red-50/50"; }
+                else if (status.type === 'NEW') { bezaClass = "text-blue-600 font-bold"; bezaBg = "bg-blue-50/50"; }
+                return { bezaClass, bezaBg };
+            };
 
+            const ui1 = getBezaUI(c.status);
+            const ui2 = getBezaUI(c2.status);
+
+            // Kolum E3
+            if (isE3) {
+                html += `
+                <td class="text-center bg-emerald-50/30 text-emerald-700">
+                    <div class="font-medium">${safeStr(c2.markah)}</div>
+                    <div class="text-[10px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded inline-block mt-1">${safeStr(c2.gred)}</div>
+                </td>`;
+            }
+
+            // Kolum E2, E1, dan BZA1
             html += `
-                <td class="text-center bg-blue-50/30">
-                    <div class="font-bold text-gray-800">${safeStr(r.markah)}</div>
-                    <div class="badge-pill mt-1 ${getStatusClass(r.gred)} border text-[10px]">${safeStr(r.gred)}</div>
-                </td>
                 <td class="text-center bg-gray-50/50 text-gray-500">
                     <div class="font-medium">${safeStr(c.markah)}</div>
                     <div class="text-[10px] bg-gray-200 text-gray-600 px-1.5 py-0.5 rounded inline-block mt-1">${safeStr(c.gred)}</div>
                 </td>
-                <td class="text-center text-xs font-oswald ${bezaClass} ${bezaBg}">
+                <td class="text-center bg-blue-50/30">
+                    <div class="font-bold text-gray-800">${safeStr(r.markah)}</div>
+                    <div class="badge-pill mt-1 ${getStatusClass(r.gred)} border text-[10px]">${safeStr(r.gred)}</div>
+                </td>
+                <td class="text-center text-xs font-oswald ${ui1.bezaClass} ${ui1.bezaBg}" title="E1-E2">
                     ${c.status.label}
                 </td>
-            </tr>`;
+            `;
+
+            // Kolum BZA2
+            if (isE3) {
+                html += `
+                <td class="text-center text-xs font-oswald ${ui2.bezaClass} ${ui2.bezaBg} border-l border-gray-100/50" title="E1-E3">
+                    ${c2.status.label}
+                </td>`;
+            }
+            html += `</tr>`;
         } else {
             html += `
                 <td class="text-center font-bold text-gray-800 font-data-num">${safeStr(r.markah)}</td>
@@ -331,6 +391,7 @@ export function renderSpecialTable(results, mode, isCompareMode, showSchool = tr
     tbody.innerHTML = html;
     container.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
+// [COMMENT SYNTAX] SURGICAL EDIT END
 
 export function setupSpecialExport(btnExcelId) {
     const btnExcel = document.getElementById(btnExcelId);
