@@ -7,7 +7,8 @@
 // 1. STATE PENYIMPANAN DATA (PRIVATE)
 // Data mentah dari DB disimpan di sini. Tidak boleh diakses terus dari luar.
 let _currentDataCache = [];      // Data Utama (Exam 1)
-let _comparisonDataCache = [];   // Data Perbandingan (Exam 2)
+let _comparisonDataCache = [];   // Data Perbandingan 1 (Exam 2)
+let _comparisonDataCache2 = [];  // [SURGICAL EDIT] Data Perbandingan 2 (Exam 3 - Pilihan)
 
 // 2. STATE KONFIGURASI UI (PRIVATE)
 // Menyimpan status pilihan dropdown semasa.
@@ -16,6 +17,8 @@ const _uiState = {
     form1: '',
     exam2: '',
     form2: '',
+    exam3: '', // [SURGICAL EDIT] Tambahan untuk Peperiksaan ke-3
+    form3: '', // [SURGICAL EDIT] Tambahan untuk Tingkatan ke-3
     school: 'SEMUA',
     demog: 'ALL',
     component: 'NONE',
@@ -41,16 +44,30 @@ export function setMainData(data) {
 }
 
 /**
- * Simpan data perbandingan (Exam 2) ke dalam memori.
+ * Simpan data perbandingan pertama (Exam 2) ke dalam memori.
  * @param {Array} data - Array objek pelajar
  */
 export function setComparisonData(data) {
     if (Array.isArray(data)) {
         _comparisonDataCache = [...data];
-        console.log(`[State] Data Banding dikemaskini: ${_comparisonDataCache.length} rekod.`);
+        console.log(`[State] Data Banding 1 dikemaskini: ${_comparisonDataCache.length} rekod.`);
     } else {
         console.error('[State] Ralat: Data banding mesti dalam bentuk Array.');
         _comparisonDataCache = [];
+    }
+}
+
+/**
+ * [SURGICAL EDIT] Simpan data perbandingan kedua (Exam 3) ke dalam memori.
+ * @param {Array} data - Array objek pelajar
+ */
+export function setComparisonData2(data) {
+    if (Array.isArray(data)) {
+        _comparisonDataCache2 = [...data];
+        console.log(`[State] Data Banding 2 (E3) dikemaskini: ${_comparisonDataCache2.length} rekod.`);
+    } else {
+        console.error('[State] Ralat: Data banding 2 (E3) mesti dalam bentuk Array.');
+        _comparisonDataCache2 = [];
     }
 }
 
@@ -72,7 +89,7 @@ export function setFilter(key, value) {
 // ==========================================
 
 /**
- * Ambil salinan data utama.
+ * Ambil salinan data utama (E1).
  * @returns {Array} Salinan data utama
  */
 export function getMainData() {
@@ -80,11 +97,19 @@ export function getMainData() {
 }
 
 /**
- * Ambil salinan data perbandingan.
+ * Ambil salinan data perbandingan (E2).
  * @returns {Array} Salinan data perbandingan
  */
 export function getComparisonData() {
     return [..._comparisonDataCache];
+}
+
+/**
+ * [SURGICAL EDIT] Ambil salinan data perbandingan kedua (E3).
+ * @returns {Array} Salinan data perbandingan 2
+ */
+export function getComparisonData2() {
+    return [..._comparisonDataCache2];
 }
 
 /**
@@ -114,12 +139,15 @@ export function getFilter(key) {
 export function resetState() {
     _currentDataCache = [];
     _comparisonDataCache = [];
+    _comparisonDataCache2 = []; // [SURGICAL EDIT] Kosongkan cache E3
     
     // Reset UI State ke default
     _uiState.exam1 = '';
     _uiState.form1 = '';
     _uiState.exam2 = '';
     _uiState.form2 = '';
+    _uiState.exam3 = ''; // [SURGICAL EDIT] Reset state E3
+    _uiState.form3 = ''; // [SURGICAL EDIT] Reset state form E3
     _uiState.school = 'SEMUA';
     _uiState.demog = 'ALL';
     _uiState.component = 'NONE';

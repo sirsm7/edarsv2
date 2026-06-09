@@ -1,6 +1,7 @@
 // ==========================================
 // EDARS V3.0 - UTILITIES MODULE
 // Mengandungi fungsi bantuan umum (Pure Functions) & Eksport Excel.
+// KEMASKINI V3.1: Eksport Excel pintar dengan tapisan lajur tersembunyi (Hidden Columns).
 // ==========================================
 
 // 1. PEMBERSIHAN DATA & PENGEKSTRAKAN TEKS
@@ -113,7 +114,14 @@ export function exportTableToExcel(tableID, filename) {
         return;
     }
     
-    // 1. Bina Template HTML dengan Meta Charset
+    // [SURGICAL EDIT] Klon jadual untuk elak rosakkan UI sebenar
+    const clonedTable = table.cloneNode(true);
+    
+    // [SURGICAL EDIT] Buang elemen dengan class .hidden atau col-e3 yang disorok
+    const hiddenElements = clonedTable.querySelectorAll('.hidden');
+    hiddenElements.forEach(el => el.remove());
+
+    // 1. Bina Template HTML dengan Meta Charset menggunakan jadual yang telah dibersihkan
     const htmlContent = `
         <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
         <head>
@@ -142,7 +150,7 @@ export function exportTableToExcel(tableID, filename) {
             </style>
         </head>
         <body>
-            ${table.outerHTML}
+            ${clonedTable.outerHTML}
         </body>
         </html>
     `;

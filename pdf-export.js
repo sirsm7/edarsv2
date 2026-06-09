@@ -2,6 +2,7 @@
 // EDARS V3.0 - PDF EXPORT MODULE (VECTOR FIX & EMOJI CLEANER)
 // Modul global untuk menjana laporan PDF menggunakan jsPDF & AutoTable.
 // KEMASKINI: Ditambah penapis Emoji (Folder 📂) untuk elak isu simbol pelik.
+// KEMASKINI V3.1: Logik DOM Cleansing pintar untuk lajur E3 tersembunyi.
 // ==========================================
 
 window.exportTableToPDF = function(tableId, reportTitle, fileNamePrefix) {
@@ -21,6 +22,23 @@ window.exportTableToPDF = function(tableId, reportTitle, fileNamePrefix) {
         day: '2-digit', month: '2-digit', year: 'numeric',
         hour: '2-digit', minute: '2-digit'
     });
+
+    // ==========================================
+    // HELPER: DOM CLEANSING (Surgical Edit)
+    // ==========================================
+    const originalTable = document.getElementById(tableId);
+    if (!originalTable) {
+        Swal.fire('Ralat', 'Jadual tidak ditemui untuk dieksport ke PDF.', 'error');
+        return;
+    }
+
+    // [SURGICAL EDIT] Klon jadual untuk mengelak kerosakan UI pada paparan pengguna
+    const clonedTable = originalTable.cloneNode(true);
+    
+    // [SURGICAL EDIT] Bersihkan sebarang lajur (column) atau sel yang mempunyai kelas '.hidden'
+    // Ini menyelesaikan isu AutoTable yang keliru dengan colspan E3 ketika dalam Mod E2
+    const hiddenElements = clonedTable.querySelectorAll('.hidden');
+    hiddenElements.forEach(el => el.remove());
 
     // ==========================================
     // HELPER: COLOR EXTRACTION
@@ -73,8 +91,9 @@ window.exportTableToPDF = function(tableId, reportTitle, fileNamePrefix) {
     // ==========================================
     // CORE: TABLE GENERATION
     // ==========================================
+    // [SURGICAL EDIT] Tukar 'html: `#${tableId}`' kepada jadual yang di-klon (clonedTable)
     doc.autoTable({
-        html: `#${tableId}`,
+        html: clonedTable,
         startY: 40,
         theme: 'grid',
         styles: {

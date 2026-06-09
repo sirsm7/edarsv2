@@ -2,13 +2,11 @@
 // EDARS V3.0 - TEMPLATES MODULE
 // Mengandungi semua struktur HTML (View Layer).
 // Fungsi tulen: Input Data -> Output HTML String.
+// KEMASKINI V3.1: Sokongan Matriks Dinamik 3 Peperiksaan (E3).
 // ==========================================
 
 import { getLMSColor } from './utils.js';
 import { NAMA_SUBJEK } from './config.js';
-
-// ... (Kekalkan fungsi header subjek lain seperti sedia ada) ...
-// ... (getComplexSubjectHeader, getComponentSchoolHeader, etc) ...
 
 export function getComplexSubjectHeader() {
     return `
@@ -91,30 +89,54 @@ export function getComponentSimpleHeader() {
     </tr>`;
 }
 
-export function getComparisonDetailHeader() {
+// [SURGICAL EDIT] Suntik sokongan dinamik E3 pada header matriks perbandingan
+export function getComparisonDetailHeader(names = {}) {
+    const isE3 = !!names.name3;
+    const n1 = names.name1 || 'E1';
+    const n2 = names.name2 || 'E2';
+    const n3 = names.name3 || 'E3';
+    
+    // Auto-adjust colspan untuk menyokong E3 dan Beza ke-2
+    const colSpan = isE3 ? 5 : 3;
+
     return `
     <thead>
     <tr>
         <th rowspan="2" class="w-10 text-center border-r bg-gray-50">BIL</th>
         <th rowspan="2" class="text-left border-r bg-gray-50">NAMA SEKOLAH</th>
-        <th colspan="3" class="text-center bg-emerald-50 text-emerald-800 border-b border-emerald-200 border-r">CEMERLANG (%)</th>
-        <th colspan="3" class="text-center bg-blue-50 text-blue-800 border-b border-blue-200 border-r">KEPUJIAN (%)</th>
-        <th colspan="3" class="text-center bg-indigo-50 text-indigo-800 border-b border-indigo-200 border-r">LULUS (%)</th>
-        <th colspan="3" class="text-center bg-gray-100 text-gray-900 border-b border-gray-300">GPMP</th>
+        <th colspan="${colSpan}" class="text-center bg-emerald-50 text-emerald-800 border-b border-emerald-200 border-r">CEMERLANG (%)</th>
+        <th colspan="${colSpan}" class="text-center bg-blue-50 text-blue-800 border-b border-blue-200 border-r">KEPUJIAN (%)</th>
+        <th colspan="${colSpan}" class="text-center bg-indigo-50 text-indigo-800 border-b border-indigo-200 border-r">LULUS (%)</th>
+        <th colspan="${colSpan}" class="text-center bg-gray-100 text-gray-900 border-b border-gray-300">GPMP</th>
     </tr>
     <tr class="text-[10px]">
-        <th class="text-center bg-emerald-50/50 text-emerald-700 border-r">E1</th>
-        <th class="text-center bg-emerald-50/30 text-gray-500 border-r">E2</th>
-        <th class="text-center bg-emerald-100 text-emerald-900 font-bold border-r">BEZA</th>
-        <th class="text-center bg-blue-50/50 text-blue-700 border-r">E1</th>
-        <th class="text-center bg-blue-50/30 text-gray-500 border-r">E2</th>
-        <th class="text-center bg-blue-100 text-blue-900 font-bold border-r">BEZA</th>
-        <th class="text-center bg-indigo-50/50 text-indigo-700 border-r">E1</th>
-        <th class="text-center bg-indigo-50/30 text-gray-500 border-r">E2</th>
-        <th class="text-center bg-indigo-100 text-indigo-900 font-bold border-r">BEZA</th>
-        <th class="text-center bg-gray-50 text-gray-800 border-r">E1</th>
-        <th class="text-center bg-gray-50 text-gray-500 border-r">E2</th>
-        <th class="text-center bg-gray-200 text-gray-900 font-bold">BEZA</th>
+        <!-- CEMERLANG -->
+        <th class="text-center bg-emerald-50/50 text-emerald-700 border-r" title="${n1}">E1</th>
+        <th class="text-center bg-emerald-50/30 text-gray-500 border-r" title="${n2}">E2</th>
+        ${isE3 ? `<th class="text-center bg-emerald-50/50 text-emerald-600 border-r" title="${n3}">E3</th>` : ''}
+        <th class="text-center bg-emerald-100 text-emerald-900 font-bold border-r">BZA 1</th>
+        ${isE3 ? `<th class="text-center bg-emerald-100/50 text-emerald-900 font-bold border-r">BZA 2</th>` : ''}
+
+        <!-- KEPUJIAN -->
+        <th class="text-center bg-blue-50/50 text-blue-700 border-r" title="${n1}">E1</th>
+        <th class="text-center bg-blue-50/30 text-gray-500 border-r" title="${n2}">E2</th>
+        ${isE3 ? `<th class="text-center bg-blue-50/50 text-blue-600 border-r" title="${n3}">E3</th>` : ''}
+        <th class="text-center bg-blue-100 text-blue-900 font-bold border-r">BZA 1</th>
+        ${isE3 ? `<th class="text-center bg-blue-100/50 text-blue-900 font-bold border-r">BZA 2</th>` : ''}
+
+        <!-- LULUS -->
+        <th class="text-center bg-indigo-50/50 text-indigo-700 border-r" title="${n1}">E1</th>
+        <th class="text-center bg-indigo-50/30 text-gray-500 border-r" title="${n2}">E2</th>
+        ${isE3 ? `<th class="text-center bg-indigo-50/50 text-indigo-600 border-r" title="${n3}">E3</th>` : ''}
+        <th class="text-center bg-indigo-100 text-indigo-900 font-bold border-r">BZA 1</th>
+        ${isE3 ? `<th class="text-center bg-indigo-100/50 text-indigo-900 font-bold border-r">BZA 2</th>` : ''}
+
+        <!-- GPMP -->
+        <th class="text-center bg-gray-50 text-gray-800 border-r" title="${n1}">E1</th>
+        <th class="text-center bg-gray-50 text-gray-500 border-r" title="${n2}">E2</th>
+        ${isE3 ? `<th class="text-center bg-gray-50 text-gray-600 border-r" title="${n3}">E3</th>` : ''}
+        <th class="text-center bg-gray-200 text-gray-900 font-bold border-r">BZA 1</th>
+        ${isE3 ? `<th class="text-center bg-gray-200/50 text-gray-900 font-bold border-l border-gray-300">BZA 2</th>` : ''}
     </tr>
     </thead>`;
 }
@@ -178,9 +200,6 @@ export function getKPIExportHeader(nameE1 = "EXAM 1", nameE2 = "EXAM 2") {
         </tr>
     </thead>`;
 }
-
-// ... (Kekalkan fungsi baris lain seperti sedia ada) ...
-// ... (getAggregateRow, getSubjectStatsRow, etc) ...
 
 export function getAggregateRow(s, i) {
     const plbm = s.bm.hadir>0 ? (s.bm.lulus/s.bm.hadir*100).toFixed(2) : "0.00"; 
@@ -372,7 +391,9 @@ function formatDiff(v1, v2, isInverse = false) {
     return `<span class="${color}">${arrow} ${diffStr}</span>`;
 }
 
-export function getComparisonDetailRow(s, i) {
+// [SURGICAL EDIT] Suntik pengiraan E3 dan BZA 2 ke dalam struktur baris matriks
+export function getComparisonDetailRow(s, i, names = {}) {
+    const isE3 = !!names.name3;
     const calcPerc = (val, total) => total > 0 ? ((val / total) * 100) : 0;
 
     // DATA E1
@@ -388,6 +409,13 @@ export function getComparisonDetailRow(s, i) {
     const kep2 = calcPerc(s.e2.kepujian, h2);
     const lus2 = calcPerc(s.e2.lulus, h2);
     const gp2 = h2 > 0 ? (s.e2.point / h2) : 0;
+    
+    // DATA E3 (Pilihan)
+    const h3 = s.e3 ? s.e3.hadir : 0;
+    const cem3 = s.e3 ? calcPerc(s.e3.cemerlang, h3) : 0;
+    const kep3 = s.e3 ? calcPerc(s.e3.kepujian, h3) : 0;
+    const lus3 = s.e3 ? calcPerc(s.e3.lulus, h3) : 0;
+    const gp3 = h3 > 0 ? (s.e3.point / h3) : 0;
 
     return `
     <tr class="transition-colors text-gray-700 hover:bg-gray-50">
@@ -397,21 +425,33 @@ export function getComparisonDetailRow(s, i) {
             <span class="font-semibold uppercase text-xs tracking-tight">${s.name}</span>
         </td>
 
+        <!-- CEMERLANG -->
         <td class="text-center bg-emerald-50/30 text-emerald-800 border-r border-emerald-100 text-xs font-bold">${cem1.toFixed(2)}</td>
         <td class="text-center bg-gray-50 text-gray-400 border-r border-gray-100 text-xs">${cem2.toFixed(2)}</td>
+        ${isE3 ? `<td class="text-center bg-emerald-50/20 text-emerald-600 border-r border-emerald-100 text-xs font-bold">${cem3.toFixed(2)}</td>` : ''}
         <td class="text-center bg-emerald-50 text-xs border-r border-emerald-100">${formatDiff(cem1, cem2)}</td>
+        ${isE3 ? `<td class="text-center bg-emerald-50/50 text-xs border-r border-emerald-100">${formatDiff(cem1, cem3)}</td>` : ''}
 
+        <!-- KEPUJIAN -->
         <td class="text-center bg-blue-50/30 text-blue-800 border-r border-blue-100 text-xs font-bold">${kep1.toFixed(2)}</td>
         <td class="text-center bg-gray-50 text-gray-400 border-r border-gray-100 text-xs">${kep2.toFixed(2)}</td>
+        ${isE3 ? `<td class="text-center bg-blue-50/20 text-blue-600 border-r border-blue-100 text-xs font-bold">${kep3.toFixed(2)}</td>` : ''}
         <td class="text-center bg-blue-50 text-xs border-r border-blue-100">${formatDiff(kep1, kep2)}</td>
+        ${isE3 ? `<td class="text-center bg-blue-50/50 text-xs border-r border-blue-100">${formatDiff(kep1, kep3)}</td>` : ''}
 
+        <!-- LULUS -->
         <td class="text-center bg-indigo-50/30 text-indigo-800 border-r border-indigo-100 text-xs font-bold">${lus1.toFixed(2)}</td>
         <td class="text-center bg-gray-50 text-gray-400 border-r border-gray-100 text-xs">${lus2.toFixed(2)}</td>
+        ${isE3 ? `<td class="text-center bg-indigo-50/20 text-indigo-600 border-r border-indigo-100 text-xs font-bold">${lus3.toFixed(2)}</td>` : ''}
         <td class="text-center bg-indigo-50 text-xs border-r border-indigo-100">${formatDiff(lus1, lus2)}</td>
+        ${isE3 ? `<td class="text-center bg-indigo-50/50 text-xs border-r border-indigo-100">${formatDiff(lus1, lus3)}</td>` : ''}
 
+        <!-- GPMP -->
         <td class="text-center bg-gray-100 text-gray-900 border-r border-gray-200 text-xs font-bold">${gp1.toFixed(2)}</td>
         <td class="text-center bg-gray-50 text-gray-400 border-r border-gray-100 text-xs">${gp2.toFixed(2)}</td>
-        <td class="text-center bg-gray-200 text-xs">${formatDiff(gp1, gp2, true)}</td>
+        ${isE3 ? `<td class="text-center bg-gray-50/80 text-gray-600 border-r border-gray-100 text-xs font-bold">${gp3.toFixed(2)}</td>` : ''}
+        <td class="text-center bg-gray-200 text-xs border-r border-gray-200">${formatDiff(gp1, gp2, true)}</td>
+        ${isE3 ? `<td class="text-center bg-gray-200/50 text-xs border-l border-gray-200">${formatDiff(gp1, gp3, true)}</td>` : ''}
     </tr>`;
 }
 

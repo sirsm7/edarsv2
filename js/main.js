@@ -2,6 +2,7 @@
 // EDARS V3.0 - MAIN CONTROLLER (SMART FETCH ENABLED)
 // Menguruskan aliran kerja aplikasi, event listeners, dan integrasi modul.
 // KEMASKINI: Logik "Smart Fetch" dilaksanakan untuk prestasi mudah alih optimum.
+// KEMASKINI V3.1: Sokongan Mod Perbandingan 3 Peperiksaan (E1, E2, E3).
 // ==========================================
 
 // 1. IMPORT MODUL
@@ -92,11 +93,17 @@ function setupEventListeners() {
     document.getElementById('toggleCompare').addEventListener('change', handleModeToggle);
     document.getElementById('examSelect').addEventListener('change', handleExamChange);
     document.getElementById('formSelect').addEventListener('change', handleFormChange);
+    
     // ── SURGICAL EDIT START: Tambahan Event Listener School Select ──
     const schoolSelect = document.getElementById('schoolSelect');
     if (schoolSelect) schoolSelect.addEventListener('change', handleSchoolChange);
     // ── SURGICAL EDIT END ──
-    document.getElementById('examSelect2').addEventListener('change', handleExam2Change); // Untuk perbandingan
+    
+    document.getElementById('examSelect2').addEventListener('change', handleExam2Change); // Untuk perbandingan E2
+    
+    // [SURGICAL EDIT] Listener untuk E3
+    const examSelect3 = document.getElementById('examSelect3');
+    if (examSelect3) examSelect3.addEventListener('change', handleExam3Change);
 
     // C. Butang Tindakan Utama
     document.getElementById('btnAnalisa').addEventListener('click', loadAnalyticsDispatch);
@@ -124,9 +131,6 @@ function setupEventListeners() {
     const btnStudentAchievement = document.getElementById('btnStudentAchievement');
     if (btnStudentAchievement) btnStudentAchievement.addEventListener('click', switchToStudentAchievementView);
     // ── SURGICAL EDIT END ──
-
-    const btnGenerateCredit = document.getElementById('btnGenerateCredit');
-    if (btnGenerateCredit) btnGenerateCredit.addEventListener('click', handleGenerateCreditAnalysis);
 
     // H. Butang Analisa Subjek Spesifik
     const btnSingleSubject = document.getElementById('btnSingleSubject');
@@ -218,23 +222,32 @@ function handleModeToggle() {
     State.setFilter('isCompareMode', isCompare);
 
     const divExam2 = document.getElementById('divExam2');
+    const divExam3 = document.getElementById('divExam3'); // [SURGICAL EDIT] E3 Container
     const lblExam1 = document.getElementById('lblExam1');
     const exam2Sel = document.getElementById('examSelect2');
     const form2Sel = document.getElementById('formSelect2');
+    const exam3Sel = document.getElementById('examSelect3'); // [SURGICAL EDIT]
+    const form3Sel = document.getElementById('formSelect3'); // [SURGICAL EDIT]
 
     if (isCompare) {
         divExam2.classList.remove('hidden');
+        if (divExam3) divExam3.classList.remove('hidden'); // [SURGICAL EDIT] Show E3
         lblExam1.innerText = "1. Peperiksaan (Utama)";
         if (exam2Sel.options.length <= 1) {
             const exam1Opts = document.getElementById('examSelect').innerHTML;
             exam2Sel.innerHTML = exam1Opts;
+            if (exam3Sel) exam3Sel.innerHTML = exam1Opts; // [SURGICAL EDIT] Populate E3 opts
         }
     } else {
         divExam2.classList.add('hidden');
+        if (divExam3) divExam3.classList.add('hidden'); // [SURGICAL EDIT] Hide E3
         lblExam1.innerText = "1. Peperiksaan";
         exam2Sel.value = ""; 
         form2Sel.value = ""; 
+        if (exam3Sel) exam3Sel.value = ""; // [SURGICAL EDIT]
+        if (form3Sel) form3Sel.value = ""; // [SURGICAL EDIT]
         State.setComparisonData([]); 
+        State.setComparisonData2([]); // [SURGICAL EDIT] Clear E3 State
     }
     hideAllViews();
     // ── SURGICAL EDIT START: Kemas kini Butang Paparan Pelajar ──
@@ -285,6 +298,7 @@ function switchToStudentAchievementView() {
     const demog = document.getElementById('demogSelect').value;
     const isCompare = document.getElementById('toggleCompare').checked;
     const exam2 = document.getElementById('examSelect2').value;
+    const exam3 = document.getElementById('examSelect3')?.value; // [SURGICAL EDIT] E3
 
     if (!Analytics.isSpecificSchoolSelected(school)) {
         Swal.fire('Info', 'Paparan pelajar hanya tersedia apabila memilih nama sekolah spesifik, bukan SEMUA SEKOLAH (DAERAH).', 'info');
@@ -308,6 +322,7 @@ function switchToStudentAchievementView() {
     }
 
     let comparisonData = [];
+    let comparisonData2 = []; // [SURGICAL EDIT] E3
     if (isCompare) {
         if (!State.getComparisonData().length) {
             Swal.fire('Info', 'Data perbandingan tidak dimuatkan. Sila jana analisa perbandingan dahulu.', 'warning');
@@ -316,10 +331,17 @@ function switchToStudentAchievementView() {
         comparisonData = State.getComparisonData();
         comparisonData = comparisonData.filter(s => s.nama_sekolah === school);
         comparisonData = comparisonData.filter(s => Analytics.filterDemography(s, demog));
+        
+        // [SURGICAL EDIT] Ambil E3 jika ada
+        if (exam3 && State.getComparisonData2().length) {
+            comparisonData2 = State.getComparisonData2();
+            comparisonData2 = comparisonData2.filter(s => s.nama_sekolah === school);
+            comparisonData2 = comparisonData2.filter(s => Analytics.filterDemography(s, demog));
+        }
     }
 
-    // Panggil calculate dengan data perbandingan (jika ada)
-    const result = Analytics.calculateStudentAchievementData(filteredData, comparisonData);
+    // [SURGICAL EDIT] Panggil calculate dengan data E1, E2, E3
+    const result = Analytics.calculateStudentAchievementData(filteredData, comparisonData, comparisonData2);
 
     hideAllViews();
 
@@ -335,7 +357,8 @@ function switchToStudentAchievementView() {
         school,
         demog,
         isCompare,
-        exam2
+        exam2,
+        exam3 // [SURGICAL EDIT]
     });
 
     if (view) view.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -410,6 +433,10 @@ function resetDashboardView(fullReset = false) {
         document.getElementById('examSelect').selectedIndex = 0; 
         document.getElementById('examSelect2').selectedIndex = 0;
         
+        // [SURGICAL EDIT] Reset E3
+        const examSel3 = document.getElementById('examSelect3');
+        if (examSel3) examSel3.selectedIndex = 0;
+        
         const formSel = document.getElementById('formSelect');
         formSel.innerHTML = '<option value="">-- Pilih Exam --</option>';
         formSel.disabled = true;
@@ -417,6 +444,13 @@ function resetDashboardView(fullReset = false) {
         const formSel2 = document.getElementById('formSelect2');
         formSel2.innerHTML = '<option value="">-- Pilih Exam 2 --</option>';
         formSel2.disabled = true;
+        
+        // [SURGICAL EDIT] Reset E3 form
+        const formSel3 = document.getElementById('formSelect3');
+        if (formSel3) {
+            formSel3.innerHTML = '<option value="">-- Pilih Exam 3 --</option>';
+            formSel3.disabled = true;
+        }
         
         const schoolSel = document.getElementById('schoolSelect');
         schoolSel.innerHTML = '<option value="SEMUA">SEMUA SEKOLAH (DAERAH)</option>';
@@ -452,13 +486,16 @@ async function loadInitialData() {
         const exams = await fetchExamList();
         const sel = document.getElementById('examSelect');
         const sel2 = document.getElementById('examSelect2');
+        const sel3 = document.getElementById('examSelect3'); // [SURGICAL EDIT] E3
         
         sel.innerHTML = '<option value="">-- Sila Pilih --</option>';
-        sel2.innerHTML = '<option value="">-- Pilih Base Line --</option>';
+        sel2.innerHTML = '<option value="">-- Pilih Base Line 1 --</option>';
+        if (sel3) sel3.innerHTML = '<option value="">-- Pilih Base Line 2 --</option>'; // [SURGICAL EDIT]
         
         exams.forEach(e => {
             sel.add(new Option(e, e));
             sel2.add(new Option(e, e));
+            if (sel3) sel3.add(new Option(e, e)); // [SURGICAL EDIT]
         });
     } catch (err) {
         console.error("Fail loading initial data", err);
@@ -502,10 +539,29 @@ async function handleExam2Change() {
     formSel2.disabled = false;
 }
 
+// [SURGICAL EDIT] Handle Exam 3 Change
+async function handleExam3Change() {
+    const exam = this.value;
+    State.setFilter('exam3', exam);
+    State.setComparisonData2([]); // Clear data lama
+    
+    const formSel3 = document.getElementById('formSelect3');
+    formSel3.innerHTML = '<option value="">Memuatkan...</option>';
+    formSel3.disabled = true;
+    
+    if (!exam) return;
+    
+    const forms = await fetchFormsForExam(exam);
+    formSel3.innerHTML = '<option value="">-- Pilih Tingkatan --</option>';
+    forms.forEach(f => formSel3.add(new Option(f, f)));
+    formSel3.disabled = false;
+}
+
 // ── SURGICAL EDIT START: Fungsi Handle School Change ──
 function handleSchoolChange() {
     State.setMainData([]);
     State.setComparisonData([]);
+    State.setComparisonData2([]); // [SURGICAL EDIT] Clear E3 data
     hideAllViews();
 
     const form = document.getElementById('formSelect')?.value || '';
@@ -541,9 +597,6 @@ async function handleFormChange() {
     // ── SURGICAL EDIT START: Kemas kini butang ──
     updateStudentAchievementButtonState();
     // ── SURGICAL EDIT END ──
-
-    // NOTA: 'Silent Load' telah DIBUANG untuk mengelakkan bottleneck di mobile.
-    // Data sebenar hanya akan diambil apabila butang 'Jana Analisa' ditekan.
 }
 
 function extractSubjectsFromData(data) {
@@ -630,8 +683,6 @@ async function loadSingleAnalytics() {
 
     try {
         // SMART FETCH: Sentiasa ambil data baru berdasarkan filter sekolah SEMASA.
-        // Jika pilih sekolah, ambil data sekolah itu sahaja. Jika SEMUA, ambil semua.
-        // Ini mengurangkan saiz muat turun sebanyak 95% untuk analisis sekolah individu.
         let rawData = await fetchDataForAnalytics(exam, form, school);
         State.setMainData(rawData);
         // ── SURGICAL EDIT START: Kemas kini butang ──
@@ -641,10 +692,7 @@ async function loadSingleAnalytics() {
         // Tapis Data (Demografi)
         let filteredData = rawData;
         
-        // Filter sekolah 'SEMUA' masih perlu dilakukan di klien jika rawData mengandungi semua sekolah
-        // Tetapi jika DB dah filter (school !== 'SEMUA'), baris ini redundant tapi selamat.
         if (school !== 'SEMUA') filteredData = filteredData.filter(s => s.nama_sekolah === school);
-        
         filteredData = filteredData.filter(s => Analytics.filterDemography(s, demog));
         
         if (filteredData.length === 0) { 
@@ -696,31 +744,47 @@ async function loadSingleAnalytics() {
 async function loadComparisonAnalytics() {
     const exam1 = document.getElementById('examSelect').value;
     const exam2 = document.getElementById('examSelect2').value;
+    const exam3 = document.getElementById('examSelect3')?.value; // [SURGICAL EDIT] E3
     const form1 = document.getElementById('formSelect').value;
     const form2 = document.getElementById('formSelect2').value;
+    const form3 = document.getElementById('formSelect3')?.value; // [SURGICAL EDIT] E3
     const school = document.getElementById('schoolSelect').value;
     const comp = document.getElementById('componentSelect').value;
     const demog = document.getElementById('demogSelect').value;
 
     if (!exam1 || !exam2 || !form1 || !form2) {
-        return Swal.fire('Ralat', 'Sila pilih kedua-dua Peperiksaan dan Tingkatan.', 'warning');
+        return Swal.fire('Ralat', 'Sila pilih sekurang-kurangnya Peperiksaan Utama dan Banding 1.', 'warning');
     }
     
-    if (exam1 === exam2 && form1 === form2) {
-        return Swal.fire('Ralat', 'Sila pilih kombinasi Exam/Tingkatan yang berbeza.', 'warning');
+    // [SURGICAL EDIT] Halangan kombinasi berulang untuk E1, E2 dan E3
+    if ((exam1 === exam2 && form1 === form2) || 
+        (exam3 && exam1 === exam3 && form1 === form3) || 
+        (exam3 && exam2 === exam3 && form2 === form3)) {
+        return Swal.fire('Ralat', 'Sila pilih kombinasi Exam/Tingkatan yang berbeza untuk setiap pilihan.', 'warning');
     }
 
     Swal.fire({ title: 'Sedang Membuat Perbandingan...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
     try {
-        // SMART FETCH: Ambil data untuk kedua-dua exam berdasarkan sekolah yang dipilih.
-        let [data1, data2] = await Promise.all([
+        // [SURGICAL EDIT] SMART FETCH untuk 3 Peperiksaan
+        let fetchPromises = [
             fetchDataForAnalytics(exam1, form1, school),
             fetchDataForAnalytics(exam2, form2, school)
-        ]);
+        ];
+        
+        if (exam3 && form3) {
+            fetchPromises.push(fetchDataForAnalytics(exam3, form3, school));
+        }
+
+        let results = await Promise.all(fetchPromises);
+        let data1 = results[0];
+        let data2 = results[1];
+        let data3 = results.length > 2 ? results[2] : [];
         
         State.setMainData(data1);
         State.setComparisonData(data2);
+        State.setComparisonData2(data3); // Simpan E3 di State
+        
         // ── SURGICAL EDIT START: Kemas kini butang ──
         updateStudentAchievementButtonState();
         // ── SURGICAL EDIT END ──
@@ -734,8 +798,9 @@ async function loadComparisonAnalytics() {
 
         const filtered1 = applyFilters(data1);
         const filtered2 = applyFilters(data2);
+        const filtered3 = applyFilters(data3); // [SURGICAL EDIT]
         
-        if (filtered1.length === 0 && filtered2.length === 0) { 
+        if (filtered1.length === 0 && filtered2.length === 0 && filtered3.length === 0) { 
             Swal.fire('Tiada Data', 'Tiada data untuk kriteria ini selepas penapisan.', 'info'); 
             return; 
         }
@@ -743,7 +808,7 @@ async function loadComparisonAnalytics() {
         hideAllViews();
         document.getElementById('viewComparison').classList.remove('hidden');
         
-        // --- LOGIK BUTTON KPI EXPORT (BARU) ---
+        // --- LOGIK BUTTON KPI EXPORT ---
         const btnKPI = document.getElementById('btnExportKPI');
         if (btnKPI) {
             if (school === 'SEMUA') btnKPI.classList.remove('hidden');
@@ -754,16 +819,17 @@ async function loadComparisonAnalytics() {
         const compContainer = document.getElementById('comparisonComponentContainer');
         const generalContainer = document.getElementById('comparisonGeneralContainer');
 
+        // [SURGICAL EDIT] Hantar filtered3 dan metadata exam3
         if (comp !== 'NONE') {
             compContainer.classList.remove('hidden');
             generalContainer.classList.add('hidden');
-            const result = Analytics.calculateComparisonComponent(filtered1, filtered2, comp);
-            UI.renderComparisonComponentTable(result, { name1: exam1, name2: exam2 });
+            const result = Analytics.calculateComparisonComponent(filtered1, filtered2, filtered3, comp);
+            UI.renderComparisonComponentTable(result, { name1: exam1, name2: exam2, name3: exam3 });
         } else {
             compContainer.classList.add('hidden');
             generalContainer.classList.remove('hidden');
-            const result = Analytics.calculateComparisonGeneral(filtered1, filtered2);
-            UI.renderComparisonTables(result, { name1: exam1, name2: exam2 });
+            const result = Analytics.calculateComparisonGeneral(filtered1, filtered2, filtered3);
+            UI.renderComparisonTables(result, { name1: exam1, name2: exam2, name3: exam3 });
         }
 
         // ── SURGICAL EDIT START: Kemas kini butang ──
@@ -811,39 +877,35 @@ async function handleGenerateSpecialReport() {
     }
 
     let comparisonData = [];
+    let comparisonData2 = []; // [SURGICAL EDIT]
     if (isCompare) {
         if (!State.getComparisonData().length) {
             Swal.fire('Info', 'Data perbandingan tidak dimuatkan. Sila jana analisa perbandingan dahulu.', 'warning');
             return;
         }
         comparisonData = State.getComparisonData();
+        if (State.getComparisonData2().length) {
+            comparisonData2 = State.getComparisonData2();
+        }
     }
 
     Swal.fire({ title: 'Menjana Laporan...', didOpen: () => Swal.showLoading() });
     
     setTimeout(() => {
-        const results = Special.generateSpecialReportData(filteredData, selectedSubjects, mode, comparisonData);
+        // [SURGICAL EDIT] Hantar comparisonData2 ke Special Module
+        const results = Special.generateSpecialReportData(filteredData, selectedSubjects, mode, comparisonData, comparisonData2);
         
         if (results.length === 0) {
             Swal.fire('Bersih', `Tiada calon ditemui untuk isu ${mode} dalam subjek yang dipilih.`, 'success');
             document.getElementById('specialResultContainer').classList.add('hidden');
         } else {
-            // FIX: Hantar parameter boolean untuk kawal paparan kolum sekolah
             const showSchool = (school === 'SEMUA');
-            Special.renderSpecialTable(results, mode, isCompare, showSchool);
-            
-            // Kod lama yang manipulasi DOM secara manual dibuang
-            // Kerana logik renderSpecialTable yang baru sudah menguruskannya
+            // [SURGICAL EDIT] Hantar isCompare dan Boolean E3
+            Special.renderSpecialTable(results, mode, isCompare, showSchool, Boolean(document.getElementById('examSelect3')?.value));
             
             Swal.close();
         }
     }, 300);
-}
-
-async function handleGenerateCreditAnalysis() {
-    // ── SURGICAL EDIT START: Halakan jana kredit kepada aliran gabungan satu subjek ──
-    await handleGenerateSingleSubject();
-    // ── SURGICAL EDIT END ──
 }
 
 // ── SURGICAL EDIT START: Jana Analisa Subjek dan Analisa Kredit daripada satu pilihan subjek ──
@@ -873,6 +935,8 @@ async function handleGenerateSingleSubject() {
     }
 
     let filteredData2 = [];
+    let filteredData3 = []; // [SURGICAL EDIT] E3
+    
     if (isCompare) {
         let raw2 = State.getComparisonData();
         if (raw2.length === 0) {
@@ -889,38 +953,58 @@ async function handleGenerateSingleSubject() {
         filteredData2 = raw2;
         if (school !== 'SEMUA') filteredData2 = filteredData2.filter(s => s.nama_sekolah === school);
         filteredData2 = filteredData2.filter(s => Analytics.filterDemography(s, demog));
+
+        // [SURGICAL EDIT] Semak dan proses untuk E3 jika wujud
+        let raw3 = State.getComparisonData2();
+        const exam3 = document.getElementById('examSelect3')?.value;
+        const form3 = document.getElementById('formSelect3')?.value;
+        
+        if (raw3.length === 0 && exam3 && form3) {
+            raw3 = await fetchDataForAnalytics(exam3, form3, school);
+            State.setComparisonData2(raw3);
+        }
+        filteredData3 = raw3;
+        if (school !== 'SEMUA') filteredData3 = filteredData3.filter(s => s.nama_sekolah === school);
+        filteredData3 = filteredData3.filter(s => Analytics.filterDemography(s, demog));
     }
 
     Swal.fire({ title: 'Menjana Analisa Subjek & Kredit...', didOpen: () => Swal.showLoading() });
 
     setTimeout(() => {
-        // ── SURGICAL EDIT START: Jana dua jadual daripada satu pilihan subjek ──
-        // Panggil fungsi penjanaan dari modul Analytics
-        const result = Analytics.calculateSingleSubjectMatrix(filteredData1, filteredData2, isCompare, selectedSubject);
+        // [SURGICAL EDIT] Panggil fungsi penjanaan dari modul Analytics dengan filteredData3
+        const result = Analytics.calculateSingleSubjectMatrix(filteredData1, filteredData2, filteredData3, isCompare, selectedSubject);
         
-        // Panggil fungsi paparan dari modul UI
-        UI.renderSingleSubjectTable(result, isCompare, selectedSubject);
+        const exam1Name = document.getElementById('examSelect').value;
+        const exam2Name = document.getElementById('examSelect2').value;
+        const exam3Name = document.getElementById('examSelect3')?.value;
+        
+        // Panggil fungsi paparan dari modul UI dengan meta exam3
+        UI.renderSingleSubjectTable(result, isCompare, selectedSubject, { name1: exam1Name, name2: exam2Name, name3: exam3Name });
 
         const fullSubjectName = NAMA_SUBJEK[selectedSubject] || selectedSubject;
-        const subtitle = isCompare 
-            ? `Perbandingan antara ${document.getElementById('examSelect').value} vs ${document.getElementById('examSelect2').value}`
-            : `Peperiksaan: ${document.getElementById('examSelect').value}`;
+        let subtitle = `Peperiksaan: ${exam1Name}`;
+        if (isCompare) {
+            subtitle = exam3Name 
+                ? `Perbandingan: ${exam1Name} vs ${exam2Name} vs ${exam3Name}` 
+                : `Perbandingan: ${exam1Name} vs ${exam2Name}`;
+        }
 
         document.getElementById('singleSubjectReportTitle').innerText = `ANALISA PENCAPAIAN SUBJEK: ${fullSubjectName}`;
         document.getElementById('singleSubjectReportSubtitle').innerText = subtitle;
         document.getElementById('singleSubjectResultContainer').classList.remove('hidden');
 
+        // Modul Kredit
         const stats1 = Credit.calculateCreditAnalysis(filteredData1, selectedSubject);
-        const stats2 = isCompare ? Credit.calculateCreditAnalysis(filteredData2, selectedSubject) : null;
+        const stats2 = isCompare && filteredData2.length > 0 ? Credit.calculateCreditAnalysis(filteredData2, selectedSubject) : null;
+        const stats3 = isCompare && filteredData3.length > 0 ? Credit.calculateCreditAnalysis(filteredData3, selectedSubject) : null; // [SURGICAL EDIT]
 
-        Credit.renderCreditAnalysisTable(stats1, stats2, isCompare, selectedSubject);
+        Credit.renderCreditAnalysisTable(stats1, stats2, stats3, isCompare, selectedSubject);
 
         document.getElementById('creditReportTitle').innerText = `ANALISA PENCAPAIAN KREDIT: ${fullSubjectName}`;
         document.getElementById('creditReportSubtitle').innerText = subtitle;
         document.getElementById('creditResultContainer').classList.remove('hidden');
 
         document.getElementById('singleSubjectResultContainer').scrollIntoView({ behavior: 'smooth' });
-        // ── SURGICAL EDIT END ──
 
         Swal.close();
     }, 500);

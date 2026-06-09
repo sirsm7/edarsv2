@@ -105,16 +105,17 @@
 
             <div class="p-6 md:p-8">
                 
+                <!-- [COMMENT SYNTAX] SURGICAL EDIT START: Menambah sokongan Mod Perbandingan 3 Peperiksaan (E3) -->
                 <!-- Suis Mod Perbandingan -->
                 <div class="flex items-center gap-3 mb-6 pb-6 border-b border-dashed border-border">
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" id="toggleCompare" class="sr-only peer">
                         <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-ppdBlue"></div>
-                        <span class="ml-3 text-[10px] font-bold text-text-muted uppercase tracking-widest">Mod Perbandingan (Post-Mortem)</span>
+                        <span class="ml-3 text-[10px] font-bold text-text-muted uppercase tracking-widest">Mod Perbandingan (Sehingga 3 Peperiksaan)</span>
                     </label>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-6">
                     <!-- KOLUM 1: Exam Utama -->
                     <div>
                         <label id="lblExam1" class="block text-[9px] font-bold text-text-muted uppercase mb-2 tracking-widest">1. Peperiksaan</label>
@@ -123,30 +124,41 @@
                         <select id="formSelect" class="filter-select" disabled><option value="">-- Pilih Exam --</option></select>
                     </div>
 
-                    <!-- KOLUM 2: Exam Banding (Dynamic) -->
+                    <!-- KOLUM 2: Exam Banding 1 (Dynamic) -->
                     <div id="divExam2" class="hidden bg-ppdBlue/5 p-4 rounded-xl border border-ppdBlue/10">
-                        <label class="block text-[9px] font-bold text-ppdBlue uppercase mb-2 tracking-widest">2. Peperiksaan (Banding)</label>
-                        <select id="examSelect2" class="filter-select border-ppdBlue/20 focus:border-ppdBlue"><option value="">-- Pilih Baseline --</option></select>
-                        <label class="block text-[9px] font-bold text-ppdBlue uppercase mt-4 mb-2 tracking-widest">Tingkatan (Banding)</label>
+                        <label class="block text-[9px] font-bold text-ppdBlue uppercase mb-2 tracking-widest">2. Peperiksaan (Banding 1)</label>
+                        <select id="examSelect2" class="filter-select border-ppdBlue/20 focus:border-ppdBlue"><option value="">-- Pilih Baseline 1 --</option></select>
+                        <label class="block text-[9px] font-bold text-ppdBlue uppercase mt-4 mb-2 tracking-widest">Tingkatan</label>
                         <select id="formSelect2" class="filter-select border-ppdBlue/20 focus:border-ppdBlue" disabled><option value="">-- Pilih Exam 2 --</option></select>
                     </div>
 
-                    <!-- KOLUM 3: Sekolah & Demografi -->
+                    <!-- KOLUM 3: Exam Banding 2 (Pilihan E3) -->
+                    <div id="divExam3" class="hidden bg-emerald-50/30 p-4 rounded-xl border border-emerald-100/50">
+                        <label class="block text-[9px] font-bold text-emerald-700 uppercase mb-2 tracking-widest">3. Peperiksaan (Banding 2 - Pilihan)</label>
+                        <select id="examSelect3" class="filter-select border-emerald-200 focus:border-emerald-500"><option value="">-- Pilih Baseline 2 --</option></select>
+                        <label class="block text-[9px] font-bold text-emerald-700 uppercase mt-4 mb-2 tracking-widest">Tingkatan</label>
+                        <select id="formSelect3" class="filter-select border-emerald-200 focus:border-emerald-500" disabled><option value="">-- Pilih Exam 3 --</option></select>
+                    </div>
+
+                    <!-- KOLUM 4: Sekolah -->
                     <div>
                         <label class="block text-[9px] font-bold text-text-muted uppercase mb-2 tracking-widest">Sekolah</label>
                         <select id="schoolSelect" class="filter-select" disabled><option value="SEMUA">SEMUA SEKOLAH (DAERAH)</option></select>
                     </div>
+
+                    <!-- KOLUM 5: Demografi -->
                     <div>
                         <label class="block text-[9px] font-bold text-text-muted uppercase mb-2 tracking-widest">Demografi</label>
                         <select id="demogSelect" class="filter-select"></select>
                     </div>
                     
-                    <!-- KOLUM 4: Komponen -->
+                    <!-- KOLUM 6: Komponen -->
                     <div id="divComponent">
                         <label class="block text-[9px] font-bold text-text-muted uppercase mb-2 tracking-widest">Komponen (KPI)</label>
                         <select id="componentSelect" class="filter-select"></select>
                     </div>
                 </div>
+                <!-- [COMMENT SYNTAX] SURGICAL EDIT END -->
                 
                 <!-- BARIS BUTANG TINDAKAN -->
                 <div class="mt-8 flex flex-col md:flex-row justify-end gap-3 pt-6 border-t border-border">
@@ -421,6 +433,7 @@
                         <h3 class="font-bold font-oswald uppercase text-sm">Banding Subjek Komponen</h3>
                         <div class="flex gap-2"><button id="btnPdfCompareCompSubjects" class="btn-pdf">PDF</button><button id="btnExportCompareCompSubjects" class="btn-excel">EXCEL</button></div>
                     </div>
+                    <!-- [COMMENT SYNTAX] SURGICAL EDIT START: Struktur Jadual dengan Lajur E3 (Tersembunyi by default) -->
                     <div class="overflow-x-auto">
                         <table id="tableCompareCompSubjects">
                             <thead>
@@ -428,9 +441,17 @@
                                     <th class="border" rowspan="2">Bil</th><th class="border" rowspan="2">Kod</th><th class="border" rowspan="2">Subjek</th>
                                     <th class="border text-center" colspan="2" id="headCompSubExam1">E1</th>
                                     <th class="border text-center" colspan="2" id="headCompSubExam2">E2</th>
-                                    <th class="border text-center" colspan="3">Beza</th>
+                                    <th class="border text-center col-e3 hidden" colspan="2" id="headCompSubExam3">E3</th>
+                                    <th class="border text-center" colspan="3">Beza (E1-E2)</th>
+                                    <th class="border text-center col-e3 hidden" colspan="3">Beza (E1-E3)</th>
                                 </tr>
-                                <tr><th class="border text-center">%L</th><th class="border text-center">GP</th><th class="border text-center">%L</th><th class="border text-center">GP</th><th class="border text-center">GP</th><th class="border text-center">%L</th><th class="border text-center">S</th></tr>
+                                <tr>
+                                    <th class="border text-center">%L</th><th class="border text-center">GP</th>
+                                    <th class="border text-center">%L</th><th class="border text-center">GP</th>
+                                    <th class="border text-center col-e3 hidden">%L</th><th class="border text-center col-e3 hidden">GP</th>
+                                    <th class="border text-center">GP</th><th class="border text-center">%L</th><th class="border text-center">S</th>
+                                    <th class="border text-center col-e3 hidden">GP</th><th class="border text-center col-e3 hidden">%L</th><th class="border text-center col-e3 hidden">S</th>
+                                </tr>
                             </thead>
                             <tbody id="tbodyCompareCompSubjects"></tbody>
                         </table>
@@ -452,9 +473,17 @@
                                     <th class="border" rowspan="2">Bil</th><th class="border" rowspan="2">Sekolah</th>
                                     <th class="border text-center" colspan="2" id="headCompSchoolExam1">E1</th>
                                     <th class="border text-center" colspan="2" id="headCompSchoolExam2">E2</th>
-                                    <th class="border text-center" colspan="2">Beza</th>
+                                    <th class="border text-center col-e3 hidden" colspan="2" id="headCompSchoolExam3">E3</th>
+                                    <th class="border text-center" colspan="2">Beza (E1-E2)</th>
+                                    <th class="border text-center col-e3 hidden" colspan="2">Beza (E1-E3)</th>
                                 </tr>
-                                <tr><th class="border text-center">Calon</th><th class="border text-center">GPK</th><th class="border text-center">Calon</th><th class="border text-center">GPK</th><th class="border text-center">GPK</th><th class="border text-center">S</th></tr>
+                                <tr>
+                                    <th class="border text-center">Calon</th><th class="border text-center">GPK</th>
+                                    <th class="border text-center">Calon</th><th class="border text-center">GPK</th>
+                                    <th class="border text-center col-e3 hidden">Calon</th><th class="border text-center col-e3 hidden">GPK</th>
+                                    <th class="border text-center">GPK</th><th class="border text-center">S</th>
+                                    <th class="border text-center col-e3 hidden">GPK</th><th class="border text-center col-e3 hidden">S</th>
+                                </tr>
                             </thead>
                             <tbody id="tbodyCompareCompSchools"></tbody>
                         </table>
@@ -480,9 +509,17 @@
                                     <th class="border" rowspan="2">Bil</th><th class="border" rowspan="2">Sekolah</th>
                                     <th class="border text-center" colspan="3" id="headExam1">E1</th>
                                     <th class="border text-center" colspan="3" id="headExam2">E2</th>
-                                    <th class="border text-center" colspan="2">Beza</th>
+                                    <th class="border text-center col-e3 hidden" colspan="3" id="headExam3">E3</th>
+                                    <th class="border text-center" colspan="2">Beza (E1-E2)</th>
+                                    <th class="border text-center col-e3 hidden" colspan="2">Beza (E1-E3)</th>
                                 </tr>
-                                <tr><th class="border text-center">Calon</th><th class="border text-center">GPS</th><th class="border text-center">%L</th><th class="border text-center">Calon</th><th class="border text-center">GPS</th><th class="border text-center">%L</th><th class="border text-center">GPS</th><th class="border text-center">LMS</th></tr>
+                                <tr>
+                                    <th class="border text-center">Calon</th><th class="border text-center">GPS</th><th class="border text-center">%L</th>
+                                    <th class="border text-center">Calon</th><th class="border text-center">GPS</th><th class="border text-center">%L</th>
+                                    <th class="border text-center col-e3 hidden">Calon</th><th class="border text-center col-e3 hidden">GPS</th><th class="border text-center col-e3 hidden">%L</th>
+                                    <th class="border text-center">GPS</th><th class="border text-center">LMS</th>
+                                    <th class="border text-center col-e3 hidden">GPS</th><th class="border text-center col-e3 hidden">LMS</th>
+                                </tr>
                             </thead>
                             <tbody id="tbodyCompareSchools"></tbody>
                         </table>
@@ -502,9 +539,17 @@
                                     <th class="border" rowspan="2">Bil</th><th class="border" rowspan="2">Kod</th><th class="border" rowspan="2">Subjek</th>
                                     <th class="border text-center" colspan="2" id="headSubExam1">E1</th>
                                     <th class="border text-center" colspan="2" id="headSubExam2">E2</th>
-                                    <th class="border text-center" colspan="3">Beza</th>
+                                    <th class="border text-center col-e3 hidden" colspan="2" id="headSubExam3">E3</th>
+                                    <th class="border text-center" colspan="3">Beza (E1-E2)</th>
+                                    <th class="border text-center col-e3 hidden" colspan="3">Beza (E1-E3)</th>
                                 </tr>
-                                <tr><th class="border text-center">%L</th><th class="border text-center">GP</th><th class="border text-center">%L</th><th class="border text-center">GP</th><th class="border text-center">GP</th><th class="border text-center">%L</th><th class="border text-center">S</th></tr>
+                                <tr>
+                                    <th class="border text-center">%L</th><th class="border text-center">GP</th>
+                                    <th class="border text-center">%L</th><th class="border text-center">GP</th>
+                                    <th class="border text-center col-e3 hidden">%L</th><th class="border text-center col-e3 hidden">GP</th>
+                                    <th class="border text-center">GP</th><th class="border text-center">%L</th><th class="border text-center">S</th>
+                                    <th class="border text-center col-e3 hidden">GP</th><th class="border text-center col-e3 hidden">%L</th><th class="border text-center col-e3 hidden">S</th>
+                                </tr>
                             </thead>
                             <tbody id="tbodyCompareSubjects"></tbody>
                         </table>
@@ -524,15 +569,24 @@
                                     <th class="border" rowspan="2">Bil</th><th class="border" rowspan="2">Sekolah</th>
                                     <th class="border text-center" colspan="2" id="headTLMSExam1">E1</th>
                                     <th class="border text-center" colspan="2" id="headTLMSExam2">E2</th>
-                                    <th class="border text-center" colspan="2">Beza</th>
+                                    <th class="border text-center col-e3 hidden" colspan="2" id="headTLMSExam3">E3</th>
+                                    <th class="border text-center" colspan="2">Beza (E1-E2)</th>
+                                    <th class="border text-center col-e3 hidden" colspan="2">Beza (E1-E3)</th>
                                 </tr>
-                                <tr><th class="border text-center">T</th><th class="border text-center">%T</th><th class="border text-center">T</th><th class="border text-center">%T</th><th class="border text-center">J</th><th class="border text-center">%</th></tr>
+                                <tr>
+                                    <th class="border text-center">T</th><th class="border text-center">%T</th>
+                                    <th class="border text-center">T</th><th class="border text-center">%T</th>
+                                    <th class="border text-center col-e3 hidden">T</th><th class="border text-center col-e3 hidden">%T</th>
+                                    <th class="border text-center">J</th><th class="border text-center">%</th>
+                                    <th class="border text-center col-e3 hidden">J</th><th class="border text-center col-e3 hidden">%</th>
+                                </tr>
                             </thead>
                             <tbody id="tbodyCompareTLMS"></tbody>
                         </table>
                     </div>
                 </div>
             </div>
+            <!-- [COMMENT SYNTAX] SURGICAL EDIT END -->
         </div>
 
     </main>

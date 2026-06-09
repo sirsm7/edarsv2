@@ -1,6 +1,7 @@
 // ==========================================
 // EDARS V3.0 - UI RENDER MODULE (REFACTORED)
 // Menguruskan orkestrasi DOM. Logik HTML dipindahkan ke templates.js.
+// KEMASKINI V3.1: Sokongan Paparan Matriks 3 Peperiksaan (E1, E2, E3).
 // ==========================================
 
 import { exportTableToExcel } from './utils.js';
@@ -271,7 +272,7 @@ function renderDetailedComponentTables(matrix) {
 }
 
 // ==========================================
-// 6. RENDER COMPARISON (PERBANDINGAN E1 vs E2)
+// 6. RENDER COMPARISON (PERBANDINGAN)
 // ==========================================
 
 function renderComparisonKPICards(districtStats) {
@@ -332,10 +333,14 @@ function renderComparisonKPICards(districtStats) {
     container.classList.remove('hidden');
 }
 
+// [SURGICAL EDIT] Mengintegrasikan Header & Data E3 ke dalam jadual
 export function renderComparisonTables(data, names) {
     const { schoolMap, subMap, districtStats } = data; 
-    const { name1, name2 } = names;
+    const { name1, name2, name3 } = names;
+    const isE3 = !!name3;
+    const hiddenCls = isE3 ? '' : 'hidden';
 
+    // 1. Suntik Nama Header
     document.getElementById('headExam1').innerText = name1; 
     document.getElementById('headExam2').innerText = name2;
     document.getElementById('headSubExam1').innerText = name1; 
@@ -343,9 +348,23 @@ export function renderComparisonTables(data, names) {
     document.getElementById('headTLMSExam1').innerText = name1; 
     document.getElementById('headTLMSExam2').innerText = name2;
 
+    if (isE3) {
+        if(document.getElementById('headExam3')) document.getElementById('headExam3').innerText = name3;
+        if(document.getElementById('headSubExam3')) document.getElementById('headSubExam3').innerText = name3;
+        if(document.getElementById('headTLMSExam3')) document.getElementById('headTLMSExam3').innerText = name3;
+    }
+
+    // Toggle Kolum E3
+    const e3Cols = document.querySelectorAll('#viewComparison .col-e3');
+    if (isE3) {
+        e3Cols.forEach(el => el.classList.remove('hidden'));
+    } else {
+        e3Cols.forEach(el => el.classList.add('hidden'));
+    }
+
     if (districtStats) renderComparisonKPICards(districtStats);
 
-    // 1. Jadual Banding Sekolah (GPS/LMS)
+    // 2. Jadual Banding Sekolah (GPS/LMS)
     document.getElementById('tbodyCompareSchools').innerHTML = Object.values(schoolMap)
         .sort((a,b) => (a.code || "").localeCompare(b.code || "")) 
         .map((s, i) => {
@@ -361,8 +380,20 @@ export function renderComparisonTables(data, names) {
             const colorLMS = diffLMS === 0 ? 'text-gray-400' : (diffLMS > 0 ? 'text-green-600 font-bold' : 'text-red-600 font-bold');
             const arrowLMS = diffLMS === 0 ? '-' : (diffLMS > 0 ? '▲' : '▼');
 
+            // Data E3
+            const calon3 = s.ex3 ? s.ex3.calonCount : 0;
+            const gps3 = s.ex3 ? s.ex3.gps : 0;
+            const diffGPS3 = gps1 - gps3; 
+            const colorGPS3 = diffGPS3 === 0 ? 'text-gray-400' : (diffGPS3 < 0 ? 'text-green-600 font-bold' : 'text-red-600 font-bold'); 
+            const arrowGPS3 = diffGPS3 === 0 ? '-' : (diffGPS3 < 0 ? '▲' : '▼'); 
+
+            const lmsPerc3 = s.ex3 && s.ex3.calonCount > 0 ? (s.ex3.lmsCount / s.ex3.calonCount) * 100 : 0;
+            const diffLMS3 = lmsPerc1 - lmsPerc3; 
+            const colorLMS3 = diffLMS3 === 0 ? 'text-gray-400' : (diffLMS3 > 0 ? 'text-green-600 font-bold' : 'text-red-600 font-bold');
+            const arrowLMS3 = diffLMS3 === 0 ? '-' : (diffLMS3 > 0 ? '▲' : '▼');
+
             return `
-            <tr class="transition-colors text-gray-700">
+            <tr class="transition-colors text-gray-700 hover:bg-cyan-50/10">
                 <td class="text-center text-gray-400">${i+1}</td>
                 <td class="font-medium text-left">
                     <span class="text-gray-400 text-[10px] block leading-none">[${s.code}]</span>
@@ -371,15 +402,27 @@ export function renderComparisonTables(data, names) {
                 <td class="text-center bg-gray-50/50 text-gray-600">${s.ex1.calonCount || 0}</td>
                 <td class="text-center bg-gray-50/50 font-bold text-gray-800">${gps1.toFixed(2)}</td>
                 <td class="text-center bg-gray-50/50 text-blue-600 font-bold">${lmsPerc1.toFixed(2)}%</td>
+                
                 <td class="text-center bg-blue-50/30 text-gray-600">${s.ex2.calonCount || 0}</td>
                 <td class="text-center bg-blue-50/30 font-bold text-gray-800">${gps2.toFixed(2)}</td>
                 <td class="text-center bg-blue-50/30 text-blue-600 font-bold">${lmsPerc2.toFixed(2)}%</td>
+
+                <!-- COL E3 -->
+                <td class="text-center bg-emerald-50/30 text-gray-600 col-e3 ${hiddenCls}">${calon3}</td>
+                <td class="text-center bg-emerald-50/30 font-bold text-gray-800 col-e3 ${hiddenCls}">${gps3.toFixed(2)}</td>
+                <td class="text-center bg-emerald-50/30 text-emerald-600 font-bold col-e3 ${hiddenCls}">${lmsPerc3.toFixed(2)}%</td>
+                
+                <!-- BEZA 1 -->
                 <td class="text-center font-bold bg-gray-100 ${colorGPS}">${Math.abs(diffGPS).toFixed(2)} <span class="pdf-arrow text-xs ml-1">${arrowGPS}</span></td>
                 <td class="text-center font-bold bg-gray-100 ${colorLMS}">${Math.abs(diffLMS).toFixed(2)}% <span class="pdf-arrow text-xs ml-1">${arrowLMS}</span></td>
+                
+                <!-- BEZA 2 (E3) -->
+                <td class="text-center font-bold bg-gray-100/50 border-l border-gray-200 ${colorGPS3} col-e3 ${hiddenCls}">${Math.abs(diffGPS3).toFixed(2)} <span class="pdf-arrow text-xs ml-1">${arrowGPS3}</span></td>
+                <td class="text-center font-bold bg-gray-100/50 ${colorLMS3} col-e3 ${hiddenCls}">${Math.abs(diffLMS3).toFixed(2)}% <span class="pdf-arrow text-xs ml-1">${arrowLMS3}</span></td>
             </tr>`;
         }).join('');
 
-    // 2. Jadual Banding TLMS
+    // 3. Jadual Banding TLMS
     document.getElementById('tbodyCompareTLMS').innerHTML = Object.values(schoolMap)
         .sort((a,b) => (a.code || "").localeCompare(b.code || ""))
         .map((s, i) => {
@@ -391,8 +434,15 @@ export function renderComparisonTables(data, names) {
             const colorTLMS = diffTLMSPerc === 0 ? 'text-gray-400' : (diffTLMSPerc < 0 ? 'text-green-600 font-bold' : 'text-red-600 font-bold');
             const arrowTLMS = diffTLMSPerc === 0 ? '-' : (diffTLMSPerc < 0 ? '▼' : '▲'); 
 
+            // Data E3
+            const tlms3 = s.ex3 ? ((s.ex3.calonCount || 0) - s.ex3.lmsCount) : 0;
+            const tlmsPerc3 = s.ex3 && s.ex3.calonCount > 0 ? (tlms3 / s.ex3.calonCount) * 100 : 0;
+            const diffTLMSPerc3 = tlmsPerc1 - tlmsPerc3;
+            const colorTLMS3 = diffTLMSPerc3 === 0 ? 'text-gray-400' : (diffTLMSPerc3 < 0 ? 'text-green-600 font-bold' : 'text-red-600 font-bold');
+            const arrowTLMS3 = diffTLMSPerc3 === 0 ? '-' : (diffTLMSPerc3 < 0 ? '▼' : '▲');
+
             return `
-            <tr class="transition-colors text-gray-700">
+            <tr class="transition-colors text-gray-700 hover:bg-rose-50/10">
                 <td class="text-center text-gray-400">${i+1}</td>
                 <td class="font-medium text-left">
                     <span class="text-gray-400 text-[10px] block leading-none">[${s.code}]</span>
@@ -402,16 +452,26 @@ export function renderComparisonTables(data, names) {
                 <td class="text-center bg-red-50/30 text-red-600 font-bold">${tlmsPerc1.toFixed(2)}%</td>
                 <td class="text-center bg-red-100/50 font-bold text-gray-700">${tlms2}</td>
                 <td class="text-center bg-red-100/50 text-red-600 font-bold">${tlmsPerc2.toFixed(2)}%</td>
+                
+                <!-- COL E3 -->
+                <td class="text-center bg-red-50/50 font-bold text-gray-700 col-e3 ${hiddenCls}">${tlms3}</td>
+                <td class="text-center bg-red-50/50 text-red-600 font-bold col-e3 ${hiddenCls}">${tlmsPerc3.toFixed(2)}%</td>
+
+                <!-- BEZA 1 -->
                 <td class="text-center font-bold bg-gray-100 ${colorTLMS}">${Math.abs(tlms1 - tlms2)}</td>
                 <td class="text-center font-bold bg-gray-100 ${colorTLMS}">${Math.abs(diffTLMSPerc).toFixed(2)}% <span class="pdf-arrow text-xs ml-1">${arrowTLMS}</span></td>
+
+                <!-- BEZA 2 (E3) -->
+                <td class="text-center font-bold bg-gray-100/50 border-l border-gray-200 ${colorTLMS3} col-e3 ${hiddenCls}">${Math.abs(tlms1 - tlms3)}</td>
+                <td class="text-center font-bold bg-gray-100/50 ${colorTLMS3} col-e3 ${hiddenCls}">${Math.abs(diffTLMSPerc3).toFixed(2)}% <span class="pdf-arrow text-xs ml-1">${arrowTLMS3}</span></td>
             </tr>`;
         }).join('');
 
-    // 3. Jadual Banding Subjek
+    // 4. Jadual Banding Subjek
     document.getElementById('tbodyCompareSubjects').innerHTML = Object.values(subMap)
         .sort(sortSubjects)
         .map((s, i) => {
-            const getStats = (o) => ({ gpmp: o.ct > 0 ? (o.pt/o.ct) : 0, perc: o.ct > 0 ? (o.lulus/o.ct)*100 : 0 }); 
+            const getStats = (o) => ({ gpmp: o && o.ct > 0 ? (o.pt/o.ct) : 0, perc: o && o.ct > 0 ? (o.lulus/o.ct)*100 : 0 }); 
             const st1 = getStats(s.ex1); 
             const st2 = getStats(s.ex2); 
             const diffGP = st1.gpmp - st2.gpmp; 
@@ -423,37 +483,77 @@ export function renderComparisonTables(data, names) {
             const isLulusBetter = diffLulus > 0;
             const colorClassLulus = diffLulus === 0 ? 'text-gray-400' : (isLulusBetter ? 'text-green-600 font-bold' : 'text-red-600 font-bold');
             
+            // Data E3
+            const st3 = s.ex3 ? getStats(s.ex3) : { gpmp: 0, perc: 0 };
+            const diffGP3 = st1.gpmp - st3.gpmp; 
+            const isGPBetter3 = diffGP3 < 0; 
+            const colorClassGP3 = diffGP3 === 0 ? 'text-gray-400' : (isGPBetter3 ? 'text-green-600 font-bold' : 'text-red-600 font-bold'); 
+            const arrowVisual3 = diffGP3 > 0 ? '▲' : (diffGP3 < 0 ? '▼' : '-');
+
+            const diffLulus3 = st1.perc - st3.perc;
+            const isLulusBetter3 = diffLulus3 > 0;
+            const colorClassLulus3 = diffLulus3 === 0 ? 'text-gray-400' : (isLulusBetter3 ? 'text-green-600 font-bold' : 'text-red-600 font-bold');
+
             return `
-            <tr class="transition-colors text-gray-700">
+            <tr class="transition-colors text-gray-700 hover:bg-orange-50/20">
                 <td class="text-center text-gray-400">${i+1}</td>
                 <td class="text-center font-bold text-gray-600">${s.kod}</td>
                 <td class="text-xs font-medium uppercase text-left tracking-wide">${s.nama}</td>
+                
                 <td class="text-center bg-gray-50/50 text-blue-700 font-medium">${st1.perc.toFixed(2)}%</td>
                 <td class="text-center bg-gray-50/50 font-bold text-gray-800">${st1.gpmp.toFixed(2)}</td>
                 <td class="text-center bg-orange-50/30 text-blue-700 font-medium">${st2.perc.toFixed(2)}%</td>
                 <td class="text-center bg-orange-50/30 font-bold text-gray-800">${st2.gpmp.toFixed(2)}</td>
+
+                <!-- COL E3 -->
+                <td class="text-center bg-emerald-50/30 text-blue-700 font-medium col-e3 ${hiddenCls}">${st3.perc.toFixed(2)}%</td>
+                <td class="text-center bg-emerald-50/30 font-bold text-gray-800 col-e3 ${hiddenCls}">${st3.gpmp.toFixed(2)}</td>
+
+                <!-- BEZA 1 -->
                 <td class="text-center font-bold bg-gray-100 ${colorClassGP}">${Math.abs(diffGP).toFixed(2)}</td>
                 <td class="text-center font-bold bg-gray-100 ${colorClassLulus}">${Math.abs(diffLulus).toFixed(2)}%</td>
                 <td class="text-center font-bold ${colorClassGP}"><span class="pdf-arrow text-sm">${arrowVisual}</span></td>
+
+                <!-- BEZA 2 (E3) -->
+                <td class="text-center font-bold bg-gray-100/50 border-l border-gray-200 ${colorClassGP3} col-e3 ${hiddenCls}">${Math.abs(diffGP3).toFixed(2)}</td>
+                <td class="text-center font-bold bg-gray-100/50 ${colorClassLulus3} col-e3 ${hiddenCls}">${Math.abs(diffLulus3).toFixed(2)}%</td>
+                <td class="text-center font-bold ${colorClassGP3} col-e3 ${hiddenCls}"><span class="pdf-arrow text-sm">${arrowVisual3}</span></td>
             </tr>`;
         }).join('');
 }
 
+// [SURGICAL EDIT] Mengintegrasikan Header & Data E3 ke dalam jadual komponen
 export function renderComparisonComponentTable(data, names) {
     const { subMap, schoolMap, districtStats, comparisonMatrix } = data;
-    const { name1, name2 } = names;
+    const { name1, name2, name3 } = names;
+    const isE3 = !!name3;
+    const hiddenCls = isE3 ? '' : 'hidden';
 
+    // 1. Suntik Nama Header
     document.getElementById('headCompSubExam1').innerText = name1; 
     document.getElementById('headCompSubExam2').innerText = name2;
     document.getElementById('headCompSchoolExam1').innerText = name1; 
     document.getElementById('headCompSchoolExam2').innerText = name2;
+
+    if (isE3) {
+        if(document.getElementById('headCompSubExam3')) document.getElementById('headCompSubExam3').innerText = name3;
+        if(document.getElementById('headCompSchoolExam3')) document.getElementById('headCompSchoolExam3').innerText = name3;
+    }
+
+    // Toggle Kolum E3
+    const e3Cols = document.querySelectorAll('#viewComparison .col-e3');
+    if (isE3) {
+        e3Cols.forEach(el => el.classList.remove('hidden'));
+    } else {
+        e3Cols.forEach(el => el.classList.add('hidden'));
+    }
 
     if (districtStats) renderComparisonKPICards(districtStats);
 
     document.getElementById('tbodyCompareCompSubjects').innerHTML = Object.values(subMap)
         .sort(sortSubjects)
         .map((s, i) => {
-            const getStats = (o) => ({ gpmp: o.ct > 0 ? (o.pt/o.ct) : 0, perc: o.ct > 0 ? (o.lulus/o.ct)*100 : 0 }); 
+            const getStats = (o) => ({ gpmp: o && o.ct > 0 ? (o.pt/o.ct) : 0, perc: o && o.ct > 0 ? (o.lulus/o.ct)*100 : 0 }); 
             const st1 = getStats(s.ex1); 
             const st2 = getStats(s.ex2); 
             const diffGP = st1.gpmp - st2.gpmp; 
@@ -465,6 +565,17 @@ export function renderComparisonComponentTable(data, names) {
             const isLulusBetter = diffLulus > 0;
             const colorClassLulus = diffLulus === 0 ? 'text-gray-400' : (isLulusBetter ? 'text-green-600 font-bold' : 'text-red-600 font-bold');
             
+            // Data E3
+            const st3 = s.ex3 ? getStats(s.ex3) : { gpmp: 0, perc: 0 };
+            const diffGP3 = st1.gpmp - st3.gpmp; 
+            const isGPBetter3 = diffGP3 < 0; 
+            const colorClassGP3 = diffGP3 === 0 ? 'text-gray-400' : (isGPBetter3 ? 'text-green-600 font-bold' : 'text-red-600 font-bold'); 
+            const arrowVisual3 = diffGP3 > 0 ? '▲' : (diffGP3 < 0 ? '▼' : '-');
+
+            const diffLulus3 = st1.perc - st3.perc;
+            const isLulusBetter3 = diffLulus3 > 0;
+            const colorClassLulus3 = diffLulus3 === 0 ? 'text-gray-400' : (isLulusBetter3 ? 'text-green-600 font-bold' : 'text-red-600 font-bold');
+
             return `
             <tr class="transition-colors text-gray-700 hover:bg-pink-50/10">
                 <td class="text-center text-gray-400">${i+1}</td>
@@ -474,14 +585,25 @@ export function renderComparisonComponentTable(data, names) {
                 <td class="text-center bg-gray-50/50 font-bold text-gray-800">${st1.gpmp.toFixed(2)}</td>
                 <td class="text-center bg-pink-50/30 text-blue-700 font-medium">${st2.perc.toFixed(2)}%</td>
                 <td class="text-center bg-pink-50/30 font-bold text-gray-800">${st2.gpmp.toFixed(2)}</td>
+
+                <!-- COL E3 -->
+                <td class="text-center bg-emerald-50/30 text-blue-700 font-medium col-e3 ${hiddenCls}">${st3.perc.toFixed(2)}%</td>
+                <td class="text-center bg-emerald-50/30 font-bold text-gray-800 col-e3 ${hiddenCls}">${st3.gpmp.toFixed(2)}</td>
+
+                <!-- BEZA 1 -->
                 <td class="text-center font-bold bg-gray-100 ${colorClassGP}">${Math.abs(diffGP).toFixed(2)}</td>
                 <td class="text-center font-bold bg-gray-100 ${colorClassLulus}">${Math.abs(diffLulus).toFixed(2)}%</td>
                 <td class="text-center font-bold ${colorClassGP}"><span class="pdf-arrow text-sm">${arrowVisual}</span></td>
+
+                <!-- BEZA 2 (E3) -->
+                <td class="text-center font-bold bg-gray-100/50 border-l border-gray-200 ${colorClassGP3} col-e3 ${hiddenCls}">${Math.abs(diffGP3).toFixed(2)}</td>
+                <td class="text-center font-bold bg-gray-100/50 ${colorClassLulus3} col-e3 ${hiddenCls}">${Math.abs(diffLulus3).toFixed(2)}%</td>
+                <td class="text-center font-bold ${colorClassGP3} col-e3 ${hiddenCls}"><span class="pdf-arrow text-sm">${arrowVisual3}</span></td>
             </tr>`;
         }).join('');
 
     if (comparisonMatrix) {
-        renderDetailedComparisonTables(comparisonMatrix);
+        renderDetailedComparisonTables(comparisonMatrix, names); // Pass names untuk header E3
     }
 
     document.getElementById('tbodyCompareCompSchools').innerHTML = Object.values(schoolMap)
@@ -492,6 +614,12 @@ export function renderComparisonComponentTable(data, names) {
             const diffGPK = gpk1 - gpk2;
             const colorClass = diffGPK === 0 ? 'text-gray-400' : (diffGPK < 0 ? 'text-green-600 font-bold' : 'text-red-600 font-bold');
             const arrowVisual = diffGPK > 0 ? '▲' : (diffGPK < 0 ? '▼' : '-');
+
+            // Data E3
+            const gpk3 = s.ex3 ? s.ex3.gpk : 0;
+            const diffGPK3 = gpk1 - gpk3;
+            const colorClass3 = diffGPK3 === 0 ? 'text-gray-400' : (diffGPK3 < 0 ? 'text-green-600 font-bold' : 'text-red-600 font-bold');
+            const arrowVisual3 = diffGPK3 > 0 ? '▲' : (diffGPK3 < 0 ? '▼' : '-');
 
             return `
             <tr class="transition-colors text-gray-700 hover:bg-purple-50/10">
@@ -504,13 +632,23 @@ export function renderComparisonComponentTable(data, names) {
                 <td class="text-center bg-purple-50/30 font-bold text-gray-800">${gpk1.toFixed(2)}</td>
                 <td class="text-center bg-purple-100/30 text-gray-500 text-xs">${s.ex2.calon}</td>
                 <td class="text-center bg-purple-100/30 font-bold text-gray-800">${gpk2.toFixed(2)}</td>
+
+                <!-- COL E3 -->
+                <td class="text-center bg-emerald-50/30 text-gray-500 text-xs col-e3 ${hiddenCls}">${s.ex3 ? s.ex3.calon : 0}</td>
+                <td class="text-center bg-emerald-50/30 font-bold text-gray-800 col-e3 ${hiddenCls}">${gpk3.toFixed(2)}</td>
+
+                <!-- BEZA 1 -->
                 <td class="text-center font-bold bg-gray-100 ${colorClass}">${Math.abs(diffGPK).toFixed(2)}</td>
                 <td class="text-center font-bold ${colorClass}"><span class="pdf-arrow text-sm">${arrowVisual}</span></td>
+
+                <!-- BEZA 2 (E3) -->
+                <td class="text-center font-bold bg-gray-100/50 border-l border-gray-200 ${colorClass3} col-e3 ${hiddenCls}">${Math.abs(diffGPK3).toFixed(2)}</td>
+                <td class="text-center font-bold ${colorClass3} col-e3 ${hiddenCls}"><span class="pdf-arrow text-sm">${arrowVisual3}</span></td>
             </tr>`;
         }).join('');
 }
 
-function renderDetailedComparisonTables(comparisonMatrix) {
+function renderDetailedComparisonTables(comparisonMatrix, names) {
     const container = document.getElementById('comparisonDetailedContainer');
     if (!container) return;
     container.innerHTML = '';
@@ -519,7 +657,7 @@ function renderDetailedComparisonTables(comparisonMatrix) {
     if (subjects.length === 0) return;
 
     let fullHTML = '';
-    const headerHtml = Templates.getComparisonDetailHeader();
+    const headerHtml = Templates.getComparisonDetailHeader(names);
 
     subjects.forEach(kod => {
         const subData = comparisonMatrix[kod];
@@ -530,7 +668,7 @@ function renderDetailedComparisonTables(comparisonMatrix) {
 
         const rows = Object.values(subData)
             .sort((a,b) => (a.code || "").localeCompare(b.code || ""))
-            .map((s, i) => Templates.getComparisonDetailRow(s, i)).join('');
+            .map((s, i) => Templates.getComparisonDetailRow(s, i, names)).join('');
 
         fullHTML += Templates.getDetailedTableBlock(kod, subName, rows, btnPdfId, btnExcelId, tableId, headerHtml, "pink", "PERBANDINGAN: ");
     });
@@ -555,7 +693,7 @@ function renderDetailedComparisonTables(comparisonMatrix) {
 // ==========================================
 // 7. RENDER SINGLE SUBJECT (ANALISA SUBJEK SPESIFIK)
 // ==========================================
-export function renderSingleSubjectTable(result, isCompare, subjectCode) {
+export function renderSingleSubjectTable(result, isCompare, subjectCode, names = {}) {
     const thead = document.getElementById('theadSingleSubject');
     const tbody = document.getElementById('tbodySingleSubject');
     
@@ -567,8 +705,8 @@ export function renderSingleSubjectTable(result, isCompare, subjectCode) {
     let rowsHtml = '';
 
     if (isCompare) {
-        headerHtml = Templates.getComparisonDetailHeader();
-        rowsHtml = schoolData.map((s, i) => Templates.getComparisonDetailRow(s, i)).join('');
+        headerHtml = Templates.getComparisonDetailHeader(names);
+        rowsHtml = schoolData.map((s, i) => Templates.getComparisonDetailRow(s, i, names)).join('');
     } else {
         headerHtml = Templates.getComponentSchoolHeader();
         rowsHtml = schoolData.map((s, i) => Templates.getComponentSchoolRow(s, i)).join('');
@@ -625,16 +763,24 @@ function getStudentAchievementSubjectDisplay(subjectResult) {
     return `${escapeStudentAchievementHTML(markah)} <span class="text-[10px] text-gray-500">(${escapeStudentAchievementHTML(gred)})</span>`;
 }
 
-function getStudentAchievementRow(row, index, subjects, isCompare) {
+// [SURGICAL EDIT] Mengintegrasikan Data Subjek E3 dan Beza 2 dalam paparan pelajar
+function getStudentAchievementRow(row, index, subjects, isCompare, context = {}) {
     if (isCompare) {
+        const isE3 = !!context.exam3;
         const comp = row.comparison || {};
+        const comp2 = row.comparison2 || {};
+        
         const gpsDiffClass = comp.gpsImprovement === 'UP' ? 'text-green-600' : (comp.gpsImprovement === 'DOWN' ? 'text-red-600' : 'text-gray-400');
+        const gpsDiffClass2 = comp2.gpsImprovement === 'UP' ? 'text-green-600' : (comp2.gpsImprovement === 'DOWN' ? 'text-red-600' : 'text-gray-400');
+        
         const totalTakenE1 = row.totalTaken || 0;
         const totalTakenE2 = comp.totalTaken || 0;
+        const totalTakenE3 = comp2.totalTaken || 0;
 
         const subjectCells = subjects.map(subject => {
             const sr = row.subjects.find(item => item.kod === subject.kod) || {};
             
+            // Perbezaan E1 vs E2
             let diffHtml = '-';
             let diffClass = 'text-gray-400';
             if (sr.diffStatus) {
@@ -645,15 +791,29 @@ function getStudentAchievementRow(row, index, subjects, isCompare) {
                 diffHtml = sr.diffStatus.label;
             }
 
+            // Perbezaan E1 vs E3
+            let diffHtml2 = '-';
+            let diffClass2 = 'text-gray-400';
+            if (isE3 && sr.diffStatus2) {
+                if (sr.diffStatus2.type === 'UP') diffClass2 = 'text-green-600 font-bold';
+                else if (sr.diffStatus2.type === 'DOWN') diffClass2 = 'text-red-600 font-bold';
+                else if (sr.diffStatus2.type === 'NEW') diffClass2 = 'text-blue-600 font-bold';
+                else if (sr.diffStatus2.type === 'DROP') diffClass2 = 'text-rose-600 font-bold';
+                diffHtml2 = sr.diffStatus2.label;
+            }
+
             const e1Display = sr.isTaken ? `${escapeStudentAchievementHTML(sr.markah || '-')} <div class="text-[10px] text-gray-500 leading-none mt-0.5">(${escapeStudentAchievementHTML(sr.gred || '-')})</div>` : '-';
             const e2Display = sr.compIsTaken ? `${escapeStudentAchievementHTML(sr.compMark || '-')} <div class="text-[10px] text-gray-400 leading-none mt-0.5">(${escapeStudentAchievementHTML(sr.compGrade || '-')})</div>` : '-';
+            const e3Display = sr.comp2IsTaken ? `${escapeStudentAchievementHTML(sr.comp2Mark || '-')} <div class="text-[10px] text-emerald-600/70 leading-none mt-0.5">(${escapeStudentAchievementHTML(sr.comp2Grade || '-')})</div>` : '-';
 
             const bgE1 = sr.isTaken && !sr.isPass && sr.gred !== 'TH' && sr.gred !== 'T' ? 'bg-red-50/20 text-red-700 font-bold' : (sr.isTaken ? 'bg-blue-50/10 text-gray-800' : 'bg-gray-50/20 text-gray-400');
 
             return `
                 <td class="text-center align-middle border-r border-gray-100 ${bgE1}">${e1Display}</td>
                 <td class="text-center align-middle border-r border-gray-100 bg-gray-50/30 text-gray-500 text-xs">${e2Display}</td>
+                ${isE3 ? `<td class="text-center align-middle border-r border-emerald-100/50 bg-emerald-50/20 text-emerald-800/80 text-xs">${e3Display}</td>` : ''}
                 <td class="text-center align-middle border-r border-gray-200 bg-gray-50/50 text-[10px] ${diffClass}">${diffHtml}</td>
+                ${isE3 ? `<td class="text-center align-middle border-r border-gray-200 bg-gray-100/30 text-[10px] ${diffClass2}">${diffHtml2}</td>` : ''}
             `;
         }).join('');
 
@@ -670,16 +830,24 @@ function getStudentAchievementRow(row, index, subjects, isCompare) {
                 </td>
                 <td class="text-center font-semibold text-gray-700 border-r border-gray-200">${escapeStudentAchievementHTML(row.kelas || '-')}</td>
                 
+                <!-- Subjek Diambil -->
                 <td class="text-center font-bold text-blue-700 bg-gray-50/50 border-r border-gray-100">${totalTakenE1}</td>
                 <td class="text-center text-gray-500 bg-gray-50/50 border-r border-gray-200">${totalTakenE2}</td>
+                ${isE3 ? `<td class="text-center text-emerald-700 bg-emerald-50/50 border-r border-gray-200">${totalTakenE3}</td>` : ''}
                 
+                <!-- Status LMS -->
                 <td class="text-center font-bold border-r border-gray-100 ${row.lmsStatus === 'LMS' ? 'text-emerald-700 bg-emerald-50/50' : 'text-rose-700 bg-rose-50/50'}">${escapeStudentAchievementHTML(row.lmsStatus || '-')}</td>
                 <td class="text-center text-[10px] font-semibold border-r border-emerald-100 ${comp.lmsStatus === 'LMS' ? 'text-emerald-600 bg-emerald-50/30' : 'text-rose-600 bg-rose-50/30'}">${escapeStudentAchievementHTML(comp.lmsStatus || '-')}</td>
+                ${isE3 ? `<td class="text-center text-[10px] font-semibold border-r border-emerald-100 ${comp2.lmsStatus === 'LMS' ? 'text-emerald-600 bg-emerald-50/30' : 'text-rose-600 bg-rose-50/30'}">${escapeStudentAchievementHTML(comp2.lmsStatus || '-')}</td>` : ''}
                 
+                <!-- GPS -->
                 <td class="text-center font-bold text-gray-900 bg-indigo-50/50 border-r border-gray-100">${escapeStudentAchievementHTML(row.gpsText || '-')}</td>
                 <td class="text-center text-gray-500 bg-indigo-50/30 border-r border-gray-100 text-xs">${escapeStudentAchievementHTML(comp.gpsText || '-')}</td>
+                ${isE3 ? `<td class="text-center text-emerald-700 bg-emerald-50/30 border-r border-gray-100 text-xs">${escapeStudentAchievementHTML(comp2.gpsText || '-')}</td>` : ''}
                 <td class="text-center font-bold bg-indigo-100/50 border-r border-indigo-200 text-xs ${gpsDiffClass}">${escapeStudentAchievementHTML(comp.gpsDiffText || '-')}</td>
+                ${isE3 ? `<td class="text-center font-bold bg-indigo-100/50 border-r border-indigo-200 text-xs ${gpsDiffClass2}">${escapeStudentAchievementHTML(comp2.gpsDiffText || '-')}</td>` : ''}
                 
+                <!-- Gred & Markah -->
                 ${subjectCells}
             </tr>
         `;
@@ -725,10 +893,13 @@ function getStudentAchievementEmptyRow(colspan, message) {
     `;
 }
 
-function getStudentAchievementHeader(subjects, isCompare) {
+// [SURGICAL EDIT] Mengintegrasikan Header E3 dan BZA 2 dalam paparan pelajar
+function getStudentAchievementHeader(subjects, isCompare, context = {}) {
     if (isCompare) {
+        const isE3 = !!context.exam3;
+
         const subjectHeaders = subjects.map(subject => `
-            <th class="border-r border-gray-300 text-center min-w-[140px] px-2 py-2" colspan="3" title="${escapeStudentAchievementHTML(subject.nama)}">
+            <th class="border-r border-gray-300 text-center ${isE3 ? 'min-w-[180px]' : 'min-w-[140px]'} px-2 py-2" colspan="${isE3 ? 5 : 3}" title="${escapeStudentAchievementHTML(subject.nama)}">
                 <div class="font-bold">${escapeStudentAchievementHTML(subject.kod)}</div>
                 <div class="text-[9px] font-medium text-gray-500 normal-case leading-tight mt-0.5">${escapeStudentAchievementHTML(subject.nama)}</div>
             </th>
@@ -737,7 +908,9 @@ function getStudentAchievementHeader(subjects, isCompare) {
         const subjectSubHeaders = subjects.map(subject => `
             <th class="border-r border-gray-200 text-center text-[10px] bg-blue-50/50 w-16 py-1">E1</th>
             <th class="border-r border-gray-200 text-center text-[10px] bg-gray-50/50 w-16 py-1">E2</th>
-            <th class="border-r border-gray-300 text-center text-[10px] bg-gray-100 w-16 py-1">BEZA</th>
+            ${isE3 ? `<th class="border-r border-emerald-100/50 text-center text-[10px] bg-emerald-50/50 w-16 py-1">E3</th>` : ''}
+            <th class="border-r border-gray-300 text-center text-[10px] bg-gray-100 w-16 py-1">BZA 1</th>
+            ${isE3 ? `<th class="border-r border-gray-300 text-center text-[10px] bg-gray-100/50 w-16 py-1">BZA 2</th>` : ''}
         `).join('');
 
         return `
@@ -746,19 +919,30 @@ function getStudentAchievementHeader(subjects, isCompare) {
                 <th rowspan="2" class="border-r border-b text-center min-w-[120px] bg-gray-50">ID / KP</th>
                 <th rowspan="2" class="border-r border-b text-left min-w-[200px] bg-gray-50">Nama Murid</th>
                 <th rowspan="2" class="border-r border-b text-center min-w-[80px] bg-gray-50">Kelas</th>
-                <th colspan="2" class="border-r border-b border-gray-300 text-center bg-gray-100">Subjek (Ambil)</th>
-                <th colspan="2" class="border-r border-b border-emerald-200 text-center bg-emerald-50">LMS</th>
-                <th colspan="3" class="border-r border-b border-indigo-200 text-center bg-indigo-50">GPS</th>
+                <th colspan="${isE3 ? 3 : 2}" class="border-r border-b border-gray-300 text-center bg-gray-100">Subjek (Ambil)</th>
+                <th colspan="${isE3 ? 3 : 2}" class="border-r border-b border-emerald-200 text-center bg-emerald-50">LMS</th>
+                <th colspan="${isE3 ? 5 : 3}" class="border-r border-b border-indigo-200 text-center bg-indigo-50">GPS</th>
                 ${subjectHeaders}
             </tr>
             <tr class="text-[10px]">
+                <!-- Ambil -->
                 <th class="border-r border-b border-gray-200 text-center bg-gray-50 py-1">E1</th>
                 <th class="border-r border-b border-gray-300 text-center bg-gray-50 py-1">E2</th>
+                ${isE3 ? `<th class="border-r border-b border-emerald-200 text-center bg-emerald-50 py-1">E3</th>` : ''}
+                
+                <!-- LMS -->
                 <th class="border-r border-b border-emerald-200 text-center bg-emerald-50 py-1">E1</th>
                 <th class="border-r border-b border-emerald-200 text-center bg-emerald-50 py-1">E2</th>
+                ${isE3 ? `<th class="border-r border-b border-emerald-200 text-center bg-emerald-50 py-1">E3</th>` : ''}
+
+                <!-- GPS -->
                 <th class="border-r border-b border-indigo-200 text-center bg-indigo-50 py-1">E1</th>
                 <th class="border-r border-b border-indigo-200 text-center bg-indigo-50 py-1">E2</th>
-                <th class="border-r border-b border-indigo-300 text-center bg-indigo-100 font-bold py-1">BEZA</th>
+                ${isE3 ? `<th class="border-r border-b border-emerald-200 text-center bg-emerald-50 py-1">E3</th>` : ''}
+                <th class="border-r border-b border-indigo-300 text-center bg-indigo-100 font-bold py-1">BZA 1</th>
+                ${isE3 ? `<th class="border-r border-b border-indigo-300 text-center bg-indigo-100/50 font-bold py-1">BZA 2</th>` : ''}
+                
+                <!-- Gred Matriks -->
                 ${subjectSubHeaders}
             </tr>
         `;
@@ -835,20 +1019,23 @@ export function renderStudentAchievementTable(data, context = {}) {
     
     // Semak mod perbandingan (daripada context atau kehadiran objek comparison)
     const isCompare = context.isCompare || (rows.length > 0 && rows[0].comparison !== undefined && rows[0].comparison !== null);
+    const isE3 = !!context.exam3;
 
-    const totalColumns = isCompare ? 11 + (subjects.length * 3) : 11 + subjects.length;
+    const totalColumns = isCompare ? (isE3 ? 14 : 11) + (subjects.length * (isE3 ? 5 : 3)) : 11 + subjects.length;
 
-    thead.innerHTML = getStudentAchievementHeader(subjects, isCompare);
+    thead.innerHTML = getStudentAchievementHeader(subjects, isCompare, context);
 
     if (subtitle) {
         const examText = context.exam ? escapeStudentAchievementHTML(context.exam) : '';
         const formText = context.form ? escapeStudentAchievementHTML(context.form) : '';
         const schoolText = context.school ? escapeStudentAchievementHTML(context.school) : '';
         const exam2Text = context.exam2 ? escapeStudentAchievementHTML(context.exam2) : '';
+        const exam3Text = context.exam3 ? escapeStudentAchievementHTML(context.exam3) : '';
         
         let subtitleParts = [];
         if (isCompare && exam2Text) {
-            subtitleParts = [`Perbandingan: ${examText} vs ${exam2Text}`, formText, schoolText].filter(Boolean);
+            const comparisonStr = exam3Text ? `Perbandingan: ${examText} vs ${exam2Text} vs ${exam3Text}` : `Perbandingan: ${examText} vs ${exam2Text}`;
+            subtitleParts = [comparisonStr, formText, schoolText].filter(Boolean);
         } else {
             subtitleParts = [examText, formText, schoolText].filter(Boolean);
         }
@@ -866,7 +1053,7 @@ export function renderStudentAchievementTable(data, context = {}) {
     }
 
     tbody.innerHTML = rows
-        .map((row, index) => getStudentAchievementRow(row, index, subjects, isCompare))
+        .map((row, index) => getStudentAchievementRow(row, index, subjects, isCompare, context))
         .join('');
 }
 // ── SURGICAL EDIT END ──
