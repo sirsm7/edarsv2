@@ -147,8 +147,8 @@ function setupEventListeners() {
     setupExportListeners();
     
     // G. Butang KPI Export (LISTENER BARU)
-    const btnKPI = document.getElementById('btnExportKPI');
-    if (btnKPI) btnKPI.addEventListener('click', generateAndExportKPI);
+    const btnExportKPI = document.getElementById('btnExportKPI');
+    if (btnExportKPI) btnExportKPI.addEventListener('click', generateAndExportKPI);
 }
 
 function setupExportListeners() {
@@ -332,7 +332,8 @@ function switchToStudentAchievementView() {
     
     if (classSelect) {
         const currentVal = classSelect.value;
-        const uniqueClasses = [...new Set(baseData.map(s => s.nama_kelas))].filter(Boolean).sort();
+        // PEMBETULAN BUG: Tukar s.nama_kelas kepada s.kelas
+        const uniqueClasses = [...new Set(baseData.map(s => s.kelas))].filter(Boolean).sort();
         
         classSelect.innerHTML = '<option value="SEMUA">-- SEMUA KELAS --</option>';
         uniqueClasses.forEach(c => classSelect.add(new Option(c, c)));
@@ -347,7 +348,8 @@ function switchToStudentAchievementView() {
     // Tapis Data Akhir (Berdasarkan Kelas Pilihan)
     let filteredData = baseData;
     if (selectedClass !== 'SEMUA') {
-        filteredData = filteredData.filter(s => s.nama_kelas === selectedClass);
+        // PEMBETULAN BUG: Tukar s.nama_kelas kepada s.kelas
+        filteredData = filteredData.filter(s => s.kelas === selectedClass);
     }
 
     let comparisonData = [];
@@ -370,8 +372,9 @@ function switchToStudentAchievementView() {
 
         // Tapis Comparison Data Ikut Kelas
         if (selectedClass !== 'SEMUA') {
-            comparisonData = comparisonData.filter(s => s.nama_kelas === selectedClass);
-            comparisonData2 = comparisonData2.filter(s => s.nama_kelas === selectedClass);
+            // PEMBETULAN BUG: Tukar s.nama_kelas kepada s.kelas
+            comparisonData = comparisonData.filter(s => s.kelas === selectedClass);
+            comparisonData2 = comparisonData2.filter(s => s.kelas === selectedClass);
         }
     }
 
@@ -870,10 +873,10 @@ async function loadComparisonAnalytics() {
         document.getElementById('viewComparison').classList.remove('hidden');
         
         // --- LOGIK BUTTON KPI EXPORT ---
-        const btnKPI = document.getElementById('btnExportKPI');
-        if (btnKPI) {
-            if (school === 'SEMUA') btnKPI.classList.remove('hidden');
-            else btnKPI.classList.add('hidden');
+        const btnExportKPI = document.getElementById('btnExportKPI');
+        if (btnExportKPI) {
+            if (school === 'SEMUA') btnExportKPI.classList.remove('hidden');
+            else btnExportKPI.classList.add('hidden');
         }
         // --------------------------------------
 
