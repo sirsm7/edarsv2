@@ -126,7 +126,9 @@ export async function processAndUploadDataSmart(rows) {
         if (batch.length >= 50) { 
             const { error } = await supabaseClient
                 .from('edars_data')
-                .upsert(batch, { onConflict: 'id_individu, nama_peperiksaan', ignoreDuplicates: true });
+                // [SURGICAL EDIT START] Tukar ignoreDuplicates ke false untuk paksa kemas kini data sedia ada
+                .upsert(batch, { onConflict: 'id_individu, nama_peperiksaan', ignoreDuplicates: false });
+                // [SURGICAL EDIT END]
             
             if (error) throw new Error(error.message);
             batch = []; 
@@ -137,7 +139,9 @@ export async function processAndUploadDataSmart(rows) {
     if (batch.length > 0) {
         const { error } = await supabaseClient
             .from('edars_data')
-            .upsert(batch, { onConflict: 'id_individu, nama_peperiksaan', ignoreDuplicates: true });
+            // [SURGICAL EDIT START] Tukar ignoreDuplicates ke false untuk paksa kemas kini data sedia ada
+            .upsert(batch, { onConflict: 'id_individu, nama_peperiksaan', ignoreDuplicates: false });
+            // [SURGICAL EDIT END]
         
         if (error) throw new Error(error.message);
     }
