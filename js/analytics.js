@@ -3,6 +3,7 @@
 // Modul ini mengandungi logik pengiraan statistik tulen.
 // Bebas daripada manipulasi DOM (Pure Logic).
 // KEMASKINI V3.1: Sokongan Mod Perbandingan 3 Peperiksaan (E1, E2, E3).
+// KEMASKINI V3.1.2: Arah Trajektori Visual dilaraskan secara literal (▲ / ▼).
 // ==========================================
 
 import { GRED_POINTS, SUBJEK_KECUALI, NAMA_SUBJEK, COMPONENT_MAP, SUBJECT_PRIORITY } from './config.js';
@@ -923,7 +924,7 @@ export function getStudentAchievementSubjectCodes(students, comparisonStudents =
     return Array.from(subjectSet).sort(studentAchievementCompareSubjects);
 }
 
-// [COMMENT SYNTAX] SURGICAL EDIT START: Logik Matematik Trajektori Paparan Pelajar (E1 - E2) & (E1 - E3)
+// SURGICAL EDIT START: Logik Matematik Trajektori Paparan Pelajar (E1 - E2) & (E1 - E3) disemak untuk Anak Panah
 export function calculateStudentAchievementData(students, comparisonStudents = [], comparisonStudents2 = [], options = {}) {
     const source = Array.isArray(students) ? students : [];
     const compSource = Array.isArray(comparisonStudents) ? comparisonStudents : [];
@@ -1044,16 +1045,18 @@ export function calculateStudentAchievementData(students, comparisonStudents = [
                     const v2 = parseFloat(compMark);
                     if (!isNaN(v1) && !isNaN(v2)) {
                         const diff = v1 - v2; // E1 - E2 (Markah lebih tinggi adalah lebih baik)
-                        if (diff > 0) diffStatus = { type: 'UP', label: `▲ +${diff}`, val: diff };
-                        else if (diff < 0) diffStatus = { type: 'DOWN', label: `▼ ${Math.abs(diff)}`, val: diff };
+                        if (diff > 0) diffStatus = { type: 'UP', label: `▲ +${diff}`, val: diff }; // Markah naik = ▲ (Hijau)
+                        else if (diff < 0) diffStatus = { type: 'DOWN', label: `▼ ${Math.abs(diff)}`, val: diff }; // Markah turun = ▼ (Merah)
                         else diffStatus = { type: 'SAME', label: '-', val: 0 };
                     } else if (grade !== compGrade) {
                          const p1 = GRED_POINTS[grade];
                          const p2 = GRED_POINTS[compGrade];
                          if (p1 !== undefined && p2 !== undefined) {
                              const diff = p1 - p2; // E1 - E2 (Mata gred lebih rendah adalah lebih baik)
-                             if (diff < 0) diffStatus = { type: 'UP', label: `▲`, val: Math.abs(diff) };
-                             else if (diff > 0) diffStatus = { type: 'DOWN', label: `▼`, val: Math.abs(diff) };
+                             // FIX: Nilai Menyusut (Makin Baik) = Anak Panah Kebawah ▼ & UP (Hijau)
+                             if (diff < 0) diffStatus = { type: 'UP', label: `▼`, val: Math.abs(diff) };
+                             // FIX: Nilai Meningkat (Makin Lemah) = Anak Panah Keatas ▲ & DOWN (Merah)
+                             else if (diff > 0) diffStatus = { type: 'DOWN', label: `▲`, val: Math.abs(diff) };
                              else diffStatus = { type: 'SAME', label: '-', val: 0 };
                          }
                     }
@@ -1119,8 +1122,10 @@ export function calculateStudentAchievementData(students, comparisonStudents = [
                          const p3 = GRED_POINTS[comp2Grade];
                          if (p1 !== undefined && p3 !== undefined) {
                              const diff2 = p1 - p3; // E1 - E3
-                             if (diff2 < 0) diffStatus2 = { type: 'UP', label: `▲`, val: Math.abs(diff2) };
-                             else if (diff2 > 0) diffStatus2 = { type: 'DOWN', label: `▼`, val: Math.abs(diff2) };
+                             // FIX: Nilai Menyusut (Makin Baik) = Anak Panah Kebawah ▼ & UP (Hijau)
+                             if (diff2 < 0) diffStatus2 = { type: 'UP', label: `▼`, val: Math.abs(diff2) };
+                             // FIX: Nilai Meningkat (Makin Lemah) = Anak Panah Keatas ▲ & DOWN (Merah)
+                             else if (diff2 > 0) diffStatus2 = { type: 'DOWN', label: `▲`, val: Math.abs(diff2) };
                              else diffStatus2 = { type: 'SAME', label: '-', val: 0 };
                          }
                     }
@@ -1189,8 +1194,10 @@ export function calculateStudentAchievementData(students, comparisonStudents = [
             if (compCountedSubjects > 0 && countedSubjects > 0) {
                 const gpsDiff = gps - compGps; // E1 - E2 (GPS rendah = baik)
                 finalGpsDiff = gpsDiff;
-                if (gpsDiff < 0) { gpsImprovement = 'UP'; gpsDiffText = `▲ ${Math.abs(gpsDiff).toFixed(2)}`; }
-                else if (gpsDiff > 0) { gpsImprovement = 'DOWN'; gpsDiffText = `▼ ${Math.abs(gpsDiff).toFixed(2)}`; }
+                // FIX: GPS Menyusut (Makin Baik) = Anak Panah Kebawah ▼ & UP (Hijau)
+                if (gpsDiff < 0) { gpsImprovement = 'UP'; gpsDiffText = `▼ ${Math.abs(gpsDiff).toFixed(2)}`; }
+                // FIX: GPS Meningkat (Makin Lemah) = Anak Panah Keatas ▲ & DOWN (Merah)
+                else if (gpsDiff > 0) { gpsImprovement = 'DOWN'; gpsDiffText = `▲ ${Math.abs(gpsDiff).toFixed(2)}`; }
                 else { gpsImprovement = 'SAME'; gpsDiffText = '-'; }
             }
 
@@ -1224,8 +1231,10 @@ export function calculateStudentAchievementData(students, comparisonStudents = [
             if (comp2CountedSubjects > 0 && countedSubjects > 0) {
                 const gpsDiff2 = gps - comp2Gps; // E1 - E3 (GPS rendah = baik)
                 finalGpsDiff2 = gpsDiff2;
-                if (gpsDiff2 < 0) { gpsImprovement2 = 'UP'; gpsDiffText2 = `▲ ${Math.abs(gpsDiff2).toFixed(2)}`; }
-                else if (gpsDiff2 > 0) { gpsImprovement2 = 'DOWN'; gpsDiffText2 = `▼ ${Math.abs(gpsDiff2).toFixed(2)}`; }
+                // FIX: GPS Menyusut (Makin Baik) = Anak Panah Kebawah ▼ & UP (Hijau)
+                if (gpsDiff2 < 0) { gpsImprovement2 = 'UP'; gpsDiffText2 = `▼ ${Math.abs(gpsDiff2).toFixed(2)}`; }
+                // FIX: GPS Meningkat (Makin Lemah) = Anak Panah Keatas ▲ & DOWN (Merah)
+                else if (gpsDiff2 > 0) { gpsImprovement2 = 'DOWN'; gpsDiffText2 = `▲ ${Math.abs(gpsDiff2).toFixed(2)}`; }
                 else { gpsImprovement2 = 'SAME'; gpsDiffText2 = '-'; }
             }
 
@@ -1243,7 +1252,7 @@ export function calculateStudentAchievementData(students, comparisonStudents = [
                 lmsStatus: comp2IsLMS ? 'LMS' : 'TLMS'
             };
         }
-        // [COMMENT SYNTAX] SURGICAL EDIT END
+// SURGICAL EDIT END
 
         return {
             bil: index + 1,
@@ -1366,14 +1375,14 @@ export function getStudentAchievementExportRows(studentAchievementData, isCompar
             item['GPS E2'] = row.comparison ? row.comparison.gpsText : '-';
             if (row.comparison2) item['GPS E3'] = row.comparison2.gpsText; 
 
-            // Label Eksport Matematik Trajektori (Semasa vs Baseline)
+            // FIX: Label Eksport Matematik Trajektori dilaras dengan literal matematikal sebenar
             item['Beza GPS (E1-E2)'] = row.comparison && row.comparison.gpsImprovement !== 'NONE'
-                ? (row.comparison.gpsImprovement === 'UP' ? `+${row.comparison.gpsDiff}` : (row.comparison.gpsImprovement === 'DOWN' ? `-${row.comparison.gpsDiff}` : '0.00'))
+                ? (row.comparison.gpsImprovement === 'UP' ? `-${row.comparison.gpsDiff}` : (row.comparison.gpsImprovement === 'DOWN' ? `+${row.comparison.gpsDiff}` : '0.00'))
                 : '-';
                 
             if (row.comparison2) {
                 item['Beza GPS (E1-E3)'] = row.comparison2.gpsImprovement !== 'NONE'
-                    ? (row.comparison2.gpsImprovement === 'UP' ? `+${row.comparison2.gpsDiff}` : (row.comparison2.gpsImprovement === 'DOWN' ? `-${row.comparison2.gpsDiff}` : '0.00'))
+                    ? (row.comparison2.gpsImprovement === 'UP' ? `-${row.comparison2.gpsDiff}` : (row.comparison2.gpsImprovement === 'DOWN' ? `+${row.comparison2.gpsDiff}` : '0.00'))
                     : '-';
             }
         } else {

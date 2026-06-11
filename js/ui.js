@@ -295,8 +295,8 @@ function renderComparisonKPICards(districtStats) {
 
         if (diff !== 0) {
             if (isInverse) { // Jika GPS/TLMS (Makin Rendah Makin Bagus = Prestasi Naik)
-                if (diff < 0) { color = 'text-green-600 font-bold'; arrow = '▲'; }
-                else { color = 'text-red-600 font-bold'; arrow = '▼'; }
+                if (diff < 0) { color = 'text-green-600 font-bold'; arrow = '▼'; } // Nombor turun, hijau
+                else { color = 'text-red-600 font-bold'; arrow = '▲'; } // Nombor naik, merah
             } else { // Jika LMS/Cemerlang (Makin Tinggi Makin Bagus)
                 if (diff > 0) { color = 'text-green-600 font-bold'; arrow = '▲'; }
                 else { color = 'text-red-600 font-bold'; arrow = '▼'; }
@@ -380,7 +380,7 @@ export function renderComparisonTables(data, names) {
             const diffGPS = gps1 - gps2; // E1 vs E2 (Baseline Math)
             const isGPBetter = diffGPS < 0; // GPS rendah = baik
             const colorGPS = diffGPS === 0 ? 'text-gray-400' : (isGPBetter ? 'text-green-600 font-bold' : 'text-red-600 font-bold'); 
-            const arrowGPS = diffGPS === 0 ? '-' : (isGPBetter ? '▲' : '▼'); 
+            const arrowGPS = diffGPS === 0 ? '-' : (isGPBetter ? '▼' : '▲'); // Kemaskini: Nilai turun = ▼ (Hijau)
 
             const lmsPerc1 = s.ex1.calonCount > 0 ? (s.ex1.lmsCount / s.ex1.calonCount) * 100 : 0;
             const lmsPerc2 = s.ex2.calonCount > 0 ? (s.ex2.lmsCount / s.ex2.calonCount) * 100 : 0;
@@ -395,7 +395,7 @@ export function renderComparisonTables(data, names) {
             const diffGPS3 = gps1 - gps3; // E1 vs E3 (Baseline Math)
             const isGPBetter3 = diffGPS3 < 0;
             const colorGPS3 = diffGPS3 === 0 ? 'text-gray-400' : (isGPBetter3 ? 'text-green-600 font-bold' : 'text-red-600 font-bold'); 
-            const arrowGPS3 = diffGPS3 === 0 ? '-' : (isGPBetter3 ? '▲' : '▼'); 
+            const arrowGPS3 = diffGPS3 === 0 ? '-' : (isGPBetter3 ? '▼' : '▲'); 
 
             const lmsPerc3 = s.ex3 && s.ex3.calonCount > 0 ? (s.ex3.lmsCount / s.ex3.calonCount) * 100 : 0;
             const diffLMS3 = lmsPerc1 - lmsPerc3; 
@@ -450,14 +450,14 @@ export function renderComparisonTables(data, names) {
             const tlmsPerc2 = s.ex2.calonCount > 0 ? (tlms2 / s.ex2.calonCount) * 100 : 0;
             const diffTLMSPerc = tlmsPerc1 - tlmsPerc2; // E1 - E2 (Rendah = Baik)
             const colorTLMS = diffTLMSPerc === 0 ? 'text-gray-400' : (diffTLMSPerc < 0 ? 'text-green-600 font-bold' : 'text-red-600 font-bold');
-            const arrowTLMS = diffTLMSPerc === 0 ? '-' : (diffTLMSPerc < 0 ? '▲' : '▼'); 
+            const arrowTLMS = diffTLMSPerc === 0 ? '-' : (diffTLMSPerc < 0 ? '▼' : '▲'); // Kemaskini
 
             // Data E3
             const tlms3 = s.ex3 ? ((s.ex3.calonCount || 0) - s.ex3.lmsCount) : 0;
             const tlmsPerc3 = s.ex3 && s.ex3.calonCount > 0 ? (tlms3 / s.ex3.calonCount) * 100 : 0;
             const diffTLMSPerc3 = tlmsPerc1 - tlmsPerc3; // E1 - E3
             const colorTLMS3 = diffTLMSPerc3 === 0 ? 'text-gray-400' : (diffTLMSPerc3 < 0 ? 'text-green-600 font-bold' : 'text-red-600 font-bold');
-            const arrowTLMS3 = diffTLMSPerc3 === 0 ? '-' : (diffTLMSPerc3 < 0 ? '▲' : '▼');
+            const arrowTLMS3 = diffTLMSPerc3 === 0 ? '-' : (diffTLMSPerc3 < 0 ? '▼' : '▲'); // Kemaskini
 
             return `
             <tr class="transition-colors text-gray-700 hover:bg-rose-50/10">
@@ -503,24 +503,24 @@ export function renderComparisonTables(data, names) {
             const diffGP = st1.gpmp - st2.gpmp; // E1 - E2
             const isGPBetter = diffGP < 0; 
             const colorClassGP = diffGP === 0 ? 'text-gray-400' : (isGPBetter ? 'text-green-600 font-bold' : 'text-red-600 font-bold'); 
-            const arrowVisual = diffGP === 0 ? '-' : (isGPBetter ? '▲' : '▼');
+            const arrowVisual = diffGP === 0 ? '-' : (diffGP < 0 ? '▼' : '▲'); // Kemaskini
 
             const diffLulus = st1.perc - st2.perc; // E1 - E2
             const isLulusBetter = diffLulus > 0;
             const colorClassLulus = diffLulus === 0 ? 'text-gray-400' : (isLulusBetter ? 'text-green-600 font-bold' : 'text-red-600 font-bold');
-            const arrowVisualLulus = diffLulus === 0 ? '-' : (isLulusBetter ? '▲' : '▼');
+            const arrowVisualLulus = diffLulus === 0 ? '-' : (diffLulus > 0 ? '▲' : '▼');
             
             // Data E3
             const st3 = s.ex3 ? getStats(s.ex3) : { gpmp: 0, perc: 0 };
             const diffGP3 = st1.gpmp - st3.gpmp; // E1 - E3
             const isGPBetter3 = diffGP3 < 0; 
             const colorClassGP3 = diffGP3 === 0 ? 'text-gray-400' : (isGPBetter3 ? 'text-green-600 font-bold' : 'text-red-600 font-bold'); 
-            const arrowVisual3 = diffGP3 === 0 ? '-' : (isGPBetter3 ? '▲' : '▼');
+            const arrowVisual3 = diffGP3 === 0 ? '-' : (diffGP3 < 0 ? '▼' : '▲'); // Kemaskini
 
             const diffLulus3 = st1.perc - st3.perc; // E1 - E3
             const isLulusBetter3 = diffLulus3 > 0;
             const colorClassLulus3 = diffLulus3 === 0 ? 'text-gray-400' : (isLulusBetter3 ? 'text-green-600 font-bold' : 'text-red-600 font-bold');
-            const arrowVisualLulus3 = diffLulus3 === 0 ? '-' : (isLulusBetter3 ? '▲' : '▼');
+            const arrowVisualLulus3 = diffLulus3 === 0 ? '-' : (diffLulus3 > 0 ? '▲' : '▼');
 
             return `
             <tr class="transition-colors text-gray-700 hover:bg-orange-50/20">
@@ -598,7 +598,7 @@ export function renderComparisonComponentTable(data, names) {
             const diffGP = st1.gpmp - st2.gpmp; // E1 - E2
             const isGPBetter = diffGP < 0; 
             const colorClassGP = diffGP === 0 ? 'text-gray-400' : (isGPBetter ? 'text-green-600 font-bold' : 'text-red-600 font-bold'); 
-            const arrowVisual = diffGP === 0 ? '-' : (isGPBetter ? '▲' : '▼');
+            const arrowVisual = diffGP === 0 ? '-' : (diffGP < 0 ? '▼' : '▲'); // Kemaskini
             
             const diffLulus = st1.perc - st2.perc; // E1 - E2
             const isLulusBetter = diffLulus > 0;
@@ -609,7 +609,7 @@ export function renderComparisonComponentTable(data, names) {
             const diffGP3 = st1.gpmp - st3.gpmp; // E1 - E3
             const isGPBetter3 = diffGP3 < 0; 
             const colorClassGP3 = diffGP3 === 0 ? 'text-gray-400' : (isGPBetter3 ? 'text-green-600 font-bold' : 'text-red-600 font-bold'); 
-            const arrowVisual3 = diffGP3 === 0 ? '-' : (isGPBetter3 ? '▲' : '▼');
+            const arrowVisual3 = diffGP3 === 0 ? '-' : (diffGP3 < 0 ? '▼' : '▲'); // Kemaskini
 
             const diffLulus3 = st1.perc - st3.perc; // E1 - E3
             const isLulusBetter3 = diffLulus3 > 0;
@@ -661,13 +661,13 @@ export function renderComparisonComponentTable(data, names) {
             const gpk2 = s.ex2.gpk;
             const diffGPK = gpk1 - gpk2; // E1 - E2
             const colorClass = diffGPK === 0 ? 'text-gray-400' : (diffGPK < 0 ? 'text-green-600 font-bold' : 'text-red-600 font-bold');
-            const arrowVisual = diffGPK === 0 ? '-' : (diffGPK < 0 ? '▲' : '▼');
+            const arrowVisual = diffGPK === 0 ? '-' : (diffGPK < 0 ? '▼' : '▲'); // Kemaskini
 
             // Data E3
             const gpk3 = s.ex3 ? s.ex3.gpk : 0;
             const diffGPK3 = gpk1 - gpk3; // E1 - E3
             const colorClass3 = diffGPK3 === 0 ? 'text-gray-400' : (diffGPK3 < 0 ? 'text-green-600 font-bold' : 'text-red-600 font-bold');
-            const arrowVisual3 = diffGPK3 === 0 ? '-' : (diffGPK3 < 0 ? '▲' : '▼');
+            const arrowVisual3 = diffGPK3 === 0 ? '-' : (diffGPK3 < 0 ? '▼' : '▲'); // Kemaskini
 
             return `
             <tr class="transition-colors text-gray-700 hover:bg-purple-50/10">
