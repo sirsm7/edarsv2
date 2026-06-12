@@ -901,8 +901,10 @@ async function loadComparisonAnalytics() {
             // LALUAN 1: Mod Analisa Trend (Kohort Makro)
             if (viewTrendAnalysis) viewTrendAnalysis.classList.remove('hidden');
             
-            const result = Analytics.calculateTrendGeneral(filtered1, filtered2, filtered3);
-            UI.renderTrendAnalysisTables(result, { name1: exam1, name2: exam2, name3: exam3 });
+            // [COMMENT SYNTAX] SURGICAL EDIT START: Menyalurkan pembolehubah 'comp' ke dalam Analitik dan UI
+            const result = Analytics.calculateTrendGeneral(filtered1, filtered2, filtered3, comp);
+            UI.renderTrendAnalysisTables(result, { name1: exam1, name2: exam2, name3: exam3, comp: comp });
+            // [COMMENT SYNTAX] SURGICAL EDIT END
             
         } else {
             // LALUAN 2: Mod Trajektori Individu (Asal)

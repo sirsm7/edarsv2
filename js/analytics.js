@@ -579,16 +579,19 @@ export function calculateComparisonGeneral(list1, list2, list3 = []) {
     return { schoolMap, subMap, districtStats };
 }
 
-// [COMMENT SYNTAX] SURGICAL EDIT START: Menambah logik Analisa Trend Kohort
+// [COMMENT SYNTAX] SURGICAL EDIT START: Menyuntik compCode dan targetSubjects bagi menapis Analisa Trend Komponen
 // -----------------------------------------------------------
 // NEW: TREND ANALYSIS LOGIC (ANALISA KOHORT)
 // Mengabaikan id_individu. Menilai makro keseluruhan populasi.
 // -----------------------------------------------------------
-export function calculateTrendGeneral(list1, list2, list3 = []) {
-    const stats1 = getDistrictSimpleStats(list1);
-    const stats2 = getDistrictSimpleStats(list2);
-    const stats3 = getDistrictSimpleStats(list3);
-    const districtStats = { ex1: stats1, ex2: stats2, ex3: stats3 };
+export function calculateTrendGeneral(list1, list2, list3 = [], compCode = 'NONE') {
+    const isComponent = compCode !== 'NONE';
+    const targetSubjects = isComponent ? (COMPONENT_MAP[compCode] || []) : [];
+
+    const stats1 = getDistrictSimpleStats(list1, isComponent, targetSubjects);
+    const stats2 = getDistrictSimpleStats(list2, isComponent, targetSubjects);
+    const stats3 = getDistrictSimpleStats(list3, isComponent, targetSubjects);
+    const districtStats = { ex1: stats1, ex2: stats2, ex3: stats3, isComponent };
 
     // 1. Proses Sekolah (Trend Makro) - Tiada pemadanan ID
     const schoolMap = {};
@@ -619,6 +622,10 @@ export function calculateTrendGeneral(list1, list2, list3 = []) {
                 if (k.startsWith('G') || k.startsWith('GRED')) {
                     const kod = k.replace(/^G_?|RED /g, '').trim();
                     if (!NAMA_SUBJEK.hasOwnProperty(kod)) return;
+
+                    // --- SUNTINGAN KOMPONEN ---
+                    if (isComponent && !targetSubjects.includes(kod)) return;
+                    // --------------------------
                     
                     const g = marks[k] ? marks[k].toString().trim().toUpperCase() : '';
                     if (g !== '' && g !== 'NULL' && g !== 'UNDEFINED') {
@@ -626,7 +633,9 @@ export function calculateTrendGeneral(list1, list2, list3 = []) {
                         if (!['A+', 'A', 'A-'].includes(g)) straightA = false;
                         if (!isLulusGrade(g)) lulusSemua = false;
 
-                        if (!SUBJEK_KECUALI.includes(kod)) {
+                        // SUNTINGAN KOMPONEN: Jika komponen aktif, abaikan SUBJEK_KECUALI dan terus kira jika ada dalam targetSubjects.
+                        const isRelevant = isComponent ? true : !SUBJEK_KECUALI.includes(kod);
+                        if (isRelevant) {
                             if (GRED_POINTS.hasOwnProperty(g)) {
                                 sc[key].pt += GRED_POINTS[g];
                                 sc[key].ct++;
@@ -655,6 +664,10 @@ export function calculateTrendGeneral(list1, list2, list3 = []) {
                 if (k.startsWith('G') || k.startsWith('GRED')) {
                     const kod = k.replace(/^G_?|RED /g, '').trim();
                     if (!NAMA_SUBJEK.hasOwnProperty(kod)) return;
+
+                    // --- SUNTINGAN KOMPONEN ---
+                    if (isComponent && !targetSubjects.includes(kod)) return;
+                    // --------------------------
 
                     const g = marks[k] ? marks[k].toString().trim().toUpperCase() : '';
                     if (g !== '' && g !== 'NULL' && g !== 'UNDEFINED') {

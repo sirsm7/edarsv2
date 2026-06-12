@@ -276,7 +276,6 @@ function renderDetailedComponentTables(matrix) {
 // 6. RENDER COMPARISON (PERBANDINGAN)
 // ==========================================
 
-// [COMMENT SYNTAX] SURGICAL EDIT START: Pembetulan Matematik Trajektori E1 vs E2 & Parameter Dinamik Container
 function renderComparisonKPICards(districtStats, containerId = 'comparisonKPIContainer') {
     const container = document.getElementById(containerId);
     if (!container) return;
@@ -334,9 +333,7 @@ function renderComparisonKPICards(districtStats, containerId = 'comparisonKPICon
     container.innerHTML = html;
     container.classList.remove('hidden');
 }
-// [COMMENT SYNTAX] SURGICAL EDIT END
 
-// [COMMENT SYNTAX] SURGICAL EDIT START: DOM Cleansing & Susunan Matriks E3 -> E2 -> E1 dengan Label Baharu
 export function renderComparisonTables(data, names) {
     const { schoolMap, subMap, districtStats } = data; 
     const { name1, name2, name3 } = names;
@@ -556,9 +553,7 @@ export function renderComparisonTables(data, names) {
             </tr>`;
         }).join('');
 }
-// [COMMENT SYNTAX] SURGICAL EDIT END
 
-// [COMMENT SYNTAX] SURGICAL EDIT START: DOM Cleansing - Matriks Komponen E3 -> E2 -> E1 dengan Label Baharu
 export function renderComparisonComponentTable(data, names) {
     const { subMap, schoolMap, districtStats, comparisonMatrix } = data;
     const { name1, name2, name3 } = names;
@@ -703,7 +698,6 @@ export function renderComparisonComponentTable(data, names) {
             </tr>`;
         }).join('');
 }
-// [COMMENT SYNTAX] SURGICAL EDIT END
 
 function renderDetailedComparisonTables(comparisonMatrix, names) {
     const container = document.getElementById('comparisonDetailedContainer');
@@ -746,10 +740,6 @@ function renderDetailedComparisonTables(comparisonMatrix, names) {
     });
 }
 
-// [COMMENT SYNTAX] SURGICAL EDIT START: Renderer Analisa Subjek Spesifik dengan Label Baharu
-// ==========================================
-// 7. RENDER SINGLE SUBJECT (ANALISA SUBJEK SPESIFIK)
-// ==========================================
 export function renderSingleSubjectTable(result, isCompare, subjectCode, names = {}) {
     const thead = document.getElementById('theadSingleSubject');
     const tbody = document.getElementById('tbodySingleSubject');
@@ -777,9 +767,7 @@ export function renderSingleSubjectTable(result, isCompare, subjectCode, names =
     thead.innerHTML = headerHtml;
     tbody.innerHTML = rowsHtml;
 }
-// [COMMENT SYNTAX] SURGICAL EDIT END
 
-// ── SURGICAL EDIT START: Renderer Paparan Pelajar & Pencapaian ──
 // ==========================================
 // 8. RENDER STUDENT ACHIEVEMENT (PAPARAN PELAJAR)
 // ==========================================
@@ -825,7 +813,6 @@ function getStudentAchievementSubjectDisplay(subjectResult) {
     return `${escapeStudentAchievementHTML(markah)} <span class="text-[10px] text-gray-500">(${escapeStudentAchievementHTML(gred)})</span>`;
 }
 
-// [COMMENT SYNTAX] SURGICAL EDIT START: Mengintegrasikan Data Subjek E3 -> E2 -> E1 dan Beza Matematik (E1 - E2/E3)
 function getStudentAchievementRow(row, index, subjects, isCompare, context = {}) {
     if (isCompare) {
         const isE3 = !!context.exam3;
@@ -945,7 +932,6 @@ function getStudentAchievementRow(row, index, subjects, isCompare, context = {})
     }
 }
 
-// [COMMENT SYNTAX] SURGICAL EDIT START: Mengemaskini thead Paparan Pelajar dengan terminologi Semasa & Banding
 function getStudentAchievementEmptyRow(colspan, message) {
     return `
         <tr>
@@ -1037,7 +1023,6 @@ function getStudentAchievementHeader(subjects, isCompare, context = {}) {
         </tr>
     `;
 }
-// [COMMENT SYNTAX] SURGICAL EDIT END
 
 function updateStudentAchievementInfo(data, isCompare) {
     const info = document.getElementById('studentAchievementInfo');
@@ -1100,9 +1085,7 @@ export function renderStudentAchievementTable(data, context = {}) {
         
         let subtitleParts = [];
         if (isCompare && exam2Text) {
-            // [COMMENT SYNTAX] SURGICAL EDIT START: Mengemas kini teks Perbandingan dengan terminologi Semasa & Banding
             const comparisonStr = exam3Text ? `Perbandingan: ${examText} (Semasa) vs ${exam2Text} (Banding 1) vs ${exam3Text} (Banding 2)` : `Perbandingan: ${examText} (Semasa) vs ${exam2Text} (Banding 1)`;
-            // [COMMENT SYNTAX] SURGICAL EDIT END
             subtitleParts = [comparisonStr, formText, schoolText].filter(Boolean);
         } else {
             subtitleParts = [examText, formText, schoolText].filter(Boolean);
@@ -1125,11 +1108,22 @@ export function renderStudentAchievementTable(data, context = {}) {
         .join('');
 }
 
-// [COMMENT SYNTAX] SURGICAL EDIT START: Modul Render Baharu untuk Jadual Analisa Trend Kohort
+// [COMMENT SYNTAX] SURGICAL EDIT START: Modul Render Baharu untuk Jadual Analisa Trend Kohort berserta Logik Dinamik Nama Komponen
 export function renderTrendAnalysisTables(data, names) {
     const { schoolMap, subMap, top5Improved, top5Declined, districtStats } = data; 
-    const { name1, name2, name3 } = names;
+    const { name1, name2, name3, comp } = names;
     const isE3 = !!name3;
+    const isComp = comp && comp !== 'NONE';
+
+    // Dapatkan Label Komponen
+    let compLabel = '';
+    if (isComp) {
+        const foundComp = STATIC_OPTIONS.COMPONENT.find(c => c.value === comp);
+        if (foundComp) compLabel = ` - ${foundComp.label}`;
+    }
+
+    const textGPS = isComp ? 'GPK' : 'GPS';
+    const textGPMP = isComp ? 'GPK' : 'GPMP';
 
     // Label Peperiksaan
     const label1 = name1 ? `${name1} (Semasa)` : 'E1 (Semasa)';
@@ -1138,6 +1132,29 @@ export function renderTrendAnalysisTables(data, names) {
 
     if (districtStats) {
         renderComparisonKPICards(districtStats, 'trendKPIContainer');
+    }
+
+    // Mengemaskini Tajuk DOM secara Dinamik bagi menyokong Komponen
+    const tableSchool = document.getElementById('tableTrendSchool');
+    if (tableSchool) {
+        const container = tableSchool.closest('.result-container');
+        if (container) {
+            const h3 = container.querySelector('h3');
+            const p = container.querySelector('p');
+            if (h3) h3.innerText = `Analisa Trend Prestasi Sekolah (Kohort)${compLabel}`;
+            if (p) p.innerText = `Pembandingan Makro ${textGPS} & LMS`;
+        }
+    }
+
+    const tableSub = document.getElementById('tableTrendSubject');
+    if (tableSub) {
+        const container = tableSub.closest('.result-container');
+        if (container) {
+            const h3 = container.querySelector('h3');
+            const p = container.querySelector('p');
+            if (h3) h3.innerText = `Analisa Trend Kualiti & Kuantiti Mata Pelajaran${compLabel}`;
+            if (p) p.innerText = `Peningkatan dan Penurunan ${textGPMP} Kohort`;
+        }
     }
 
     // --- 1. JADUAL TREND SEKOLAH ---
@@ -1217,13 +1234,13 @@ export function renderTrendAnalysisTables(data, names) {
             </tr>
             <tr class="text-[10px]">
                 ${isE3 ? `
-                <th class="border px-1 py-1 text-center bg-emerald-50/50">Ambil</th><th class="border px-1 py-1 text-center bg-emerald-50/50">GPMP</th><th class="border px-1 py-1 text-center bg-emerald-50/50">%Lulus</th><th class="border px-1 py-1 text-center bg-emerald-50/50">%Cem</th>
+                <th class="border px-1 py-1 text-center bg-emerald-50/50">Ambil</th><th class="border px-1 py-1 text-center bg-emerald-50/50">${textGPMP}</th><th class="border px-1 py-1 text-center bg-emerald-50/50">%Lulus</th><th class="border px-1 py-1 text-center bg-emerald-50/50">%Cem</th>
                 ` : ''}
-                <th class="border px-1 py-1 text-center bg-gray-50">Ambil</th><th class="border px-1 py-1 text-center bg-gray-50">GPMP</th><th class="border px-1 py-1 text-center bg-gray-50">%Lulus</th><th class="border px-1 py-1 text-center bg-gray-50">%Cem</th>
+                <th class="border px-1 py-1 text-center bg-gray-50">Ambil</th><th class="border px-1 py-1 text-center bg-gray-50">${textGPMP}</th><th class="border px-1 py-1 text-center bg-gray-50">%Lulus</th><th class="border px-1 py-1 text-center bg-gray-50">%Cem</th>
                 
-                <th class="border px-1 py-1 text-center bg-blue-50/30">Ambil</th><th class="border px-1 py-1 text-center bg-blue-50/30">GPMP</th><th class="border px-1 py-1 text-center bg-blue-50/30">%Lulus</th><th class="border px-1 py-1 text-center bg-blue-50/30">%Cem</th>
+                <th class="border px-1 py-1 text-center bg-blue-50/30">Ambil</th><th class="border px-1 py-1 text-center bg-blue-50/30">${textGPMP}</th><th class="border px-1 py-1 text-center bg-blue-50/30">%Lulus</th><th class="border px-1 py-1 text-center bg-blue-50/30">%Cem</th>
 
-                <th class="border px-1 py-1 text-center bg-amber-50/80">+/- GPMP</th><th class="border px-1 py-1 text-center bg-amber-50/80">Indikator</th>
+                <th class="border px-1 py-1 text-center bg-amber-50/80">+/- ${textGPMP}</th><th class="border px-1 py-1 text-center bg-amber-50/80">Indikator</th>
             </tr>
         `;
         theadSub.innerHTML = subHeadHtml;
