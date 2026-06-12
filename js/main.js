@@ -3,6 +3,7 @@
 // Menguruskan aliran kerja aplikasi, event listeners, dan integrasi modul.
 // KEMASKINI: Logik "Smart Fetch" dilaksanakan untuk prestasi mudah alih optimum.
 // KEMASKINI V3.1: Sokongan Mod Perbandingan 3 Peperiksaan (E1, E2, E3).
+// KEMASKINI V3.2: Sokongan Mod Analisa Trend Kohort vs Trajektori Individu.
 // ==========================================
 
 // 1. IMPORT MODUL
@@ -167,9 +168,11 @@ function setupExportListeners() {
         'btnExportCompareCompSubjects': ['tableCompareCompSubjects', 'Perbandingan_Subjek_Komponen'],
         'btnExportCompareCompSchools': ['tableCompareCompSchools', 'Perbandingan_Sekolah_Komponen'],
         'btnExportCompareTLMS': ['tableCompareTLMS', 'Perbandingan_TLMS_Sekolah'],
-        // ── SURGICAL EDIT START: Export Excel Paparan Pelajar ──
+        // ── SURGICAL EDIT START: Export Excel Paparan Pelajar & Analisa Trend ──
         'btnExportSingleSubject': ['tableSingleSubject', 'Analisa_Subjek_Spesifik'],
-        'btnExportStudentAchievement': ['tableStudentAchievement', 'Paparan_Pelajar_Pencapaian']
+        'btnExportStudentAchievement': ['tableStudentAchievement', 'Paparan_Pelajar_Pencapaian'],
+        'btnExportTrendSchool': ['tableTrendSchool', 'Analisa_Trend_Sekolah'],
+        'btnExportTrendSubject': ['tableTrendSubject', 'Analisa_Trend_Subjek']
         // ── SURGICAL EDIT END ──
     };
     
@@ -199,9 +202,11 @@ function setupExportListeners() {
         'btnPdfCompareTLMS': ['tableCompareTLMS', 'Banding TLMS', 'Compare_TLMS'],
         'btnPdfSpecial': ['tableSpecial', 'Laporan Khas', 'Laporan_Khas'],
         'btnPdfCredit': ['tableCreditAnalysis', 'Analisa Kredit', 'Analisa_Kredit'],
-        // ── SURGICAL EDIT START: PDF Paparan Pelajar ──
+        // ── SURGICAL EDIT START: PDF Paparan Pelajar & Analisa Trend ──
         'btnPdfSingleSubject': ['tableSingleSubject', 'Analisa Subjek', 'Analisa_Subjek_Spesifik'],
-        'btnPdfStudentAchievement': ['tableStudentAchievement', 'Paparan Pelajar & Pencapaian', 'Paparan_Pelajar_Pencapaian']
+        'btnPdfStudentAchievement': ['tableStudentAchievement', 'Paparan Pelajar & Pencapaian', 'Paparan_Pelajar_Pencapaian'],
+        'btnPdfTrendSchool': ['tableTrendSchool', 'Analisa Trend Sekolah', 'Analisa_Trend_Sekolah'],
+        'btnPdfTrendSubject': ['tableTrendSubject', 'Analisa Trend Subjek', 'Analisa_Trend_Subjek']
         // ── SURGICAL EDIT END ──
     };
 
@@ -219,7 +224,7 @@ function setupExportListeners() {
 // 4. UI LOGIC (VIEW CONTROLLERS)
 // ==========================================
 
-// [COMMENT SYNTAX] SURGICAL EDIT START: Kemas kini Teks Label Timeline (Semasa, Banding 1, Banding 2)
+// [COMMENT SYNTAX] SURGICAL EDIT START: Kemas kini Teks Label Timeline dan Pengawalan Jenis Analisa Trend
 function handleModeToggle() {
     const isCompare = document.getElementById('toggleCompare').checked;
     State.setFilter('isCompareMode', isCompare);
@@ -231,10 +236,13 @@ function handleModeToggle() {
     const form2Sel = document.getElementById('formSelect2');
     const exam3Sel = document.getElementById('examSelect3'); // [SURGICAL EDIT]
     const form3Sel = document.getElementById('formSelect3'); // [SURGICAL EDIT]
+    const compareTypeContainer = document.getElementById('compareTypeContainer'); // [SURGICAL EDIT]
 
     if (isCompare) {
         divExam2.classList.remove('hidden');
         if (divExam3) divExam3.classList.remove('hidden'); // [SURGICAL EDIT] Show E3
+        if (compareTypeContainer) compareTypeContainer.classList.remove('hidden'); // [SURGICAL EDIT] Show Trend Type
+
         lblExam1.innerText = "1. Peperiksaan (Semasa)"; // Diseragamkan mengikut terminologi baharu
         if (exam2Sel.options.length <= 1) {
             const exam1Opts = document.getElementById('examSelect').innerHTML;
@@ -244,6 +252,8 @@ function handleModeToggle() {
     } else {
         divExam2.classList.add('hidden');
         if (divExam3) divExam3.classList.add('hidden'); // [SURGICAL EDIT] Hide E3
+        if (compareTypeContainer) compareTypeContainer.classList.add('hidden'); // [SURGICAL EDIT] Hide Trend Type
+
         lblExam1.innerText = "1. Peperiksaan";
         exam2Sel.value = ""; 
         form2Sel.value = ""; 
@@ -260,8 +270,8 @@ function handleModeToggle() {
 // [COMMENT SYNTAX] SURGICAL EDIT END
 
 function hideAllViews() {
-    // ── SURGICAL EDIT START: Tambah viewStudentAchievement ──
-    ['viewAggregate', 'viewSchoolDetail', 'viewComponent', 'viewComparison', 'viewSpecialReport', 'viewCreditAnalysis', 'viewSingleSubject', 'viewStudentAchievement'].forEach(id => {
+    // ── SURGICAL EDIT START: Tambah viewStudentAchievement & viewTrendAnalysis ──
+    ['viewAggregate', 'viewSchoolDetail', 'viewComponent', 'viewComparison', 'viewSpecialReport', 'viewCreditAnalysis', 'viewSingleSubject', 'viewStudentAchievement', 'viewTrendAnalysis'].forEach(id => {
     // ── SURGICAL EDIT END ──
         const el = document.getElementById(id);
         if (el) el.classList.add('hidden');
@@ -804,7 +814,7 @@ async function loadSingleAnalytics() {
     }
 }
 
-// [COMMENT SYNTAX] SURGICAL EDIT START: Menyelaras teks alert mengikut label baharu
+// [COMMENT SYNTAX] SURGICAL EDIT START: Menyelaras teks alert mengikut label baharu dan Route ke Mod Analisa Trend
 async function loadComparisonAnalytics() {
     const exam1 = document.getElementById('examSelect').value;
     const exam2 = document.getElementById('examSelect2').value;
@@ -815,6 +825,9 @@ async function loadComparisonAnalytics() {
     const school = document.getElementById('schoolSelect').value;
     const comp = document.getElementById('componentSelect').value;
     const demog = document.getElementById('demogSelect').value;
+    
+    // Tarik input jenis perbandingan dari Radio Button UI
+    const compareType = document.querySelector('input[name="compareType"]:checked')?.value || 'TRAJEKTORI';
 
     if (!exam1 || !exam2 || !form1 || !form2) {
         return Swal.fire('Ralat', 'Sila pilih sekurang-kurangnya Peperiksaan Semasa dan Banding 1.', 'warning');
@@ -870,30 +883,45 @@ async function loadComparisonAnalytics() {
         }
 
         hideAllViews();
-        document.getElementById('viewComparison').classList.remove('hidden');
         
+        const viewComparison = document.getElementById('viewComparison');
+        const viewTrendAnalysis = document.getElementById('viewTrendAnalysis');
+
         // --- LOGIK BUTTON KPI EXPORT ---
         const btnExportKPI = document.getElementById('btnExportKPI');
         if (btnExportKPI) {
-            if (school === 'SEMUA') btnExportKPI.classList.remove('hidden');
+            // Sembunyikan Butang Jadual KPI jika berada dalam Mod Trend (kerana KPI adalah rujukan individu)
+            if (school === 'SEMUA' && compareType !== 'TREND') btnExportKPI.classList.remove('hidden');
             else btnExportKPI.classList.add('hidden');
         }
         // --------------------------------------
 
-        const compContainer = document.getElementById('comparisonComponentContainer');
-        const generalContainer = document.getElementById('comparisonGeneralContainer');
-
-        // [SURGICAL EDIT] Hantar filtered3 dan metadata exam3
-        if (comp !== 'NONE') {
-            compContainer.classList.remove('hidden');
-            generalContainer.classList.add('hidden');
-            const result = Analytics.calculateComparisonComponent(filtered1, filtered2, filtered3, comp);
-            UI.renderComparisonComponentTable(result, { name1: exam1, name2: exam2, name3: exam3 });
+        // AGIHAN PAPARAN (ROUTING) BERDASARKAN PILIHAN MOD
+        if (compareType === 'TREND') {
+            // LALUAN 1: Mod Analisa Trend (Kohort Makro)
+            if (viewTrendAnalysis) viewTrendAnalysis.classList.remove('hidden');
+            
+            const result = Analytics.calculateTrendGeneral(filtered1, filtered2, filtered3);
+            UI.renderTrendAnalysisTables(result, { name1: exam1, name2: exam2, name3: exam3 });
+            
         } else {
-            compContainer.classList.add('hidden');
-            generalContainer.classList.remove('hidden');
-            const result = Analytics.calculateComparisonGeneral(filtered1, filtered2, filtered3);
-            UI.renderComparisonTables(result, { name1: exam1, name2: exam2, name3: exam3 });
+            // LALUAN 2: Mod Trajektori Individu (Asal)
+            if (viewComparison) viewComparison.classList.remove('hidden');
+            
+            const compContainer = document.getElementById('comparisonComponentContainer');
+            const generalContainer = document.getElementById('comparisonGeneralContainer');
+            
+            if (comp !== 'NONE') {
+                if (compContainer) compContainer.classList.remove('hidden');
+                if (generalContainer) generalContainer.classList.add('hidden');
+                const result = Analytics.calculateComparisonComponent(filtered1, filtered2, filtered3, comp);
+                UI.renderComparisonComponentTable(result, { name1: exam1, name2: exam2, name3: exam3 });
+            } else {
+                if (compContainer) compContainer.classList.add('hidden');
+                if (generalContainer) generalContainer.classList.remove('hidden');
+                const result = Analytics.calculateComparisonGeneral(filtered1, filtered2, filtered3);
+                UI.renderComparisonTables(result, { name1: exam1, name2: exam2, name3: exam3 });
+            }
         }
 
         // ── SURGICAL EDIT START: Kemas kini butang ──

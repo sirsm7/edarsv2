@@ -276,9 +276,9 @@ function renderDetailedComponentTables(matrix) {
 // 6. RENDER COMPARISON (PERBANDINGAN)
 // ==========================================
 
-// [COMMENT SYNTAX] SURGICAL EDIT START: Pembetulan Matematik Trajektori E1 vs E2
-function renderComparisonKPICards(districtStats) {
-    const container = document.getElementById('comparisonKPIContainer');
+// [COMMENT SYNTAX] SURGICAL EDIT START: Pembetulan Matematik Trajektori E1 vs E2 & Parameter Dinamik Container
+function renderComparisonKPICards(districtStats, containerId = 'comparisonKPIContainer') {
+    const container = document.getElementById(containerId);
     if (!container) return;
 
     const { ex1, ex2, isComponent } = districtStats;
@@ -1123,5 +1123,162 @@ export function renderStudentAchievementTable(data, context = {}) {
     tbody.innerHTML = rows
         .map((row, index) => getStudentAchievementRow(row, index, subjects, isCompare, context))
         .join('');
+}
+
+// [COMMENT SYNTAX] SURGICAL EDIT START: Modul Render Baharu untuk Jadual Analisa Trend Kohort
+export function renderTrendAnalysisTables(data, names) {
+    const { schoolMap, subMap, top5Improved, top5Declined, districtStats } = data; 
+    const { name1, name2, name3 } = names;
+    const isE3 = !!name3;
+
+    // Label Peperiksaan
+    const label1 = name1 ? `${name1} (Semasa)` : 'E1 (Semasa)';
+    const label2 = name2 ? `${name2} (Banding 1)` : 'E2 (Banding 1)';
+    const label3 = name3 ? `${name3} (Banding 2)` : 'E3 (Banding 2)';
+
+    if (districtStats) {
+        renderComparisonKPICards(districtStats, 'trendKPIContainer');
+    }
+
+    // --- 1. JADUAL TREND SEKOLAH ---
+    const theadSchool = document.getElementById('theadTrendSchool');
+    const tbodySchool = document.getElementById('tbodyTrendSchool');
+
+    if (theadSchool && tbodySchool) {
+        let schoolHeadHtml = `
+            <tr>
+                <th class="border px-2 py-2 w-10 bg-gray-50" rowspan="2">Bil</th>
+                <th class="border px-2 py-2 text-left bg-gray-50" rowspan="2">Sekolah</th>
+                ${isE3 ? `<th class="border px-2 py-2 text-center bg-emerald-50/50" colspan="4">${label3}</th>` : ''}
+                <th class="border px-2 py-2 text-center bg-gray-50" colspan="4">${label2}</th>
+                <th class="border px-2 py-2 text-center bg-blue-50/50" colspan="4">${label1}</th>
+            </tr>
+            <tr class="text-[10px]">
+                ${isE3 ? `
+                <th class="border px-1 py-1 text-center bg-emerald-50/50">Calon</th><th class="border px-1 py-1 text-center bg-emerald-50/50">%LMS</th><th class="border px-1 py-1 text-center bg-emerald-50/50">Semua Lulus</th><th class="border px-1 py-1 text-center bg-emerald-50/50">Semua A</th>
+                ` : ''}
+                <th class="border px-1 py-1 text-center bg-gray-50">Calon</th><th class="border px-1 py-1 text-center bg-gray-50">%LMS</th><th class="border px-1 py-1 text-center bg-gray-50">Semua Lulus</th><th class="border px-1 py-1 text-center bg-gray-50">Semua A</th>
+                
+                <th class="border px-1 py-1 text-center bg-blue-50/30">Calon</th><th class="border px-1 py-1 text-center bg-blue-50/30">%LMS</th><th class="border px-1 py-1 text-center bg-blue-50/30">Semua Lulus</th><th class="border px-1 py-1 text-center bg-blue-50/30">Semua A</th>
+            </tr>
+        `;
+        theadSchool.innerHTML = schoolHeadHtml;
+
+        tbodySchool.innerHTML = Object.values(schoolMap)
+            .sort((a,b) => (a.code || "").localeCompare(b.code || ""))
+            .map((s, i) => {
+                const percLMS = (ex) => ex.calonCount > 0 ? ((ex.lmsCount / ex.calonCount) * 100).toFixed(2) + '%' : '0.00%';
+                const percLulusSemua = (ex) => ex.calonCount > 0 ? ((ex.lulusSemuaCount / ex.calonCount) * 100).toFixed(2) + '%' : '0.00%';
+                const percSemuaA = (ex) => ex.calonCount > 0 ? ((ex.cemerlangCount / ex.calonCount) * 100).toFixed(2) + '%' : '0.00%';
+
+                return `
+                <tr class="transition-colors text-gray-700 hover:bg-emerald-50/20 border-b border-gray-100">
+                    <td class="text-center text-gray-400 border-r border-gray-100">${i+1}</td>
+                    <td class="font-medium text-left border-r border-gray-100">
+                        <span class="text-gray-400 text-[10px] block leading-none">[${s.code}]</span>
+                        <span class="font-semibold uppercase text-xs tracking-tight text-gray-800">${s.name}</span>
+                    </td>
+                    
+                    ${isE3 ? `
+                    <td class="text-center bg-emerald-50/30 text-gray-600 border-r border-gray-100 text-xs">${s.ex3.calonCount}</td>
+                    <td class="text-center bg-emerald-50/30 font-bold text-emerald-800 border-r border-gray-100 text-xs">${percLMS(s.ex3)}</td>
+                    <td class="text-center bg-emerald-50/30 text-blue-700 border-r border-gray-100 text-xs">${percLulusSemua(s.ex3)}</td>
+                    <td class="text-center bg-emerald-50/30 text-emerald-700 border-r border-gray-100 text-xs">${percSemuaA(s.ex3)}</td>
+                    ` : ''}
+
+                    <td class="text-center bg-gray-50/50 text-gray-600 border-r border-gray-100 text-xs">${s.ex2.calonCount}</td>
+                    <td class="text-center bg-gray-50/50 font-bold text-gray-800 border-r border-gray-100 text-xs">${percLMS(s.ex2)}</td>
+                    <td class="text-center bg-gray-50/50 text-blue-600 border-r border-gray-100 text-xs">${percLulusSemua(s.ex2)}</td>
+                    <td class="text-center bg-gray-50/50 text-emerald-600 border-r border-gray-100 text-xs">${percSemuaA(s.ex2)}</td>
+
+                    <td class="text-center bg-blue-50/10 text-gray-600 border-r border-gray-100 text-xs">${s.ex1.calonCount}</td>
+                    <td class="text-center bg-blue-50/10 font-bold text-gray-800 border-r border-gray-100 text-xs">${percLMS(s.ex1)}</td>
+                    <td class="text-center bg-blue-50/10 text-blue-600 font-bold border-r border-gray-100 text-xs">${percLulusSemua(s.ex1)}</td>
+                    <td class="text-center bg-blue-50/10 text-emerald-600 font-bold text-xs">${percSemuaA(s.ex1)}</td>
+                </tr>
+                `;
+            }).join('');
+    }
+
+    // --- 2. JADUAL TREND SUBJEK ---
+    const theadSub = document.getElementById('theadTrendSubject');
+    const tbodySub = document.getElementById('tbodyTrendSubject');
+
+    if (theadSub && tbodySub) {
+        let subHeadHtml = `
+            <tr>
+                <th class="border px-2 py-2 w-10 bg-gray-50" rowspan="2">Bil</th>
+                <th class="border px-2 py-2 text-left bg-gray-50" rowspan="2">Kod</th>
+                <th class="border px-2 py-2 text-left bg-gray-50" rowspan="2">Mata Pelajaran</th>
+                ${isE3 ? `<th class="border px-2 py-2 text-center bg-emerald-50/50" colspan="4">${label3}</th>` : ''}
+                <th class="border px-2 py-2 text-center bg-gray-50" colspan="4">${label2}</th>
+                <th class="border px-2 py-2 text-center bg-blue-50/50" colspan="4">${label1}</th>
+                <th class="border px-2 py-2 text-center bg-amber-50" colspan="2">Jurang (E1-E2)</th>
+            </tr>
+            <tr class="text-[10px]">
+                ${isE3 ? `
+                <th class="border px-1 py-1 text-center bg-emerald-50/50">Ambil</th><th class="border px-1 py-1 text-center bg-emerald-50/50">GPMP</th><th class="border px-1 py-1 text-center bg-emerald-50/50">%Lulus</th><th class="border px-1 py-1 text-center bg-emerald-50/50">%Cem</th>
+                ` : ''}
+                <th class="border px-1 py-1 text-center bg-gray-50">Ambil</th><th class="border px-1 py-1 text-center bg-gray-50">GPMP</th><th class="border px-1 py-1 text-center bg-gray-50">%Lulus</th><th class="border px-1 py-1 text-center bg-gray-50">%Cem</th>
+                
+                <th class="border px-1 py-1 text-center bg-blue-50/30">Ambil</th><th class="border px-1 py-1 text-center bg-blue-50/30">GPMP</th><th class="border px-1 py-1 text-center bg-blue-50/30">%Lulus</th><th class="border px-1 py-1 text-center bg-blue-50/30">%Cem</th>
+
+                <th class="border px-1 py-1 text-center bg-amber-50/80">+/- GPMP</th><th class="border px-1 py-1 text-center bg-amber-50/80">Indikator</th>
+            </tr>
+        `;
+        theadSub.innerHTML = subHeadHtml;
+
+        tbodySub.innerHTML = Object.values(subMap)
+            .sort((a,b) => {
+                const idxA = SUBJECT_PRIORITY.indexOf(a.kod);
+                const idxB = SUBJECT_PRIORITY.indexOf(b.kod);
+                const wA = idxA === -1 ? 999 : idxA;
+                const wB = idxB === -1 ? 999 : idxB;
+                if(wA !== wB) return wA - wB;
+                return a.kod.localeCompare(b.kod);
+            })
+            .map((s, i) => {
+                const diffGPMP = s.diffGPMP; // E1 - E2 (negatif is good)
+                const isBetter = diffGPMP < 0;
+                const diffColor = diffGPMP === 0 ? 'text-gray-400' : (isBetter ? 'text-green-600 font-bold' : 'text-red-600 font-bold');
+                const diffArrow = diffGPMP === 0 ? '-' : (isBetter ? '▼' : '▲');
+                
+                let isTopImproved = top5Improved.find(top => top.kod === s.kod);
+                let isTopDeclined = top5Declined.find(top => top.kod === s.kod);
+                let indicator = '';
+                if (isTopImproved) indicator = `<span class="bg-green-100 text-green-700 px-1.5 py-0.5 rounded text-[9px] font-bold">🌟 TOP NAIK</span>`;
+                else if (isTopDeclined) indicator = `<span class="bg-red-100 text-red-700 px-1.5 py-0.5 rounded text-[9px] font-bold">⚠️ TOP TURUN</span>`;
+
+                return `
+                <tr class="transition-colors text-gray-700 hover:bg-amber-50/20 border-b border-gray-100">
+                    <td class="text-center text-gray-400 border-r border-gray-100">${i+1}</td>
+                    <td class="text-center font-bold text-gray-600 border-r border-gray-100 text-xs">${s.kod}</td>
+                    <td class="text-left font-medium uppercase text-xs tracking-wide border-r border-gray-100">${s.nama}</td>
+
+                    ${isE3 ? `
+                    <td class="text-center bg-emerald-50/30 text-gray-600 border-r border-gray-100 text-xs">${s.ex3.ambil}</td>
+                    <td class="text-center bg-emerald-50/30 font-bold text-gray-800 border-r border-gray-100 text-xs">${s.ex3.gpmp.toFixed(2)}</td>
+                    <td class="text-center bg-emerald-50/30 text-blue-600 border-r border-gray-100 text-xs">${s.ex3.percLulus.toFixed(2)}%</td>
+                    <td class="text-center bg-emerald-50/30 text-emerald-600 border-r border-gray-100 text-xs">${s.ex3.percCem.toFixed(2)}%</td>
+                    ` : ''}
+
+                    <td class="text-center bg-gray-50/50 text-gray-600 border-r border-gray-100 text-xs">${s.ex2.ambil}</td>
+                    <td class="text-center bg-gray-50/50 font-bold text-gray-800 border-r border-gray-100 text-xs">${s.ex2.gpmp.toFixed(2)}</td>
+                    <td class="text-center bg-gray-50/50 text-blue-600 border-r border-gray-100 text-xs">${s.ex2.percLulus.toFixed(2)}%</td>
+                    <td class="text-center bg-gray-50/50 text-emerald-600 border-r border-gray-100 text-xs">${s.ex2.percCem.toFixed(2)}%</td>
+
+                    <td class="text-center bg-blue-50/10 text-gray-600 border-r border-gray-100 text-xs">${s.ex1.ambil}</td>
+                    <td class="text-center bg-blue-50/10 font-bold text-gray-800 border-r border-gray-100 text-xs">${s.ex1.gpmp.toFixed(2)}</td>
+                    <td class="text-center bg-blue-50/10 text-blue-600 font-bold border-r border-gray-100 text-xs">${s.ex1.percLulus.toFixed(2)}%</td>
+                    <td class="text-center bg-blue-50/10 text-emerald-600 font-bold border-r border-gray-100 text-xs">${s.ex1.percCem.toFixed(2)}%</td>
+
+                    <td class="text-center bg-amber-50/30 ${diffColor} border-r border-gray-100 text-xs" title="E1-E2">
+                        ${Math.abs(diffGPMP).toFixed(2)} <span class="pdf-arrow">${diffArrow}</span>
+                    </td>
+                    <td class="text-center bg-amber-50/30 text-xs">${indicator}</td>
+                </tr>
+                `;
+            }).join('');
+    }
 }
 // [COMMENT SYNTAX] SURGICAL EDIT END

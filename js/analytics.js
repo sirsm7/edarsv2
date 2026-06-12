@@ -579,6 +579,157 @@ export function calculateComparisonGeneral(list1, list2, list3 = []) {
     return { schoolMap, subMap, districtStats };
 }
 
+// [COMMENT SYNTAX] SURGICAL EDIT START: Menambah logik Analisa Trend Kohort
+// -----------------------------------------------------------
+// NEW: TREND ANALYSIS LOGIC (ANALISA KOHORT)
+// Mengabaikan id_individu. Menilai makro keseluruhan populasi.
+// -----------------------------------------------------------
+export function calculateTrendGeneral(list1, list2, list3 = []) {
+    const stats1 = getDistrictSimpleStats(list1);
+    const stats2 = getDistrictSimpleStats(list2);
+    const stats3 = getDistrictSimpleStats(list3);
+    const districtStats = { ex1: stats1, ex2: stats2, ex3: stats3 };
+
+    // 1. Proses Sekolah (Trend Makro) - Tiada pemadanan ID
+    const schoolMap = {};
+    const processSchoolsTrend = (list, key) => {
+        list.forEach(s => {
+            if (!schoolMap[s.nama_sekolah]) {
+                schoolMap[s.nama_sekolah] = {
+                    name: s.nama_sekolah, code: s.kod_sekolah,
+                    ex1: { pt: 0, ct: 0, gps: 0, calonCount: 0, lmsCount: 0, cemerlangCount: 0, lulusSemuaCount: 0 },
+                    ex2: { pt: 0, ct: 0, gps: 0, calonCount: 0, lmsCount: 0, cemerlangCount: 0, lulusSemuaCount: 0 },
+                    ex3: { pt: 0, ct: 0, gps: 0, calonCount: 0, lmsCount: 0, cemerlangCount: 0, lulusSemuaCount: 0 }
+                };
+            }
+            const sc = schoolMap[s.nama_sekolah];
+            const marks = s.markah_data || {};
+
+            sc[key].calonCount++;
+
+            const gBM = getGrade(marks, 'BM');
+            const gSEJ = getGrade(marks, 'SEJ');
+            if (isLulusGrade(gBM) && isLulusGrade(gSEJ)) sc[key].lmsCount++;
+
+            let straightA = true;
+            let lulusSemua = true;
+            let validSubjectTaken = false;
+
+            Object.keys(marks).forEach(k => {
+                if (k.startsWith('G') || k.startsWith('GRED')) {
+                    const kod = k.replace(/^G_?|RED /g, '').trim();
+                    if (!NAMA_SUBJEK.hasOwnProperty(kod)) return;
+                    
+                    const g = marks[k] ? marks[k].toString().trim().toUpperCase() : '';
+                    if (g !== '' && g !== 'NULL' && g !== 'UNDEFINED') {
+                        validSubjectTaken = true;
+                        if (!['A+', 'A', 'A-'].includes(g)) straightA = false;
+                        if (!isLulusGrade(g)) lulusSemua = false;
+
+                        if (!SUBJEK_KECUALI.includes(kod)) {
+                            if (GRED_POINTS.hasOwnProperty(g)) {
+                                sc[key].pt += GRED_POINTS[g];
+                                sc[key].ct++;
+                            }
+                        }
+                    }
+                }
+            });
+            
+            if (validSubjectTaken && straightA) sc[key].cemerlangCount++;
+            if (validSubjectTaken && lulusSemua) sc[key].lulusSemuaCount++;
+
+            sc[key].gps = sc[key].ct > 0 ? (sc[key].pt / sc[key].ct) : 0;
+        });
+    };
+    processSchoolsTrend(list1, 'ex1');
+    processSchoolsTrend(list2, 'ex2');
+    if (list3.length) processSchoolsTrend(list3, 'ex3');
+
+    // 2. Makro Subjek (Taburan Kualiti & Jurang)
+    const subMap = {};
+    const processSubjectsTrend = (list, key) => {
+        list.forEach(s => {
+            const marks = s.markah_data || {};
+            Object.keys(marks).forEach(k => {
+                if (k.startsWith('G') || k.startsWith('GRED')) {
+                    const kod = k.replace(/^G_?|RED /g, '').trim();
+                    if (!NAMA_SUBJEK.hasOwnProperty(kod)) return;
+
+                    const g = marks[k] ? marks[k].toString().trim().toUpperCase() : '';
+                    if (g !== '' && g !== 'NULL' && g !== 'UNDEFINED') {
+                        if (!subMap[kod]) {
+                            subMap[kod] = {
+                                kod: kod, nama: NAMA_SUBJEK[kod] || kod,
+                                ex1: { pt: 0, ct: 0, lulus: 0, ambil: 0, cemerlang: 0, 'A+':0, 'A':0, 'A-':0, 'B+':0, 'B':0, 'C+':0, 'C':0, 'D':0, 'E':0, 'G':0, 'TH':0 },
+                                ex2: { pt: 0, ct: 0, lulus: 0, ambil: 0, cemerlang: 0, 'A+':0, 'A':0, 'A-':0, 'B+':0, 'B':0, 'C+':0, 'C':0, 'D':0, 'E':0, 'G':0, 'TH':0 },
+                                ex3: { pt: 0, ct: 0, lulus: 0, ambil: 0, cemerlang: 0, 'A+':0, 'A':0, 'A-':0, 'B+':0, 'B':0, 'C+':0, 'C':0, 'D':0, 'E':0, 'G':0, 'TH':0 }
+                            };
+                        }
+                        const obj = subMap[kod][key];
+                        obj.ambil++;
+
+                        if (GRED_POINTS.hasOwnProperty(g)) {
+                            obj.pt += GRED_POINTS[g];
+                            obj.ct++;
+                            if (isLulusGrade(g)) obj.lulus++;
+                            if (['A+', 'A', 'A-'].includes(g)) obj.cemerlang++;
+                            if (obj.hasOwnProperty(g)) obj[g]++;
+                        } else if (g === 'TH' || g === 'T') {
+                            obj['TH']++;
+                        }
+                    }
+                }
+            });
+        });
+    };
+    processSubjectsTrend(list1, 'ex1');
+    processSubjectsTrend(list2, 'ex2');
+    if (list3.length) processSubjectsTrend(list3, 'ex3');
+
+    // 3. Ekstrak Data Jurang & Bersihkan
+    Object.keys(subMap).forEach(kod => {
+        const sub = subMap[kod];
+        if (sub.ex1.ambil === 0 && sub.ex2.ambil === 0 && sub.ex3.ambil === 0) {
+            delete subMap[kod];
+        } else if (sub.ex1.ct === 0 && sub.ex2.ct === 0 && sub.ex3.ct === 0) {
+            delete subMap[kod];
+        } else {
+            sub.ex1.gpmp = sub.ex1.ct > 0 ? (sub.ex1.pt / sub.ex1.ct) : 0;
+            sub.ex2.gpmp = sub.ex2.ct > 0 ? (sub.ex2.pt / sub.ex2.ct) : 0;
+            sub.ex3.gpmp = sub.ex3.ct > 0 ? (sub.ex3.pt / sub.ex3.ct) : 0;
+            
+            sub.ex1.percLulus = sub.ex1.ambil > 0 ? (sub.ex1.lulus / sub.ex1.ambil) * 100 : 0;
+            sub.ex2.percLulus = sub.ex2.ambil > 0 ? (sub.ex2.lulus / sub.ex2.ambil) * 100 : 0;
+            sub.ex3.percLulus = sub.ex3.ambil > 0 ? (sub.ex3.lulus / sub.ex3.ambil) * 100 : 0;
+
+            sub.ex1.percCem = sub.ex1.ambil > 0 ? (sub.ex1.cemerlang / sub.ex1.ambil) * 100 : 0;
+            sub.ex2.percCem = sub.ex2.ambil > 0 ? (sub.ex2.cemerlang / sub.ex2.ambil) * 100 : 0;
+            sub.ex3.percCem = sub.ex3.ambil > 0 ? (sub.ex3.cemerlang / sub.ex3.ambil) * 100 : 0;
+
+            sub.diffGPMP = sub.ex1.gpmp - sub.ex2.gpmp; // E1 - E2 (negatif = baik)
+        }
+    });
+
+    // 4. Susun 5 Subjek Meningkat / Menurun (Hanya ambil yang ada ct > 0 untuk dua-dua ex1 & ex2)
+    const validTrendSubjects = Object.values(subMap).filter(s => s.ex1.ct > 0 && s.ex2.ct > 0);
+    
+    // Meningkat: diffGPMP paling negatif
+    const top5Improved = [...validTrendSubjects]
+        .filter(s => s.diffGPMP < 0)
+        .sort((a, b) => a.diffGPMP - b.diffGPMP)
+        .slice(0, 5);
+
+    // Menurun: diffGPMP paling positif
+    const top5Declined = [...validTrendSubjects]
+        .filter(s => s.diffGPMP > 0)
+        .sort((a, b) => b.diffGPMP - a.diffGPMP)
+        .slice(0, 5);
+
+    return { schoolMap, subMap, top5Improved, top5Declined, districtStats };
+}
+// [COMMENT SYNTAX] SURGICAL EDIT END
+
 // -----------------------------------------------------------
 // NEW: ADVANCED COMPARISON LOGIC (MATRIKS GABUNGAN E1,E2,E3)
 // -----------------------------------------------------------
